@@ -1,0 +1,16 @@
+# bağımlılıklar
+/node_modules
+# build
+/.next
+/out
+/dist
+# ortam değişkenleri (GİZLİ - asla commit'lenmez)
+.env
+.env.*
+!.env.example
+# prisma
+/prisma/*.db
+# log & sistem
+*.log
+.DS_Store
+.vscode

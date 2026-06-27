@@ -1,0 +1,627 @@
+// =============================================================
+//  AJANS PLATFORMU - VERİTABANI ŞEMASI (Prisma)
+//  Çok kiracılı (multi-tenant) SaaS + Dijital Ajans
+//  Tüm modeller Türkçe açıklamalarla belgelenmiştir.
+// =============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------
+//  ENUM TANIMLARI
+// -------------------------------------------------------------
+
+/// Sistem genelindeki kullanıcı rolleri (global yetki seviyesi)
+enum GlobalRole {
+  SUPER_ADMIN // Platformun tam sahibi
+  ADMIN       // Platform yöneticisi
+  CUSTOMER    // Müşteri (marka sahibi / kiracı)
+  STAFF       // Personel (müşteriye bağlı çalışan)
+}
+
+/// Bir markaya bağlı üyelik rolleri (marka içi yetki)
+enum BrandRole {
+  OWNER   // Marka sahibi
+  MANAGER // Marka yöneticisi
+  EDITOR  // İçerik düzenleyici
+  VIEWER  // Sadece görüntüleme
+}
+
+/// Abonelik durumu
+enum SubscriptionStatus {
+  TRIALING  // Deneme süresinde
+  ACTIVE    // Aktif
+  PAST_DUE  // Ödeme gecikmiş
+  CANCELED  // İptal edilmiş
+  EXPIRED   // Süresi dolmuş
+}
+
+/// Ödeme/fatura durumu
+enum InvoiceStatus {
+  PENDING // Beklemede
+  PAID    // Ödendi
+  FAILED  // Başarısız
+  REFUNDED // İade edildi
+}
+
+/// Ödeme sağlayıcısı
+enum PaymentProvider {
+  PAYTR
+  STRIPE
+}
+
+/// Yorum / geri bildirim kaynağı
+enum ReviewSource {
+  GOOGLE   // Google Maps yorumu
+  QR       // QR geri bildirim sistemi
+  MANUAL   // Elle eklenen
+  CHATBOT  // Chatbot üzerinden
+}
+
+/// Yapay zekâ duygu analizi sonucu
+enum Sentiment {
+  POSITIVE // Olumlu
+  NEUTRAL  // Nötr
+  NEGATIVE // Olumsuz
+}
+
+/// AI ile üretilen içerik türleri
+enum ContentType {
+  INSTAGRAM_POST
+  REELS_IDEA
+  STORY_IDEA
+  BLOG_POST
+  GOOGLE_ADS
+  META_ADS
+  SEO_CONTENT
+  HASHTAGS
+  CONTENT_PLAN
+}
+
+/// Bildirim kanalı
+enum NotificationChannel {
+  EMAIL
+  IN_APP
+  REALTIME
+}
+
+/// Bildirim durumu
+enum NotificationStatus {
+  UNREAD
+  READ
+}
+
+/// Destek talebi durumu
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+/// Arka plan görev durumu (BullMQ ile senkron tutulur)
+enum JobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+// -------------------------------------------------------------
+//  KİMLİK & ERİŞİM
+// -------------------------------------------------------------
+
+/// Platform kullanıcısı (her rol için ortak temel)
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  passwordHash  String?    // Şifre (kredensiyel ile giriş için)
+  name          String?
+  avatarUrl     String?
+  globalRole    GlobalRole @default(CUSTOMER)
+  emailVerified DateTime?
+  isActive      Boolean    @default(true)
+  locale        String     @default("tr")
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // İlişkiler
+  ownedBrands     Brand[]            @relation("BrandOwner")
+  memberships     BrandMember[]
+  notifications   Notification[]
+  supportTickets  SupportTicket[]
+  auditLogs       AuditLog[]
+  sessions        Session[]
+  apiKeys         ApiKey[]
+
+  @@index([globalRole])
+}
+
+/// Oturum (NextAuth uyumlu)
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  sessionToken String   @unique
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// -------------------------------------------------------------
+//  MARKA YÖNETİMİ (Kiracı çekirdeği)
+// -------------------------------------------------------------
+
+/// Marka = bir kiracının (tenant) ana birimi
+model Brand {
+  id            String   @id @default(cuid())
+  ownerId       String
+  name          String
+  slug          String   @unique
+  logoUrl       String?
+  primaryColor  String?  @default("#6366f1") // Kurumsal ana renk
+  accentColor   String?  @default("#8b5cf6") // Vurgu rengi
+  email         String?
+  phone         String?
+  address       String?
+  description   String?
+  workingHours  Json?    // { "mon": "09:00-18:00", ... }
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  owner          User              @relation("BrandOwner", fields: [ownerId], references: [id])
+  members        BrandMember[]
+  branches       Branch[]
+  employees      Employee[]
+  website        Website?
+  googleProfile  GoogleBusinessProfile?
+  reviews        Review[]
+  qrCodes        QrCode[]
+  chatbot        Chatbot?
+  contentItems   ContentItem[]
+  subscriptions  Subscription[]
+  notifications  Notification[]
+  analyticsEvents AnalyticsEvent[]
+  dashboardSummaries DashboardSummary[]
+  aiUsages       AiUsage[]
+
+  @@index([ownerId])
+}
+
+/// Kullanıcının bir markadaki üyeliği ve rolü (marka içi RBAC)
+model BrandMember {
+  id        String    @id @default(cuid())
+  brandId   String
+  userId    String
+  role      BrandRole @default(VIEWER)
+  createdAt DateTime  @default(now())
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([brandId, userId])
+  @@index([userId])
+}
+
+/// Marka şubesi
+model Branch {
+  id        String   @id @default(cuid())
+  brandId   String
+  name      String
+  address   String?
+  phone     String?
+  lat       Float?
+  lng       Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  brand     Brand      @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  employees Employee[]
+
+  @@index([brandId])
+}
+
+/// Çalışan (markaya / şubeye bağlı personel kaydı)
+model Employee {
+  id        String   @id @default(cuid())
+  brandId   String
+  branchId  String?
+  fullName  String
+  title     String?
+  email     String?
+  phone     String?
+  createdAt DateTime @default(now())
+
+  brand  Brand   @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  branch Branch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  @@index([brandId])
+}
+
+// -------------------------------------------------------------
+//  AI WEBSITE BUILDER & EDİTÖR
+// -------------------------------------------------------------
+
+/// AI ile üretilen kurumsal web sitesi (markaya 1-1)
+model Website {
+  id           String   @id @default(cuid())
+  brandId      String   @unique
+  title        String
+  domain       String?
+  theme        Json?    // Tema/renk/font ayarları
+  isPublished  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  brand Brand         @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  pages WebsitePage[]
+}
+
+/// Web sitesi sayfası (düzenlenebilir bloklar JSON olarak tutulur)
+model WebsitePage {
+  id        String   @id @default(cuid())
+  websiteId String
+  slug      String
+  title     String
+  blocks    Json     // Sayfa blokları (doğal dil editörü bunları değiştirir)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  website Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  @@unique([websiteId, slug])
+}
+
+// -------------------------------------------------------------
+//  GOOGLE BUSINESS & MAPS ANALİZİ
+// -------------------------------------------------------------
+
+/// Google Business Profile entegrasyon kaydı
+model GoogleBusinessProfile {
+  id            String   @id @default(cuid())
+  brandId       String   @unique
+  googlePlaceId String?
+  accountEmail  String?
+  accessToken   String?  // Şifrelenmiş saklanmalı
+  refreshToken  String?  // Şifrelenmiş saklanmalı
+  averageRating Float?
+  totalReviews  Int      @default(0)
+  lastSyncedAt  DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+}
+
+// -------------------------------------------------------------
+//  YORUM & AI YORUM ANALİZİ & QR GERİ BİLDİRİM
+// -------------------------------------------------------------
+
+/// Yorum / geri bildirim (Google, QR, manuel, chatbot kaynaklı)
+model Review {
+  id           String       @id @default(cuid())
+  brandId      String
+  source       ReviewSource @default(GOOGLE)
+  authorName   String?
+  rating       Int          // 1-5
+  text         String?
+  sentiment    Sentiment?   // AI duygu analizi sonucu
+  topics       String[]     // AI tarafından çıkarılan konular
+  aiSummary    String?      // AI özeti
+  externalId   String?      // Kaynak sistemdeki kimlik
+  qrCodeId     String?
+  createdAt    DateTime     @default(now())
+
+  brand  Brand   @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  qrCode QrCode? @relation(fields: [qrCodeId], references: [id], onDelete: SetNull)
+
+  @@index([brandId, createdAt])
+  @@index([sentiment])
+}
+
+/// QR geri bildirim kodu (her marka/şube için üretilir)
+model QrCode {
+  id        String   @id @default(cuid())
+  brandId   String
+  label     String?
+  slug      String   @unique // QR linkinin benzersiz yolu
+  scanCount Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  brand   Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  reviews Review[]
+
+  @@index([brandId])
+}
+
+// -------------------------------------------------------------
+//  AI CHATBOT
+// -------------------------------------------------------------
+
+/// Marka chatbotu (markaya 1-1) ve bilgi tabanı
+model Chatbot {
+  id          String   @id @default(cuid())
+  brandId     String   @unique
+  name        String   @default("Asistan")
+  systemPrompt String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  brand          Brand                    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  knowledgeBase  ChatbotKnowledge[]
+  conversations  ChatbotConversation[]
+}
+
+/// Chatbot bilgi tabanı kaydı (ürün, hizmet, menü, SSS, vb.)
+model ChatbotKnowledge {
+  id        String   @id @default(cuid())
+  chatbotId String
+  category  String   // "urun" | "hizmet" | "menu" | "sss" | "saat" | "adres" | "kampanya"
+  question  String?
+  content   String
+  embedding Float[]  // Vektör (pgvector ile aramada kullanılır)
+  createdAt DateTime @default(now())
+
+  chatbot Chatbot @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+
+  @@index([chatbotId, category])
+}
+
+/// Chatbot konuşma oturumu
+model ChatbotConversation {
+  id        String   @id @default(cuid())
+  chatbotId String
+  visitorId String?  // Anonim ziyaretçi kimliği
+  createdAt DateTime @default(now())
+
+  chatbot  Chatbot          @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+  messages ChatbotMessage[]
+
+  @@index([chatbotId])
+}
+
+/// Chatbot mesajı
+model ChatbotMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String   // "user" | "assistant"
+  content        String
+  createdAt      DateTime @default(now())
+
+  conversation ChatbotConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
+
+// -------------------------------------------------------------
+//  AI İÇERİK ÜRETİCİSİ
+// -------------------------------------------------------------
+
+/// AI ile üretilen içerik kaydı
+model ContentItem {
+  id        String      @id @default(cuid())
+  brandId   String
+  type      ContentType
+  title     String?
+  body      String
+  meta      Json?       // hashtag listesi, plan günü, platform vb.
+  createdById String?
+  createdAt DateTime    @default(now())
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@index([brandId, type])
+}
+
+// -------------------------------------------------------------
+//  ANALİTİK & AI DASHBOARD
+// -------------------------------------------------------------
+
+/// Ham analitik olayı
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  brandId   String
+  name      String   // "page_view" | "conversion" | ...
+  props     Json?
+  createdAt DateTime @default(now())
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@index([brandId, name, createdAt])
+}
+
+/// AI Dashboard günlük otomatik özet
+model DashboardSummary {
+  id            String   @id @default(cuid())
+  brandId       String
+  date          DateTime @db.Date
+  performance   Json?    // KPI göstergeleri
+  negativeTrend Json?    // Olumsuz yorum artışı
+  topComplaint  String?  // En çok şikâyet edilen konu
+  aiSuggestions String[] // Yapay zekâ önerileri
+  createdAt     DateTime @default(now())
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@unique([brandId, date])
+}
+
+/// AI kullanım istatistiği (token/maliyet takibi)
+model AiUsage {
+  id        String   @id @default(cuid())
+  brandId   String?
+  feature   String   // "content" | "chatbot" | "review_analysis" | ...
+  model     String
+  tokensIn  Int      @default(0)
+  tokensOut Int      @default(0)
+  costCents Int      @default(0)
+  createdAt DateTime @default(now())
+
+  brand Brand? @relation(fields: [brandId], references: [id], onDelete: SetNull)
+
+  @@index([brandId, feature, createdAt])
+}
+
+// -------------------------------------------------------------
+//  ABONELİK & FATURALANDIRMA
+// -------------------------------------------------------------
+
+/// Satışa sunulan paket
+model Plan {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  priceCents   Int
+  currency     String   @default("TRY")
+  interval     String   @default("month") // "month" | "year"
+  trialDays    Int      @default(14)
+  features     Json?    // Özellik/limit listesi
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  subscriptions Subscription[]
+}
+
+/// Abonelik
+model Subscription {
+  id         String             @id @default(cuid())
+  brandId    String
+  planId     String
+  status     SubscriptionStatus @default(TRIALING)
+  trialEndsAt DateTime?
+  startedAt  DateTime           @default(now())
+  endsAt     DateTime?
+  provider   PaymentProvider?
+  providerSubId String?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  brand    Brand     @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  plan     Plan      @relation(fields: [planId], references: [id])
+  invoices Invoice[]
+
+  @@index([brandId, status])
+}
+
+/// Fatura / ödeme kaydı
+model Invoice {
+  id             String          @id @default(cuid())
+  subscriptionId String
+  amountCents    Int
+  currency       String          @default("TRY")
+  status         InvoiceStatus   @default(PENDING)
+  provider       PaymentProvider
+  providerRef    String?         // PayTR/Stripe referansı
+  paidAt         DateTime?
+  createdAt      DateTime        @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId, status])
+}
+
+// -------------------------------------------------------------
+//  BİLDİRİM SİSTEMİ
+// -------------------------------------------------------------
+
+/// Bildirim (e-posta / uygulama içi / gerçek zamanlı)
+model Notification {
+  id        String              @id @default(cuid())
+  userId    String
+  brandId   String?
+  channel   NotificationChannel @default(IN_APP)
+  status    NotificationStatus  @default(UNREAD)
+  title     String
+  body      String?
+  data      Json?
+  createdAt DateTime            @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  brand Brand? @relation(fields: [brandId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+}
+
+// -------------------------------------------------------------
+//  ADMIN: API ANAHTARLARI, DESTEK, AYARLAR, LOGLAR
+// -------------------------------------------------------------
+
+/// API anahtarı (gelecekteki mobil/üçüncü taraf erişim)
+model ApiKey {
+  id         String   @id @default(cuid())
+  userId     String
+  name       String
+  keyHash    String   @unique // Anahtarın hash'i (ham hali saklanmaz)
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Destek talebi
+model SupportTicket {
+  id        String       @id @default(cuid())
+  userId    String
+  subject   String
+  message   String
+  status    TicketStatus @default(OPEN)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+}
+
+/// Sistem ayarları (anahtar-değer)
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+/// Denetim / log kaydı
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // "user.login" | "brand.create" | ...
+  entity    String?
+  entityId  String?
+  metadata  Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([action, createdAt])
+}
+
+/// Arka plan görev kaydı (BullMQ kuyruğu ile eşlenir)
+model BackgroundJob {
+  id        String    @id @default(cuid())
+  queue     String
+  name      String
+  status    JobStatus @default(QUEUED)
+  payload   Json?
+  result    Json?
+  error     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([queue, status])
+}
