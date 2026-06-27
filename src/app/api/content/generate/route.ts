@@ -1,0 +1,62 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/server/auth/auth";
+import { prisma } from "@/lib/prisma";
+import { generateContent } from "@/server/ai/content-generator";
+import { z } from "zod";
+import type { ContentType } from "@prisma/client";
+
+const CONTENT_TYPES: ContentType[] = [
+  "INSTAGRAM_POST", "REELS_IDEA", "STORY_IDEA", "BLOG_POST",
+  "GOOGLE_ADS", "META_ADS", "SEO_CONTENT", "HASHTAGS", "CONTENT_PLAN",
+];
+
+const schema = z.object({
+  brandId: z.string(),
+  type: z.enum(CONTENT_TYPES as [ContentType, ...ContentType[]]),
+  sector: z.string().min(2),
+  description: z.string().min(5),
+  topic: z.string().optional(),
+  tone: z.string().optional(),
+});
+
+export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+
+  const body = await req.json();
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
+
+  const { brandId, type, sector, description, topic, tone } = parsed.data;
+
+  const brand = await prisma.brand.findFirst({
+    where: { id: brandId, ownerId: (session.user as { id: string }).id },
+  });
+  if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
+
+  const generated = await generateContent(type, {
+    brandName: brand.name,
+    sector,
+    description,
+    topic,
+    tone,
+    primaryColor: brand.primaryColor ?? undefined,
+  });
+
+  const item = await prisma.contentItem.create({
+    data: {
+      brandId,
+      type,
+      title: generated.title,
+      body: generated.body,
+      meta: generated.meta ?? {},
+      createdById: (session.user as { id: string }).id,
+    },
+  });
+
+  await prisma.aiUsage.create({
+    data: { brandId, feature: "content", model: "claude-sonnet-4-6", tokensIn: 0, tokensOut: 0 },
+  });
+
+  return NextResponse.json({ item });
+}
