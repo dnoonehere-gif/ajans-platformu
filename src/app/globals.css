@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Premium tema değişkenleri - Light */
+:root {
+  --background: 240 20% 99%;
+  --foreground: 240 10% 8%;
+  --primary: 245 80% 62%;
+  --primary-foreground: 0 0% 100%;
+  --muted: 240 12% 94%;
+  --muted-foreground: 240 6% 40%;
+  --border: 240 12% 88%;
+  --radius: 0.875rem;
+}
+
+/* Dark tema */
+.dark {
+  --background: 240 12% 6%;
+  --foreground: 240 10% 96%;
+  --primary: 250 85% 68%;
+  --primary-foreground: 0 0% 100%;
+  --muted: 240 8% 14%;
+  --muted-foreground: 240 6% 65%;
+  --border: 240 8% 20%;
+}
+
+* { border-color: hsl(var(--border)); }
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings: "ss01", "cv01";
+}
+
+/* Glassmorphism yardımcı sınıfı */
+.glass {
+  background: hsl(var(--background) / 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid hsl(var(--border) / 0.6);
+}
