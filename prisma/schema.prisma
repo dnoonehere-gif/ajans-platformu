@@ -118,6 +118,28 @@ enum JobStatus {
 //  KİMLİK & ERİŞİM
 // -------------------------------------------------------------
 
+/// Şifre sıfırlama token'ı
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+/// E-posta doğrulama token'ı
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
 /// Platform kullanıcısı (her rol için ortak temel)
 model User {
   id            String     @id @default(cuid())
