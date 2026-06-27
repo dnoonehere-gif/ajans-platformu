@@ -1,151 +1,127 @@
-import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
-import type { GlobalRole } from "@prisma/client";
-
-const GLOBAL_ROLE_COLORS: Record<GlobalRole, string> = {
-  SUPER_ADMIN: "bg-purple-500/15 text-purple-400",
-  ADMIN: "bg-blue-500/15 text-blue-400",
-  CUSTOMER: "bg-green-500/15 text-green-400",
-  STAFF: "bg-yellow-500/15 text-yellow-400",
-};
-
-const GLOBAL_ROLE_LABELS: Record<GlobalRole, string> = {
-  SUPER_ADMIN: "Süper Admin",
-  ADMIN: "Admin",
-  CUSTOMER: "Müşteri",
-  STAFF: "Personel",
-};
+import { Users, Building2, MessageSquare, Star, Brain, TrendingUp } from "lucide-react";
 
 export default async function AdminPage() {
-  const session = await auth();
-  const role = (session?.user as { role?: string })?.role;
-  if (role !== "SUPER_ADMIN" && role !== "ADMIN") redirect("/dashboard");
-
-  const [users, brands, aiUsage, totalReviews, totalConversations] = await Promise.all([
-    prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 50,
-      select: { id: true, name: true, email: true, globalRole: true, isActive: true, createdAt: true, _count: { select: { ownedBrands: true } } },
-    }),
-    prisma.brand.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 50,
-      select: {
-        id: true, name: true, slug: true, isActive: true, createdAt: true,
-        owner: { select: { name: true, email: true } },
-        _count: { select: { reviews: true, members: true } },
-        subscriptions: { select: { status: true }, take: 1, orderBy: { createdAt: "desc" } },
-      },
-    }),
-    prisma.aiUsage.aggregate({ _sum: { tokensIn: true, tokensOut: true, costCents: true } }),
+  const [
+    userCount, brandCount, activeSubCount, totalReviews,
+    totalConversations, aiUsage, recentUsers, recentBrands,
+  ] = await Promise.all([
+    prisma.user.count(),
+    prisma.brand.count(),
+    prisma.subscription.count({ where: { status: "ACTIVE" } }),
     prisma.review.count(),
     prisma.chatbotConversation.count(),
+    prisma.aiUsage.aggregate({ _sum: { tokensIn: true, tokensOut: true, costCents: true } }),
+    prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 5, select: { id: true, name: true, email: true, globalRole: true, createdAt: true } }),
+    prisma.brand.findMany({ orderBy: { createdAt: "desc" }, take: 5, select: { id: true, name: true, slug: true, createdAt: true, owner: { select: { name: true, email: true } }, subscriptions: { take: 1, orderBy: { createdAt: "desc" }, select: { status: true } } } }),
   ]);
 
-  const totalTokens = (aiUsage._sum.tokensIn ?? 0) + (aiUsage._sum.tokensOut ?? 0);
-  const totalCost = (aiUsage._sum.costCents ?? 0) / 100;
+  const totalCost = ((aiUsage._sum.costCents ?? 0) / 100).toFixed(2);
+  const totalTokens = ((aiUsage._sum.tokensIn ?? 0) + (aiUsage._sum.tokensOut ?? 0)).toLocaleString("tr-TR");
+
+  const STATS = [
+    { label: "Kullanıcı", value: userCount, icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },
+    { label: "Marka", value: brandCount, icon: Building2, color: "text-purple-400", bg: "bg-purple-500/10" },
+    { label: "Aktif Abonelik", value: activeSubCount, icon: TrendingUp, color: "text-green-400", bg: "bg-green-500/10" },
+    { label: "Yorum", value: totalReviews, icon: Star, color: "text-yellow-400", bg: "bg-yellow-500/10" },
+    { label: "Chatbot Konuşma", value: totalConversations, icon: MessageSquare, color: "text-teal-400", bg: "bg-teal-500/10" },
+    { label: "AI Maliyet (₺)", value: totalCost, icon: Brain, color: "text-orange-400", bg: "bg-orange-500/10" },
+  ];
+
+  const ROLE_LABELS: Record<string, string> = { SUPER_ADMIN: "Süper Admin", ADMIN: "Admin", CUSTOMER: "Müşteri", STAFF: "Personel" };
+  const ROLE_COLORS: Record<string, string> = { SUPER_ADMIN: "text-purple-400 bg-purple-500/10", ADMIN: "text-blue-400 bg-blue-500/10", CUSTOMER: "text-green-400 bg-green-500/10", STAFF: "text-yellow-400 bg-yellow-500/10" };
+  const SUB_COLORS: Record<string, string> = { ACTIVE: "text-green-400 bg-green-500/10", TRIALING: "text-blue-400 bg-blue-500/10", PAST_DUE: "text-orange-400 bg-orange-500/10", CANCELED: "text-red-400 bg-red-500/10", EXPIRED: "text-gray-400 bg-gray-500/10" };
+  const SUB_LABELS: Record<string, string> = { ACTIVE: "Aktif", TRIALING: "Deneme", PAST_DUE: "Gecikmiş", CANCELED: "İptal", EXPIRED: "Sona Erdi" };
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
+    <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">Platform Admin Paneli</h1>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">Tüm kullanıcılar, markalar ve platform istatistikleri</p>
+        <h1 className="text-2xl font-bold">Genel Bakış</h1>
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">Platform geneli istatistikler</p>
       </div>
 
-      {/* Platform istatistikleri */}
-      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-        {[
-          { label: "Toplam Kullanıcı", value: users.length },
-          { label: "Toplam Marka", value: brands.length },
-          { label: "Toplam Yorum", value: totalReviews },
-          { label: "Chatbot Konuşma", value: totalConversations },
-        ].map((stat) => (
-          <div key={stat.label} className="glass rounded-2xl p-5">
-            <p className="text-2xl font-bold">{stat.value}</p>
-            <p className="text-xs text-[hsl(var(--muted-foreground))]">{stat.label}</p>
+      {/* İstatistik kartları */}
+      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-3">
+        {STATS.map((s) => (
+          <div key={s.label} className="glass rounded-2xl p-5">
+            <div className={`mb-3 inline-flex rounded-xl p-2.5 ${s.bg}`}>
+              <s.icon className={`h-5 w-5 ${s.color}`} />
+            </div>
+            <p className="text-2xl font-bold">{s.value}</p>
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">{s.label}</p>
           </div>
         ))}
       </div>
 
-      {/* AI kullanım istatistikleri */}
-      <div className="glass mb-6 grid grid-cols-3 gap-4 rounded-2xl p-5">
-        <div>
-          <p className="text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Toplam Token</p>
-          <p className="text-xl font-bold">{totalTokens.toLocaleString("tr-TR")}</p>
-        </div>
-        <div>
-          <p className="text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Toplam Maliyet</p>
-          <p className="text-xl font-bold">₺{totalCost.toFixed(2)}</p>
-        </div>
-        <div>
-          <p className="text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">AI Kullanım Kaydı</p>
-          <p className="text-xl font-bold">{(await prisma.aiUsage.count()).toLocaleString("tr-TR")}</p>
+      {/* AI özet */}
+      <div className="glass mb-8 rounded-2xl p-5">
+        <p className="mb-4 text-sm font-semibold">AI Kullanım Özeti</p>
+        <div className="grid grid-cols-3 gap-6">
+          <div>
+            <p className="text-xs text-[hsl(var(--muted-foreground))]">Toplam Token</p>
+            <p className="mt-1 text-xl font-bold">{totalTokens}</p>
+          </div>
+          <div>
+            <p className="text-xs text-[hsl(var(--muted-foreground))]">Toplam Maliyet</p>
+            <p className="mt-1 text-xl font-bold">₺{totalCost}</p>
+          </div>
+          <div>
+            <p className="text-xs text-[hsl(var(--muted-foreground))]">Giriş / Çıkış Token</p>
+            <p className="mt-1 text-xl font-bold">
+              {(aiUsage._sum.tokensIn ?? 0).toLocaleString("tr-TR")} / {(aiUsage._sum.tokensOut ?? 0).toLocaleString("tr-TR")}
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Kullanıcılar */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        {/* Son kayıt olan kullanıcılar */}
         <div className="glass rounded-2xl overflow-hidden">
-          <div className="border-b border-[hsl(var(--border))] px-5 py-3">
-            <p className="text-sm font-semibold">Kullanıcılar ({users.length})</p>
+          <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-5 py-3">
+            <p className="text-sm font-semibold">Son Kullanıcılar</p>
+            <a href="/admin/kullanicilar" className="text-xs text-[hsl(var(--primary))] hover:underline">Tümünü gör →</a>
           </div>
-          <div className="max-h-96 overflow-y-auto divide-y divide-[hsl(var(--border))]">
-            {users.map((user) => (
-              <div key={user.id} className="flex items-center gap-3 px-5 py-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[hsl(var(--primary)/0.15)] text-xs font-bold text-[hsl(var(--primary))]">
-                  {(user.name ?? user.email).slice(0, 2).toUpperCase()}
+          <div className="divide-y divide-[hsl(var(--border))]">
+            {recentUsers.map((u) => (
+              <div key={u.id} className="flex items-center gap-3 px-5 py-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary)/0.15)] text-xs font-bold text-[hsl(var(--primary))]">
+                  {(u.name ?? u.email).slice(0, 2).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{user.name ?? "—"}</p>
-                  <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">{user.email}</p>
+                  <p className="text-sm font-medium truncate">{u.name ?? "—"}</p>
+                  <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">{u.email}</p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${GLOBAL_ROLE_COLORS[user.globalRole]}`}>
-                    {GLOBAL_ROLE_LABELS[user.globalRole]}
-                  </span>
-                  {!user.isActive && (
-                    <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-xs text-red-400">Pasif</span>
-                  )}
-                  <span className="text-xs text-[hsl(var(--muted-foreground))]">{user._count.ownedBrands} marka</span>
-                </div>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[u.globalRole]}`}>
+                  {ROLE_LABELS[u.globalRole]}
+                </span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Markalar */}
+        {/* Son oluşturulan markalar */}
         <div className="glass rounded-2xl overflow-hidden">
-          <div className="border-b border-[hsl(var(--border))] px-5 py-3">
-            <p className="text-sm font-semibold">Markalar ({brands.length})</p>
+          <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-5 py-3">
+            <p className="text-sm font-semibold">Son Markalar</p>
+            <a href="/admin/markalar" className="text-xs text-[hsl(var(--primary))] hover:underline">Tümünü gör →</a>
           </div>
-          <div className="max-h-96 overflow-y-auto divide-y divide-[hsl(var(--border))]">
-            {brands.map((brand) => {
-              const subStatus = brand.subscriptions[0]?.status;
+          <div className="divide-y divide-[hsl(var(--border))]">
+            {recentBrands.map((b) => {
+              const sub = b.subscriptions[0];
               return (
-                <div key={brand.id} className="px-5 py-3">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <p className="text-sm font-medium">{brand.name}</p>
-                    <div className="flex items-center gap-1.5">
-                      {subStatus && (
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                          subStatus === "ACTIVE" ? "bg-green-500/15 text-green-400" :
-                          subStatus === "TRIALING" ? "bg-blue-500/15 text-blue-400" :
-                          "bg-red-500/15 text-red-400"
-                        }`}>
-                          {subStatus === "ACTIVE" ? "Aktif" : subStatus === "TRIALING" ? "Deneme" :
-                           subStatus === "PAST_DUE" ? "Gecikmiş" : subStatus === "CANCELED" ? "İptal" : "Süresi Dolmuş"}
-                        </span>
-                      )}
-                      {!brand.isActive && (
-                        <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-xs text-red-400">Pasif</span>
-                      )}
-                    </div>
+                <div key={b.id} className="flex items-center gap-3 px-5 py-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary)/0.15)] text-xs font-bold text-[hsl(var(--primary))]">
+                    {b.name.slice(0, 2).toUpperCase()}
                   </div>
-                  <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                    {brand.owner.name ?? brand.owner.email} · {brand._count.reviews} yorum · {brand._count.members} üye
-                  </p>
-                  <p className="text-xs text-[hsl(var(--muted-foreground))] font-mono mt-0.5">/{brand.slug}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{b.name}</p>
+                    <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">{b.owner.name ?? b.owner.email}</p>
+                  </div>
+                  {sub && (
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${SUB_COLORS[sub.status]}`}>
+                      {SUB_LABELS[sub.status]}
+                    </span>
+                  )}
                 </div>
               );
             })}
