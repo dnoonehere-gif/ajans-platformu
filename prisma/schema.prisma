@@ -195,6 +195,11 @@ model Brand {
   address       String?
   description   String?
   workingHours  Json?    // { "mon": "09:00-18:00", ... }
+  instagram     String?
+  whatsapp      String?
+  website_url   String?
+  facebook      String?
+  sector        String?
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

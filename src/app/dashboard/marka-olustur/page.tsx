@@ -1,86 +1,336 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Building2 } from "lucide-react";
+import {
+  Building2, ImagePlus, MapPin, Phone, Instagram,
+  MessageCircle, ChevronRight, ChevronLeft, Check, Loader2,
+} from "lucide-react";
+
+interface FormData {
+  name: string;
+  slug: string;
+  logoFile: File | null;
+  logoPreview: string;
+  address: string;
+  phone: string;
+  instagram: string;
+  whatsapp: string;
+  sector: string;
+  description: string;
+}
+
+const STEPS = [
+  { id: 1, label: "İşletme Adı", icon: Building2 },
+  { id: 2, label: "Logo", icon: ImagePlus },
+  { id: 3, label: "Adres", icon: MapPin },
+  { id: 4, label: "Telefon", icon: Phone },
+  { id: 5, label: "Instagram", icon: Instagram },
+  { id: 6, label: "WhatsApp", icon: MessageCircle },
+];
+
+const inputCls = "flex h-12 w-full rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.4)] px-4 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)] placeholder:text-[hsl(var(--muted-foreground))]";
 
 export default function MarkaOlusturPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: "", slug: "", description: "", email: "", phone: "" });
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const inputCls = "flex h-11 w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)]";
+  const [form, setForm] = useState<FormData>({
+    name: "", slug: "", logoFile: null, logoPreview: "",
+    address: "", phone: "", instagram: "", whatsapp: "",
+    sector: "", description: "",
+  });
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true); setError("");
+  function set(key: keyof FormData, value: string | File | null) {
+    setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  function handleNameChange(val: string) {
+    const slug = val
+      .toLowerCase()
+      .replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ş/g, "s")
+      .replace(/ı/g, "i").replace(/ö/g, "o").replace(/ç/g, "c")
+      .replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    setForm((f) => ({ ...f, name: val, slug }));
+  }
+
+  function handleLogo(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    set("logoFile", file);
+    const reader = new FileReader();
+    reader.onload = (ev) => set("logoPreview", ev.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  function canNext() {
+    if (step === 1) return form.name.trim().length >= 2;
+    return true; // diğer adımlar opsiyonel
+  }
+
+  async function handleFinish() {
+    setLoading(true);
+    setError("");
+
+    // Logo varsa önce yükle
+    let logoUrl: string | undefined;
+    if (form.logoFile) {
+      const fd = new FormData();
+      fd.append("file", form.logoFile);
+      fd.append("slug", form.slug);
+      const r = await fetch("/api/brand/logo", { method: "POST", body: fd });
+      const d = await r.json();
+      if (r.ok) logoUrl = d.url;
+    }
+
     const res = await fetch("/api/brand", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        name: form.name, slug: form.slug,
+        address: form.address || undefined,
+        phone: form.phone || undefined,
+        instagram: form.instagram || undefined,
+        whatsapp: form.whatsapp || undefined,
+        sector: form.sector || undefined,
+        description: form.description || undefined,
+        logoUrl,
+      }),
     });
+
     const data = await res.json();
     if (!res.ok) { setError(data.error ?? "Hata oluştu"); setLoading(false); return; }
     router.push("/dashboard");
     router.refresh();
   }
 
+  const progress = ((step - 1) / (STEPS.length - 1)) * 100;
+
   return (
-    <div className="mx-auto max-w-xl p-8">
-      <div className="mb-8 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[hsl(var(--primary)/0.15)]">
-          <Building2 className="h-5 w-5 text-[hsl(var(--primary))]" />
+    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md">
+
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[hsl(var(--primary))]">
+            <Building2 className="h-6 w-6 text-white" />
+          </div>
+          <h1 className="text-xl font-bold">Marka Oluştur</h1>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">Adım {step} / {STEPS.length}</p>
         </div>
-        <div>
-          <h1 className="text-xl font-bold">Yeni Marka Oluştur</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">İşletmenizi platforma ekleyin</p>
+
+        {/* Progress bar */}
+        <div className="mb-8">
+          <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-[hsl(var(--muted))]">
+            <div className="h-full rounded-full bg-[hsl(var(--primary))] transition-all duration-500" style={{ width: `${progress}%` }} />
+          </div>
+          <div className="flex justify-between">
+            {STEPS.map((s) => (
+              <div key={s.id} className="flex flex-col items-center gap-1">
+                <div className={`flex h-7 w-7 items-center justify-center rounded-full border-2 transition-all ${
+                  step > s.id ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary))]" :
+                  step === s.id ? "border-[hsl(var(--primary))] bg-transparent" :
+                  "border-[hsl(var(--border))] bg-transparent"
+                }`}>
+                  {step > s.id
+                    ? <Check className="h-3.5 w-3.5 text-white" />
+                    : <s.icon className={`h-3 w-3 ${step === s.id ? "text-[hsl(var(--primary))]" : "text-[hsl(var(--muted-foreground))]"}`} />
+                  }
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Kart */}
+        <div className="glass rounded-3xl p-8">
+
+          {/* Adım 1 — İşletme Adı */}
+          {step === 1 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-2xl font-bold">İşletmenizin adı nedir?</h2>
+                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Müşterilerinizin sizi tanıdığı isim</p>
+              </div>
+              <input autoFocus className={inputCls} placeholder="ABC Cafe" value={form.name}
+                onChange={(e) => handleNameChange(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && canNext() && setStep(2)} />
+              {form.name && (
+                <p className="text-xs text-[hsl(var(--muted-foreground))]">
+                  Sayfa adresi: <span className="font-mono text-[hsl(var(--primary))]">/{form.slug}</span>
+                </p>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Sektör (opsiyonel)</label>
+                <select
+                  value={form.sector}
+                  onChange={(e) => set("sector", e.target.value)}
+                  className={`${inputCls} cursor-pointer`}
+                >
+                  <option value="">Seçin...</option>
+                  {["Restoran & Kafe", "Güzellik & Kuaför", "Sağlık & Klinik", "Eğitim", "Perakende", "Hizmet", "Teknoloji", "Diğer"].map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Adım 2 — Logo */}
+          {step === 2 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-2xl font-bold">Logonuzu ekleyin</h2>
+                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">PNG veya JPG, en az 200×200px önerilir</p>
+              </div>
+
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogo} />
+
+              <button type="button" onClick={() => fileRef.current?.click()}
+                className={`flex h-40 w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed transition ${
+                  form.logoPreview ? "border-[hsl(var(--primary))]" : "border-[hsl(var(--border))] hover:border-[hsl(var(--primary)/0.5)]"
+                }`}>
+                {form.logoPreview ? (
+                  <img src={form.logoPreview} alt="logo" className="h-28 w-28 rounded-xl object-contain" />
+                ) : (
+                  <>
+                    <ImagePlus className="h-8 w-8 text-[hsl(var(--muted-foreground))]" />
+                    <span className="text-sm text-[hsl(var(--muted-foreground))]">Tıkla veya sürükle</span>
+                  </>
+                )}
+              </button>
+
+              {form.logoPreview && (
+                <button type="button" onClick={() => { set("logoFile", null); set("logoPreview", ""); }}
+                  className="text-xs text-red-400 hover:underline">
+                  Logoyu kaldır
+                </button>
+              )}
+
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">Opsiyonel — daha sonra da ekleyebilirsiniz.</p>
+            </div>
+          )}
+
+          {/* Adım 3 — Adres */}
+          {step === 3 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-2xl font-bold">Adresiniz nedir?</h2>
+                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Müşterilerinizin sizi bulabileceği yer</p>
+              </div>
+              <textarea
+                autoFocus
+                rows={3}
+                className={`${inputCls} h-28 resize-none py-3`}
+                placeholder="Atatürk Cad. No:12, Kadıköy / İstanbul"
+                value={form.address}
+                onChange={(e) => set("address", e.target.value)}
+              />
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">Opsiyonel — daha sonra da ekleyebilirsiniz.</p>
+            </div>
+          )}
+
+          {/* Adım 4 — Telefon */}
+          {step === 4 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-2xl font-bold">Telefon numaranız?</h2>
+                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Müşterileriniz sizi bu numaradan arayabilir</p>
+              </div>
+              <input
+                autoFocus type="tel" className={inputCls}
+                placeholder="0532 123 45 67"
+                value={form.phone}
+                onChange={(e) => set("phone", e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && setStep(5)}
+              />
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">Opsiyonel — daha sonra da ekleyebilirsiniz.</p>
+            </div>
+          )}
+
+          {/* Adım 5 — Instagram */}
+          {step === 5 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-2xl font-bold">Instagram hesabınız?</h2>
+                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">@ olmadan sadece kullanıcı adınızı girin</p>
+              </div>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-[hsl(var(--muted-foreground))]">@</span>
+                <input
+                  autoFocus className={`${inputCls} pl-8`}
+                  placeholder="abccafe"
+                  value={form.instagram}
+                  onChange={(e) => set("instagram", e.target.value.replace("@", ""))}
+                  onKeyDown={(e) => e.key === "Enter" && setStep(6)}
+                />
+              </div>
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">Opsiyonel — daha sonra da ekleyebilirsiniz.</p>
+            </div>
+          )}
+
+          {/* Adım 6 — WhatsApp */}
+          {step === 6 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-2xl font-bold">WhatsApp numaranız?</h2>
+                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Ülke kodu dahil girin</p>
+              </div>
+              <input
+                autoFocus type="tel" className={inputCls}
+                placeholder="+90 532 123 45 67"
+                value={form.whatsapp}
+                onChange={(e) => set("whatsapp", e.target.value)}
+              />
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">Opsiyonel — daha sonra da ekleyebilirsiniz.</p>
+
+              {error && (
+                <p className="rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-red-400">{error}</p>
+              )}
+            </div>
+          )}
+
+          {/* Navigasyon */}
+          <div className="mt-8 flex gap-3">
+            {step > 1 && (
+              <button onClick={() => setStep((s) => s - 1)}
+                className="flex items-center gap-2 rounded-2xl border border-[hsl(var(--border))] px-5 py-3 text-sm font-semibold transition hover:bg-[hsl(var(--accent))]">
+                <ChevronLeft className="h-4 w-4" /> Geri
+              </button>
+            )}
+
+            {step < STEPS.length ? (
+              <button
+                onClick={() => setStep((s) => s + 1)}
+                disabled={!canNext()}
+                className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[hsl(var(--primary))] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+              >
+                Devam Et <ChevronRight className="h-4 w-4" />
+              </button>
+            ) : (
+              <button
+                onClick={handleFinish}
+                disabled={loading}
+                className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[hsl(var(--primary))] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                Markayı Oluştur
+              </button>
+            )}
+          </div>
+
+          {/* Adım atla */}
+          {step > 1 && step < STEPS.length && (
+            <button onClick={() => setStep((s) => s + 1)}
+              className="mt-3 w-full text-center text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition">
+              Bu adımı atla →
+            </button>
+          )}
         </div>
       </div>
-
-      <form onSubmit={handleSubmit} className="glass rounded-2xl p-6 space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-2 space-y-1.5">
-            <label className="text-sm font-medium">Marka Adı *</label>
-            <input required className={inputCls} placeholder="Örn: Lezzet Durağı" value={form.name}
-              onChange={(e) => {
-                const name = e.target.value;
-                const slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-                setForm((f) => ({ ...f, name, slug }));
-              }} />
-          </div>
-          <div className="col-span-2 space-y-1.5">
-            <label className="text-sm font-medium">Slug (URL)</label>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-[hsl(var(--muted-foreground))]">/</span>
-              <input className={inputCls} placeholder="lezzet-duragi" value={form.slug}
-                onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") }))} />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">E-posta</label>
-            <input type="email" className={inputCls} placeholder="info@marka.com" value={form.email}
-              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Telefon</label>
-            <input className={inputCls} placeholder="0532 xxx xx xx" value={form.phone}
-              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
-          </div>
-          <div className="col-span-2 space-y-1.5">
-            <label className="text-sm font-medium">Açıklama</label>
-            <textarea className={`${inputCls} h-24 resize-none py-3`} placeholder="İşletmenizi kısaca tanıtın..."
-              value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
-          </div>
-        </div>
-
-        {error && <p className="rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-red-400">{error}</p>}
-
-        <button type="submit" disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[hsl(var(--primary))] py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          Marka Oluştur
-        </button>
-      </form>
     </div>
   );
 }
