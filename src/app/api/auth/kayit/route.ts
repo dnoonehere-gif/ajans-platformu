@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { sendVerificationEmail, sendWelcomeEmail } from "@/lib/email";
 import { randomBytes } from "crypto";
 import { auditFromRequest } from "@/server/audit/log";
+import { rateLimit, getRateLimitKey, LIMITS } from "@/server/security/rate-limit";
 
 const schema = z.object({
   name: z.string().min(2, "Ad en az 2 karakter olmalı"),
@@ -13,6 +14,9 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const rl = await rateLimit(getRateLimitKey(req), LIMITS.AUTH);
+  if (!rl.allowed) return NextResponse.json({ error: "Çok fazla kayıt denemesi. Lütfen bekleyin." }, { status: 429 });
+
   const body = await req.json();
   const parsed = schema.safeParse(body);
   if (!parsed.success) {

@@ -3,6 +3,17 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth-guard";
 
+export async function GET() {
+  const user = await getAuthUser();
+  if (!user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { name: true, email: true, twoFactorEnabled: true, createdAt: true, globalRole: true },
+  });
+  return NextResponse.json({ user: dbUser });
+}
+
 export async function PATCH(req: NextRequest) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });

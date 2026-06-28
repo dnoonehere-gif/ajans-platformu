@@ -5,6 +5,7 @@ import { generateContent } from "@/server/ai/content-generator";
 import { z } from "zod";
 import type { ContentType } from "@prisma/client";
 import { auditFromRequest } from "@/server/audit/log";
+import { rateLimit, getRateLimitKey, LIMITS } from "@/server/security/rate-limit";
 
 const CONTENT_TYPES: ContentType[] = [
   "INSTAGRAM_POST", "REELS_IDEA", "STORY_IDEA", "FACEBOOK_POST", "LINKEDIN_POST",
@@ -23,6 +24,9 @@ const schema = z.object({
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+
+  const rl = await rateLimit(getRateLimitKey(req), LIMITS.AI_GENERATE);
+  if (!rl.allowed) return NextResponse.json({ error: "AI limit aşıldı. 1 dakika sonra tekrar deneyin." }, { status: 429 });
 
   const body = await req.json();
   const parsed = schema.safeParse(body);
