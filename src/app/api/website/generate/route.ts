@@ -7,7 +7,9 @@ import { z } from "zod";
 const schema = z.object({
   brandId: z.string(),
   sector: z.string().min(2),
-  description: z.string().min(10),
+  description: z.string().optional().default(""),
+  primaryColor: z.string().optional(),
+  phone: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -18,21 +20,32 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
 
-  const { brandId, sector, description } = parsed.data;
+  const { brandId, sector, description, primaryColor, phone } = parsed.data;
 
   const brand = await prisma.brand.findFirst({
     where: { id: brandId, ownerId: (session.user as { id: string }).id },
   });
   if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
 
+  // Renk veya telefon değiştiyse markayı güncelle
+  if (primaryColor || phone) {
+    await prisma.brand.update({
+      where: { id: brandId },
+      data: {
+        ...(primaryColor ? { primaryColor } : {}),
+        ...(phone ? { phone } : {}),
+      },
+    });
+  }
+
   const blocks = await generateWebsiteBlocks({
     brandName: brand.name,
     sector,
-    description,
-    phone: brand.phone ?? undefined,
+    description: description || `${brand.name} — ${sector} sektöründe hizmet veren bir işletme.`,
+    phone: phone || brand.phone || undefined,
     email: brand.email ?? undefined,
     address: brand.address ?? undefined,
-    primaryColor: brand.primaryColor ?? undefined,
+    primaryColor: primaryColor || brand.primaryColor || undefined,
   });
 
   const website = await prisma.website.upsert({
