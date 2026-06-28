@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   LayoutDashboard, Globe, Bot, Star, Sparkles, QrCode,
-  Users, Settings, LogOut, Shield, ChevronRight,
+  Users, Settings, LogOut, Shield, ChevronRight, Building2,
 } from "lucide-react";
 import { BrandProvider } from "@/components/dashboard/brand-provider";
 import { BrandSwitcher } from "@/components/dashboard/brand-switcher";
@@ -16,6 +16,7 @@ const NAV = [
   { href: "/dashboard/reviews", label: "Yorum Analizi", icon: Star },
   { href: "/dashboard/content", label: "İçerik Üreticisi", icon: Sparkles },
   { href: "/dashboard/qr", label: "QR Geri Bildirim", icon: QrCode },
+  { href: "/dashboard/subeler", label: "Şubeler", icon: Building2 },
   { href: "/dashboard/team", label: "Takım", icon: Users },
   { href: "/dashboard/ayarlar", label: "Ayarlar", icon: Settings },
 ];
