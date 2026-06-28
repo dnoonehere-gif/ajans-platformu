@@ -4,7 +4,7 @@ import QRCode from "qrcode";
 const APP_NAME = "Ajans Platformu";
 
 export function generateTotpSecret(): string {
-  return otplib.generateSecret(20);
+  return otplib.generateSecret();
 }
 
 export async function verifyTotp(token: string, secret: string): Promise<boolean> {
@@ -17,7 +17,7 @@ export async function verifyTotp(token: string, secret: string): Promise<boolean
 }
 
 export async function getTotpUri(email: string, secret: string): Promise<string> {
-  return otplib.generateURI({ accountName: email, issuer: APP_NAME, secret, type: "totp" });
+  return otplib.generateURI({ label: email, issuer: APP_NAME, secret });
 }
 
 export async function generateQrCodeDataUrl(uri: string): Promise<string> {

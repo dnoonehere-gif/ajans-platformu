@@ -6,7 +6,8 @@ import { Worker } from "bullmq";
 import { redis } from "@/lib/redis";
 import { QUEUE_NAMES } from "./queues";
 
-const connection = redis;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const connection = redis as any;
 
 // AI görevleri işçisi (örnek iskelet)
 new Worker(

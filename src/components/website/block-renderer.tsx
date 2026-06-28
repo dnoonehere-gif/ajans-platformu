@@ -131,27 +131,30 @@ function CtaBlock({ data }: { data: Record<string, unknown> }) {
 }
 
 function ContactBlock({ data }: { data: Record<string, unknown> }) {
+  const phone = data.phone ? String(data.phone) : null;
+  const email = data.email ? String(data.email) : null;
+  const address = data.address ? String(data.address) : null;
   return (
     <section id="contact" className="bg-[hsl(var(--muted)/0.3)] px-6 py-20">
       <h2 className="mb-10 text-center text-3xl font-bold">{data.title as string}</h2>
       <div className="mx-auto max-w-md space-y-4 text-center">
-        {data.phone && (
+        {phone && (
           <p className="text-lg">
             📞{" "}
-            <a href={`tel:${String(data.phone)}`} className="hover:text-[hsl(var(--primary))]">
-              {String(data.phone)}
+            <a href={`tel:${phone}`} className="hover:text-[hsl(var(--primary))]">
+              {phone}
             </a>
           </p>
         )}
-        {data.email && (
+        {email && (
           <p className="text-lg">
             ✉️{" "}
-            <a href={`mailto:${String(data.email)}`} className="hover:text-[hsl(var(--primary))]">
-              {String(data.email)}
+            <a href={`mailto:${email}`} className="hover:text-[hsl(var(--primary))]">
+              {email}
             </a>
           </p>
         )}
-        {data.address && <p className="text-lg">📍 {String(data.address)}</p>}
+        {address && <p className="text-lg">📍 {address}</p>}
       </div>
     </section>
   );

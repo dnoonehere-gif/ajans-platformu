@@ -68,7 +68,7 @@ export async function audit(opts: AuditOptions) {
         action: opts.action,
         entity: opts.entity ?? null,
         entityId: opts.entityId ?? null,
-        metadata: opts.metadata ? (opts.metadata as Record<string, unknown>) : undefined,
+        metadata: (opts.metadata ?? undefined) as never,
         ip: opts.ip ?? null,
       },
     });
