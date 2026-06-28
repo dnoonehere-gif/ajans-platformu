@@ -1,0 +1,16 @@
+.git
+.gitignore
+.env
+.env.local
+.env*.local
+node_modules
+.next
+out
+coverage
+*.log
+*.md
+.DS_Store
+Thumbs.db
+prisma/migrations/dev*
+docker-compose.override.yml
+nginx/certs
