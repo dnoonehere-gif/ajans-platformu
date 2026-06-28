@@ -316,10 +316,12 @@ model WebsitePage {
 model GoogleBusinessProfile {
   id            String   @id @default(cuid())
   brandId       String   @unique
-  googlePlaceId String?
+  googlePlaceId String?  // location resource name: accounts/xxx/locations/yyy
+  locationName  String?  // İşletme adı (Google'dan çekilen)
   accountEmail  String?
   accessToken   String?  // Şifrelenmiş saklanmalı
   refreshToken  String?  // Şifrelenmiş saklanmalı
+  tokenExpiresAt DateTime?
   averageRating Float?
   totalReviews  Int      @default(0)
   lastSyncedAt  DateTime?
