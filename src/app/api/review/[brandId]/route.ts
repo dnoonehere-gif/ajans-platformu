@@ -5,6 +5,7 @@ import { z } from "zod";
 import { sendNotification } from "@/server/notifications/send";
 import { sendNegativeReviewAlertEmail } from "@/lib/email";
 import { auditFromRequest } from "@/server/audit/log";
+import { invalidateTag, cacheDel, CacheKeys } from "@/server/cache/redis-cache";
 
 const postSchema = z.object({
   authorName: z.string().optional(),
@@ -66,6 +67,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ bra
   });
 
   const userId = (session.user as { id: string }).id;
+  // Dashboard cache'ini invalidate et — yeni yorum eklendi
+  cacheDel(CacheKeys.dashboard(brandId)).catch(() => null);
+  invalidateTag(`brand:${brandId}`).catch(() => null);
+
   auditFromRequest("review.create", userId, {
     entity: "Review", entityId: review.id,
     metadata: { brandId, rating: parsed.data.rating, source: parsed.data.source },

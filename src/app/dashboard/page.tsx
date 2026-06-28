@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { LazySection, ChartSkeleton, Skeleton } from "@/components/ui/lazy-load";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, Cell, PieChart, Pie, Legend,
@@ -254,6 +255,7 @@ export default function DashboardPage() {
           </div>
 
           {/* 30-Day Trend Chart */}
+          <LazySection fallback={<ChartSkeleton height="h-64" />}>
           <div className="glass rounded-2xl p-5">
             <div className="mb-4 flex items-center justify-between">
               <p className="text-sm font-semibold">30 Günlük Yorum Trendi</p>
@@ -275,8 +277,10 @@ export default function DashboardPage() {
               </AreaChart>
             </ResponsiveContainer>
           </div>
+          </LazySection>
 
           {/* Rating Dist + Sentiment Donut + Source */}
+          <LazySection fallback={<div className="grid grid-cols-1 gap-4 xl:grid-cols-3"><ChartSkeleton /><ChartSkeleton /><ChartSkeleton /></div>}>
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
 
             {/* Rating Distribution */}
@@ -352,6 +356,7 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
+          </LazySection>
 
           {/* AI Performance */}
           {perf && (

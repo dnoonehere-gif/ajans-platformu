@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireGlobalPermission } from "@/lib/auth-guard";
+import { invalidateTag } from "@/server/cache/redis-cache";
 
 const DEFAULT_PLANS = [
   {
@@ -78,5 +79,6 @@ export async function POST() {
     }
   }
 
+  if (created.length) await invalidateTag("plans");
   return NextResponse.json({ created, message: `${created.length} plan oluşturuldu` });
 }
