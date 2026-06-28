@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
+export async function GET(_: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const qrCode = await prisma.qrCode.findUnique({
+    where: { slug, isActive: true },
+    include: {
+      brand: {
+        select: { name: true, logoUrl: true, primaryColor: true, sector: true },
+      },
+    },
+  });
+  if (!qrCode) return NextResponse.json({ error: "QR kodu bulunamadı" }, { status: 404 });
+  return NextResponse.json({ brand: qrCode.brand, label: qrCode.label });
+}
+
 const schema = z.object({
   authorName: z.string().optional(),
   rating: z.number().int().min(1).max(5),
