@@ -1,41 +1,91 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, Cell, PieChart, Pie,
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip,
+  ResponsiveContainer, Cell, PieChart, Pie, Legend,
 } from "recharts";
 import {
   Star, MessageSquare, Globe, Sparkles, TrendingUp, TrendingDown,
-  Loader2, RefreshCw, Bot, FileText, CheckCircle, AlertCircle, Plus,
+  Loader2, RefreshCw, Bot, FileText, CheckCircle, AlertCircle,
+  Plus, QrCode, MapPin, ArrowUpRight, ArrowDownRight, Minus,
 } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import Link from "next/link";
 
 interface KPIs {
-  totalReviews: number; avgRating: number | null;
+  totalReviews: number; avgRating: number | null; prevAvgRating: number | null;
   sentiment: { positive: number; neutral: number; negative: number };
   chatbotConversations: number; contentItems: number; websitePublished: boolean;
+  last30Count: number; reviewsPrev30Count: number;
+  reviewsLast7Count: number; reviewsPrev7Count: number;
+  weeklyChange: number | null; monthlyChange: number | null;
 }
-interface TrendPoint { date: string; count: number; avgRating: number }
+interface TrendPoint { date: string; shortDate: string; count: number; avgRating: number }
+interface RatingDist { rating: number; count: number; label: string }
+interface SourceDist { source: string; count: number }
 interface RecentReview { id: string; authorName?: string | null; rating: number; text?: string | null; sentiment?: string | null; source: string; createdAt: string }
 interface Summary { performance: { reviewScore: number; sentimentScore: number; engagementScore: number; overallScore: number }; negativeTrend: { isRising: boolean; percentage: number }; topComplaint: string | null; aiSuggestions: string[] }
-interface DashboardData { brand: { id: string; name: string; primaryColor: string | null }; kpis: KPIs; trend: TrendPoint[]; recentReviews: RecentReview[]; latestSummary: Summary | null }
+interface DashboardData {
+  brand: { id: string; name: string; primaryColor: string | null };
+  kpis: KPIs; trend: TrendPoint[]; ratingDist: RatingDist[]; sourceDist: SourceDist[];
+  recentReviews: RecentReview[]; latestSummary: Summary | null;
+}
 
-const PIE_COLORS = ["#22c55e", "#f59e0b", "#ef4444"];
+const SENTIMENT_COLORS = { positive: "#22c55e", neutral: "#f59e0b", negative: "#ef4444" };
+const SOURCE_COLORS = ["#6366f1", "#0ea5e9", "#f59e0b", "#22c55e", "#ec4899"];
+const RATING_COLORS = ["#22c55e", "#84cc16", "#f59e0b", "#f97316", "#ef4444"];
 
 function ScoreRing({ value, label, color }: { value: number; label: string; color: string }) {
   const r = 28; const circ = 2 * Math.PI * r; const dash = (value / 100) * circ;
   return (
-    <div className="flex flex-col items-center gap-1.5">
-      <svg width={72} height={72} className="-rotate-90">
-        <circle cx={36} cy={36} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={6} />
-        <circle cx={36} cy={36} r={r} fill="none" stroke={color} strokeWidth={6} strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" className="transition-all duration-700" />
-      </svg>
-      <p className="text-lg font-bold" style={{ marginTop: -52, color }}>{value}</p>
-      <p className="text-xs text-[hsl(var(--muted-foreground))]" style={{ marginTop: 28 }}>{label}</p>
+    <div className="flex flex-col items-center gap-1">
+      <div className="relative">
+        <svg width={72} height={72} className="-rotate-90">
+          <circle cx={36} cy={36} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={6} />
+          <circle cx={36} cy={36} r={r} fill="none" stroke={color} strokeWidth={6}
+            strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" className="transition-all duration-700" />
+        </svg>
+        <p className="absolute inset-0 flex items-center justify-center text-base font-bold" style={{ color }}>{value}</p>
+      </div>
+      <p className="text-xs text-[hsl(var(--muted-foreground))]">{label}</p>
     </div>
   );
 }
+
+function ChangeChip({ value }: { value: number | null }) {
+  if (value === null) return <span className="text-xs text-[hsl(var(--muted-foreground))]">—</span>;
+  if (value === 0) return (
+    <span className="flex items-center gap-0.5 text-xs text-[hsl(var(--muted-foreground))]">
+      <Minus className="h-3 w-3" /> 0%
+    </span>
+  );
+  const up = value > 0;
+  return (
+    <span className={`flex items-center gap-0.5 text-xs font-semibold ${up ? "text-green-400" : "text-red-400"}`}>
+      {up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+      {Math.abs(value)}%
+    </span>
+  );
+}
+
+function sourceLabel(s: string) {
+  const map: Record<string, string> = { GOOGLE: "Google", QR: "QR Kod", MANUAL: "Manuel", MAPS: "Haritalar" };
+  return map[s] ?? s;
+}
+
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { value: number; dataKey: string }[]; label?: string }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-2 shadow-lg text-xs">
+      <p className="mb-1 font-semibold text-[hsl(var(--foreground))]">{label}</p>
+      {payload.map((p, i) => (
+        <p key={i} className="text-[hsl(var(--muted-foreground))]">
+          {p.dataKey === "count" ? "Yorum" : "Ort. Puan"}: <span className="font-bold text-[hsl(var(--foreground))]">{p.value}</span>
+        </p>
+      ))}
+    </div>
+  );
+};
 
 export default function DashboardPage() {
   const { activeBrand, brands } = useBrand();
@@ -66,9 +116,6 @@ export default function DashboardPage() {
     setSummaryLoading(false);
   }
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString("tr-TR", { day: "2-digit", month: "short" });
-
-  // Marka yok → marka oluştur
   if (!loading && brands.length === 0) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8">
@@ -86,21 +133,25 @@ export default function DashboardPage() {
 
   const kpis = data?.kpis;
   const perf = data?.latestSummary?.performance;
+
+  const sentimentTotal = kpis ? kpis.sentiment.positive + kpis.sentiment.neutral + kpis.sentiment.negative : 0;
   const pieData = kpis ? [
-    { name: "Olumlu", value: kpis.sentiment.positive },
-    { name: "Nötr", value: kpis.sentiment.neutral },
-    { name: "Olumsuz", value: kpis.sentiment.negative },
-  ] : [];
+    { name: "Olumlu", value: kpis.sentiment.positive, color: SENTIMENT_COLORS.positive },
+    { name: "Nötr", value: kpis.sentiment.neutral, color: SENTIMENT_COLORS.neutral },
+    { name: "Olumsuz", value: kpis.sentiment.negative, color: SENTIMENT_COLORS.negative },
+  ].filter(d => d.value > 0) : [];
+
+  const maxRatingCount = Math.max(...(data?.ratingDist.map(r => r.count) ?? [1]), 1);
 
   return (
-    <div className="p-8">
-      {/* Başlık */}
-      <div className="mb-6 flex items-center justify-between">
+    <div className="p-6 lg:p-8">
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">
-            {activeBrand ? `Merhaba, ${activeBrand.name} 👋` : "Dashboard"}
+            {activeBrand ? `${activeBrand.name}` : "Dashboard"}
           </h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">Markanızın genel durumu</p>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">Genel performans özeti</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => activeBrand && loadDashboard(activeBrand.id)} disabled={loading}
@@ -110,7 +161,7 @@ export default function DashboardPage() {
           <button onClick={generateSummary} disabled={summaryLoading || !activeBrand}
             className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-3 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
             {summaryLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            AI Özet Üret
+            AI Özet
           </button>
         </div>
       </div>
@@ -120,62 +171,200 @@ export default function DashboardPage() {
           <Loader2 className="h-10 w-10 animate-spin text-[hsl(var(--primary))]" />
         </div>
       ) : !data ? null : (
-        <div className="space-y-6">
-          {/* KPI Kartları */}
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+        <div className="space-y-5">
+
+          {/* KPI Cards */}
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {/* Toplam Yorum */}
+            <div className="glass rounded-2xl p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Toplam Yorum</span>
+                <Star className="h-4 w-4 text-yellow-400" />
+              </div>
+              <p className="text-3xl font-bold">{kpis!.totalReviews}</p>
+              <div className="mt-1.5 flex items-center gap-1.5">
+                <ChangeChip value={kpis!.monthlyChange} />
+                <span className="text-xs text-[hsl(var(--muted-foreground))]">son 30 gün</span>
+              </div>
+            </div>
+
+            {/* Ortalama Puan */}
+            <div className="glass rounded-2xl p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Ort. Puan</span>
+                <TrendingUp className="h-4 w-4 text-green-400" />
+              </div>
+              <div className="flex items-end gap-2">
+                <p className="text-3xl font-bold">{kpis!.avgRating?.toFixed(1) ?? "—"}</p>
+                <p className="mb-1 text-sm text-[hsl(var(--muted-foreground))]">/ 5</p>
+              </div>
+              <div className="mt-1.5 flex">
+                {[1,2,3,4,5].map(i => (
+                  <span key={i} style={{ fontSize: 12, color: i <= Math.round(kpis!.avgRating ?? 0) ? "#f59e0b" : "hsl(var(--muted))" }}>★</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Bu Hafta */}
+            <div className="glass rounded-2xl p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Bu Hafta</span>
+                <TrendingUp className="h-4 w-4 text-blue-400" />
+              </div>
+              <p className="text-3xl font-bold">{kpis!.reviewsLast7Count}</p>
+              <div className="mt-1.5 flex items-center gap-1.5">
+                <ChangeChip value={kpis!.weeklyChange} />
+                <span className="text-xs text-[hsl(var(--muted-foreground))]">geçen haftaya göre</span>
+              </div>
+            </div>
+
+            {/* Olumlu Oran */}
+            <div className="glass rounded-2xl p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Olumlu Oran</span>
+                <CheckCircle className="h-4 w-4 text-green-400" />
+              </div>
+              <p className="text-3xl font-bold">
+                {sentimentTotal > 0 ? Math.round((kpis!.sentiment.positive / sentimentTotal) * 100) : 0}%
+              </p>
+              <div className="mt-2 h-1.5 w-full rounded-full bg-[hsl(var(--muted))]">
+                <div
+                  className="h-full rounded-full bg-green-400 transition-all duration-700"
+                  style={{ width: sentimentTotal > 0 ? `${(kpis!.sentiment.positive / sentimentTotal) * 100}%` : "0%" }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Secondary KPI row */}
+          <div className="grid grid-cols-3 gap-3 md:grid-cols-6">
             {[
-              { label: "Toplam Yorum", value: kpis!.totalReviews, icon: Star, color: "text-yellow-400" },
-              { label: "Ort. Puan", value: kpis!.avgRating?.toFixed(1) ?? "—", icon: TrendingUp, color: "text-green-400" },
-              { label: "Olumlu", value: kpis!.sentiment.positive, icon: CheckCircle, color: "text-green-400" },
-              { label: "Olumsuz", value: kpis!.sentiment.negative, icon: AlertCircle, color: "text-red-400" },
-              { label: "Chatbot", value: kpis!.chatbotConversations, icon: MessageSquare, color: "text-teal-400" },
-              { label: "İçerik", value: kpis!.contentItems, icon: FileText, color: "text-blue-400" },
+              { label: "Olumlu", value: kpis!.sentiment.positive, color: "text-green-400 bg-green-500/10" },
+              { label: "Nötr", value: kpis!.sentiment.neutral, color: "text-yellow-400 bg-yellow-500/10" },
+              { label: "Olumsuz", value: kpis!.sentiment.negative, color: "text-red-400 bg-red-500/10" },
+              { label: "Chatbot", value: kpis!.chatbotConversations, color: "text-teal-400 bg-teal-500/10" },
+              { label: "İçerik", value: kpis!.contentItems, color: "text-purple-400 bg-purple-500/10" },
+              { label: "Website", value: kpis!.websitePublished ? "Yayında" : "Taslak", color: kpis!.websitePublished ? "text-green-400 bg-green-500/10" : "text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted))]" },
             ].map((k) => (
-              <div key={k.label} className="glass rounded-2xl p-4">
-                <k.icon className={`mb-2 h-5 w-5 ${k.color}`} />
-                <p className="text-2xl font-bold">{k.value}</p>
+              <div key={k.label} className={`rounded-xl px-4 py-3 ${k.color.split(" ")[1]}`}>
+                <p className={`text-lg font-bold ${k.color.split(" ")[0]}`}>{k.value}</p>
                 <p className="text-xs text-[hsl(var(--muted-foreground))]">{k.label}</p>
               </div>
             ))}
           </div>
 
-          {/* Grafik + Pasta */}
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-            <div className="glass col-span-2 rounded-2xl p-5">
-              <p className="mb-4 text-sm font-semibold">14 Günlük Yorum Trendi</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={data.trend}>
-                  <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip labelFormatter={formatDate} formatter={(v: number) => [v, "Yorum"]} />
-                  <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
+          {/* 30-Day Trend Chart */}
+          <div className="glass rounded-2xl p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-sm font-semibold">30 Günlük Yorum Trendi</p>
+              <span className="text-xs text-[hsl(var(--muted-foreground))]">{kpis!.last30Count} yorum son 30 günde</span>
             </div>
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={data.trend} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="shortDate" tick={{ fontSize: 10 }} interval={4} />
+                <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                <Tooltip content={<CustomTooltip />} />
+                <Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2}
+                  fill="url(#areaGrad)" dot={false} activeDot={{ r: 4 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Rating Dist + Sentiment Donut + Source */}
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+
+            {/* Rating Distribution */}
             <div className="glass rounded-2xl p-5">
-              <p className="mb-4 text-sm font-semibold">Duygu Dağılımı</p>
-              <ResponsiveContainer width="100%" height={160}>
-                <PieChart>
-                  <Pie data={pieData} dataKey="value" cx="50%" cy="50%" outerRadius={60} label={({ name, value }) => `${name}: ${value}`} labelLine={false} fontSize={10}>
-                    {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              <p className="mb-4 text-sm font-semibold">Puan Dağılımı</p>
+              <div className="space-y-2.5">
+                {data.ratingDist.map((r, i) => (
+                  <div key={r.rating} className="flex items-center gap-3">
+                    <span className="w-5 shrink-0 text-right text-xs font-semibold">{r.rating}★</span>
+                    <div className="flex-1 h-3 rounded-full bg-[hsl(var(--muted))] overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{
+                          width: `${(r.count / maxRatingCount) * 100}%`,
+                          backgroundColor: RATING_COLORS[4 - i],
+                        }}
+                      />
+                    </div>
+                    <span className="w-8 shrink-0 text-xs text-[hsl(var(--muted-foreground))]">{r.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Sentiment Donut */}
+            <div className="glass rounded-2xl p-5">
+              <p className="mb-2 text-sm font-semibold">Duygu Dağılımı</p>
+              {pieData.length === 0 ? (
+                <div className="flex h-40 items-center justify-center text-sm text-[hsl(var(--muted-foreground))]">Veri yok</div>
+              ) : (
+                <>
+                  <ResponsiveContainer width="100%" height={140}>
+                    <PieChart>
+                      <Pie data={pieData} dataKey="value" cx="50%" cy="50%"
+                        innerRadius={38} outerRadius={60} paddingAngle={3}>
+                        {pieData.map((d, i) => <Cell key={i} fill={d.color} />)}
+                      </Pie>
+                      <Tooltip formatter={(v: number) => [`${v} yorum`, ""]} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="mt-1 flex flex-wrap justify-center gap-3">
+                    {pieData.map((d) => (
+                      <div key={d.name} className="flex items-center gap-1.5 text-xs">
+                        <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
+                        <span className="text-[hsl(var(--muted-foreground))]">{d.name}</span>
+                        <span className="font-semibold">{sentimentTotal > 0 ? Math.round((d.value / sentimentTotal) * 100) : 0}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Source Breakdown */}
+            <div className="glass rounded-2xl p-5">
+              <p className="mb-4 text-sm font-semibold">Kaynak Dağılımı</p>
+              {data.sourceDist.length === 0 ? (
+                <div className="flex h-40 items-center justify-center text-sm text-[hsl(var(--muted-foreground))]">Veri yok</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={160}>
+                  <BarChart data={data.sourceDist} layout="vertical" margin={{ left: 8, right: 16 }}>
+                    <XAxis type="number" tick={{ fontSize: 10 }} allowDecimals={false} />
+                    <YAxis dataKey="source" type="category" tick={{ fontSize: 11 }} width={64}
+                      tickFormatter={sourceLabel} />
+                    <Tooltip formatter={(v: number) => [v, "Yorum"]} labelFormatter={sourceLabel} />
+                    <Bar dataKey="count" radius={[0, 6, 6, 0]}>
+                      {data.sourceDist.map((_, i) => (
+                        <Cell key={i} fill={SOURCE_COLORS[i % SOURCE_COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 
-          {/* AI Performans + Öneriler */}
+          {/* AI Performance */}
           {perf && (
             <div className="glass rounded-2xl p-5">
-              <p className="mb-4 text-sm font-semibold">AI Performans Analizi</p>
-              <div className="flex flex-wrap items-center gap-8">
+              <p className="mb-5 text-sm font-semibold">AI Performans Analizi</p>
+              <div className="flex flex-wrap items-start gap-8">
                 <ScoreRing value={perf.overallScore} label="Genel" color="#6366f1" />
                 <ScoreRing value={perf.reviewScore} label="Yorum" color="#22c55e" />
                 <ScoreRing value={perf.sentimentScore} label="Duygu" color="#f59e0b" />
                 <ScoreRing value={perf.engagementScore} label="Etkileşim" color="#0ea5e9" />
                 {data.latestSummary!.aiSuggestions.length > 0 && (
-                  <div className="flex-1 min-w-0 space-y-2">
+                  <div className="flex-1 min-w-[200px] space-y-2.5">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Öneriler</p>
                     {data.latestSummary!.aiSuggestions.map((s, i) => (
                       <div key={i} className="flex gap-2 text-sm">
                         <span className="mt-0.5 shrink-0 text-[hsl(var(--primary))]">→</span>
@@ -188,78 +377,91 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* AI Brifing */}
+          {/* AI Briefing */}
           {(briefing ?? data.latestSummary?.topComplaint) && (
             <div className="glass rounded-2xl p-5">
-              <p className="mb-2 text-sm font-semibold flex items-center gap-2">
+              <p className="mb-3 flex items-center gap-2 text-sm font-semibold">
                 <Sparkles className="h-4 w-4 text-[hsl(var(--primary))]" /> AI Brifing
               </p>
               {data.latestSummary?.topComplaint && (
-                <p className="mb-2 text-sm text-red-400">
-                  🔴 En çok şikayet: <strong>{data.latestSummary.topComplaint}</strong>
-                </p>
+                <div className="mb-3 flex items-center gap-2 rounded-xl bg-red-500/8 px-4 py-2.5">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
+                  <p className="text-sm text-red-400">En çok şikayet: <strong>{data.latestSummary.topComplaint}</strong></p>
+                </div>
               )}
               {briefing && <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed">{briefing}</p>}
             </div>
           )}
 
-          {/* Son Yorumlar */}
-          <div className="glass rounded-2xl overflow-hidden">
-            <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-5 py-3">
-              <p className="text-sm font-semibold">Son Yorumlar</p>
-              <Link href="/dashboard/reviews" className="text-xs text-[hsl(var(--primary))] hover:underline">Tümünü gör →</Link>
+          {/* Recent Reviews + Module Shortcuts */}
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+            {/* Recent Reviews */}
+            <div className="glass col-span-2 overflow-hidden rounded-2xl">
+              <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-5 py-3">
+                <p className="text-sm font-semibold">Son Yorumlar</p>
+                <Link href="/dashboard/reviews" className="text-xs text-[hsl(var(--primary))] hover:underline">Tümünü gör →</Link>
+              </div>
+              <div className="divide-y divide-[hsl(var(--border))]">
+                {data.recentReviews.slice(0, 5).map((r) => (
+                  <div key={r.id} className="flex items-start gap-3 px-5 py-3.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--muted))] text-xs font-bold">
+                      {(r.authorName ?? "?").slice(0, 1).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                        <p className="text-sm font-medium">{r.authorName ?? "Anonim"}</p>
+                        <div className="flex">
+                          {[1,2,3,4,5].map(i => (
+                            <span key={i} style={{ fontSize: 11, color: i <= r.rating ? "#f59e0b" : "hsl(var(--muted))" }}>★</span>
+                          ))}
+                        </div>
+                        <span className="text-xs text-[hsl(var(--muted-foreground))]">{sourceLabel(r.source)}</span>
+                      </div>
+                      {r.text && r.text !== "—" && <p className="text-xs text-[hsl(var(--muted-foreground))] line-clamp-1">{r.text}</p>}
+                    </div>
+                    {r.sentiment && (
+                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                        r.sentiment === "POSITIVE" ? "bg-green-500/10 text-green-400" :
+                        r.sentiment === "NEGATIVE" ? "bg-red-500/10 text-red-400" :
+                        "bg-yellow-500/10 text-yellow-400"
+                      }`}>
+                        {r.sentiment === "POSITIVE" ? "Olumlu" : r.sentiment === "NEGATIVE" ? "Olumsuz" : "Nötr"}
+                      </span>
+                    )}
+                  </div>
+                ))}
+                {data.recentReviews.length === 0 && (
+                  <p className="px-5 py-8 text-center text-sm text-[hsl(var(--muted-foreground))]">Henüz yorum yok</p>
+                )}
+              </div>
             </div>
-            <div className="divide-y divide-[hsl(var(--border))]">
-              {data.recentReviews.slice(0, 5).map((r) => (
-                <div key={r.id} className="flex items-start gap-3 px-5 py-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--muted))] text-xs font-bold">
-                    {(r.authorName ?? "?").slice(0, 1).toUpperCase()}
+
+            {/* Module Shortcuts */}
+            <div className="space-y-2">
+              <p className="px-1 text-sm font-semibold">Modüller</p>
+              {[
+                { label: "Website", desc: kpis!.websitePublished ? "Yayında" : "Taslak", href: "/dashboard/website", icon: Globe, color: "text-blue-400", bg: "bg-blue-500/10" },
+                { label: "Chatbot", desc: `${kpis!.chatbotConversations} konuşma`, href: "/dashboard/chatbot", icon: Bot, color: "text-teal-400", bg: "bg-teal-500/10" },
+                { label: "Yorumlar", desc: `${kpis!.totalReviews} yorum`, href: "/dashboard/reviews", icon: Star, color: "text-yellow-400", bg: "bg-yellow-500/10" },
+                { label: "Google Business", desc: "Bağlantı & Senkronizasyon", href: "/dashboard/google", icon: MapPin, color: "text-red-400", bg: "bg-red-500/10" },
+                { label: "QR Kod", desc: "Geri bildirim topla", href: "/dashboard/qr", icon: QrCode, color: "text-orange-400", bg: "bg-orange-500/10" },
+                { label: "İçerik", desc: `${kpis!.contentItems} içerik`, href: "/dashboard/content", icon: Sparkles, color: "text-purple-400", bg: "bg-purple-500/10" },
+              ].map((m) => (
+                <Link key={m.href} href={m.href}
+                  className="glass flex items-center gap-3 rounded-xl px-4 py-3 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${m.bg}`}>
+                    <m.icon className={`h-4 w-4 ${m.color}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <p className="text-sm font-medium">{r.authorName ?? "Anonim"}</p>
-                      <div className="flex">{"★".repeat(r.rating).padEnd(5, "☆").split("").map((s, i) => (
-                        <span key={i} className={s === "★" ? "text-yellow-400" : "text-[hsl(var(--muted))]"} style={{ fontSize: 11 }}>{s}</span>
-                      ))}</div>
-                    </div>
-                    {r.text && <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">{r.text}</p>}
+                    <p className="text-sm font-semibold">{m.label}</p>
+                    <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">{m.desc}</p>
                   </div>
-                  {r.sentiment && (
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                      r.sentiment === "POSITIVE" ? "bg-green-500/10 text-green-400" :
-                      r.sentiment === "NEGATIVE" ? "bg-red-500/10 text-red-400" :
-                      "bg-yellow-500/10 text-yellow-400"
-                    }`}>
-                      {r.sentiment === "POSITIVE" ? "Olumlu" : r.sentiment === "NEGATIVE" ? "Olumsuz" : "Nötr"}
-                    </span>
-                  )}
-                </div>
+                  <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-[hsl(var(--muted-foreground))]" />
+                </Link>
               ))}
-              {data.recentReviews.length === 0 && (
-                <p className="px-5 py-8 text-center text-sm text-[hsl(var(--muted-foreground))]">Henüz yorum yok</p>
-              )}
             </div>
           </div>
 
-          {/* Modül kısayolları */}
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-            {[
-              { label: "Website", href: "/dashboard/website", icon: Globe, color: "text-blue-400 bg-blue-500/10" },
-              { label: "Chatbot", href: "/dashboard/chatbot", icon: Bot, color: "text-teal-400 bg-teal-500/10" },
-              { label: "Yorumlar", href: "/dashboard/reviews", icon: Star, color: "text-yellow-400 bg-yellow-500/10" },
-              { label: "İçerik", href: "/dashboard/content", icon: Sparkles, color: "text-purple-400 bg-purple-500/10" },
-              { label: "QR Kod", href: "/dashboard/qr", icon: FileText, color: "text-orange-400 bg-orange-500/10" },
-              { label: "Takım", href: "/dashboard/team", icon: MessageSquare, color: "text-green-400 bg-green-500/10" },
-            ].map((m) => (
-              <Link key={m.href} href={m.href}
-                className="glass flex flex-col items-center gap-2 rounded-2xl p-4 transition hover:scale-[1.02]">
-                <div className={`rounded-xl p-2.5 ${m.color.split(" ")[1]}`}>
-                  <m.icon className={`h-5 w-5 ${m.color.split(" ")[0]}`} />
-                </div>
-                <span className="text-xs font-semibold">{m.label}</span>
-              </Link>
-            ))}
-          </div>
         </div>
       )}
     </div>
