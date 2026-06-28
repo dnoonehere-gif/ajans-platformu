@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const u = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
     if (u?.email) { await sendCustomEmail(u.email, subject, content); sent = 1; }
   } else if (target === "role" && role) {
-    const users = await prisma.user.findMany({ where: { role: role as never }, select: { email: true } });
+    const users = await prisma.user.findMany({ where: { globalRole: role as never }, select: { email: true } });
     const emails = users.map((u) => u.email).filter(Boolean) as string[];
     if (emails.length) { await sendBulkEmail(emails, subject, content); sent = emails.length; }
   } else {
