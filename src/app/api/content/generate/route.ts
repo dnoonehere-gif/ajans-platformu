@@ -6,8 +6,8 @@ import { z } from "zod";
 import type { ContentType } from "@prisma/client";
 
 const CONTENT_TYPES: ContentType[] = [
-  "INSTAGRAM_POST", "REELS_IDEA", "STORY_IDEA", "BLOG_POST",
-  "GOOGLE_ADS", "META_ADS", "SEO_CONTENT", "HASHTAGS", "CONTENT_PLAN",
+  "INSTAGRAM_POST", "REELS_IDEA", "STORY_IDEA", "FACEBOOK_POST", "LINKEDIN_POST",
+  "BLOG_POST", "GOOGLE_ADS", "META_ADS", "SEO_CONTENT", "HASHTAGS", "CONTENT_PLAN",
 ];
 
 const schema = z.object({

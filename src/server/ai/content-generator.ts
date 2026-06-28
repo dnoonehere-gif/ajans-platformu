@@ -46,6 +46,22 @@ Konu: ${topic ?? "kampanya veya duyuru"}
   ]
 }`,
 
+  FACEBOOK_POST: ({ brandName, sector, topic, tone }) =>
+    `${brandName} (${sector}) için Facebook gönderisi yaz.
+Konu: ${topic ?? "marka tanıtımı veya duyuru"}
+Ton: ${tone ?? "sıcak, topluluk odaklı"}
+Facebook kitlesine uygun: hikaye anlatımı, duygusal bağ, topluluk katılımını artıran sorular.
+Format: Dikkat çekici açılış + hikaye/bilgi + soru veya CTA. Emoji kullan.
+200-250 kelime. Sadece gönderi metnini yaz.`,
+
+  LINKEDIN_POST: ({ brandName, sector, topic, tone }) =>
+    `${brandName} (${sector}) için LinkedIn gönderisi yaz.
+Konu: ${topic ?? "sektör içgörüsü, başarı hikayesi veya şirket haberi"}
+Ton: ${tone ?? "profesyonel, özgün ve düşündürücü"}
+LinkedIn formatı: Güçlü hook + 3-5 kısa paragraf + öğrenim/içgörü paylaşımı + soru veya CTA.
+Her paragraf 1-2 cümle. Emoji minimal kullan. 150-250 kelime.
+Sadece gönderi metnini yaz.`,
+
   BLOG_POST: ({ brandName, sector, topic, tone }) =>
     `${brandName} (${sector}) için SEO uyumlu blog yazısı yaz.
 Başlık konusu: ${topic ?? "sektörde başarı ipuçları"}
@@ -61,7 +77,7 @@ Format: Başlık + Giriş + 4 ana başlık (H2) + alt içerikler + Sonuç.
   "headlines": ["başlık 1 (max 30 karakter)", "başlık 2", "başlık 3"],
   "descriptions": ["açıklama 1 (max 90 karakter)", "açıklama 2"],
   "displayUrl": "orneksite.com/kampanya",
-  "keywords": ["anahtar kelime 1", "anahtar kelime 2", "anahtar kelime 3"]
+  "keywords": ["anahtar kelime 1", "anahtar kelime 2", "anahtar kelime 3", "anahtar kelime 4", "anahtar kelime 5"]
 }`,
 
   META_ADS: ({ brandName, sector, topic, tone }) =>
@@ -80,20 +96,13 @@ Ton: ${tone ?? "ikna edici"}
   SEO_CONTENT: ({ brandName, sector, topic }) =>
     `${brandName} (${sector}) için SEO içeriği yaz.
 Hedef anahtar kelime: ${topic ?? sector + " hizmetleri"}
-Format:
-- Meta başlık (60 karakter max)
-- Meta açıklama (155 karakter max)
-- H1 başlık
-- 300 kelimelik sayfa içeriği (anahtar kelime yoğunluğu %2-3)
-- 5 LSI anahtar kelime
-
 JSON formatında döndür:
 {
-  "metaTitle": "...",
-  "metaDescription": "...",
-  "h1": "...",
-  "content": "...",
-  "lsiKeywords": ["...", "...", "...", "...", "..."]
+  "metaTitle": "Meta başlık (max 60 karakter)",
+  "metaDescription": "Meta açıklama (max 155 karakter)",
+  "h1": "H1 başlık",
+  "content": "300 kelimelik sayfa içeriği (anahtar kelime yoğunluğu %2-3)",
+  "lsiKeywords": ["kelime 1", "kelime 2", "kelime 3", "kelime 4", "kelime 5"]
 }`,
 
   HASHTAGS: ({ brandName, sector, topic }) =>
@@ -111,18 +120,18 @@ Tüm hashtagler # ile başlasın. Türkçe ve İngilizce karışık olabilir.`,
   CONTENT_PLAN: ({ brandName, sector, tone }) =>
     `${brandName} (${sector}) için 30 günlük sosyal medya içerik planı oluştur.
 Ton: ${tone ?? "profesyonel ve samimi"}
-Her hafta için 7 gün, her güne bir içerik. JSON formatında:
+Her güne bir içerik, 4 hafta = 28 gün. JSON formatında:
 {
   "weeks": [
     {
       "week": 1,
       "days": [
-        {"day": 1, "date": "Pazartesi", "type": "INSTAGRAM_POST/REELS_IDEA/STORY_IDEA", "topic": "konu", "caption": "kısa açıklama"}
+        {"day": 1, "date": "Pazartesi", "type": "INSTAGRAM_POST", "topic": "konu", "caption": "kısa açıklama"}
       ]
     }
   ]
 }
-4 hafta, 28 gün planla. Çeşitli içerik türleri kullan.`,
+Çeşitli içerik türleri kullan: INSTAGRAM_POST, REELS_IDEA, STORY_IDEA, FACEBOOK_POST, LINKEDIN_POST, BLOG_POST`,
 };
 
 export async function generateContent(
@@ -130,9 +139,8 @@ export async function generateContent(
   input: ContentInput
 ): Promise<GeneratedContent> {
   const prompt = PROMPTS[type](input);
-  const raw = await generateText({ prompt, maxTokens: 1500 });
+  const raw = await generateText({ prompt, maxTokens: 1800 });
 
-  // JSON döndüren türler
   const jsonTypes: ContentType[] = [
     "REELS_IDEA", "STORY_IDEA", "GOOGLE_ADS", "META_ADS",
     "SEO_CONTENT", "HASHTAGS", "CONTENT_PLAN",
@@ -158,6 +166,8 @@ export const TYPE_LABELS: Record<ContentType, string> = {
   INSTAGRAM_POST: "Instagram Gönderisi",
   REELS_IDEA: "Reels Fikri",
   STORY_IDEA: "Story Serisi",
+  FACEBOOK_POST: "Facebook Gönderisi",
+  LINKEDIN_POST: "LinkedIn Gönderisi",
   BLOG_POST: "Blog Yazısı",
   GOOGLE_ADS: "Google Reklamı",
   META_ADS: "Meta Reklamı",
@@ -170,6 +180,8 @@ export const TYPE_ICONS: Record<ContentType, string> = {
   INSTAGRAM_POST: "📸",
   REELS_IDEA: "🎬",
   STORY_IDEA: "✨",
+  FACEBOOK_POST: "👥",
+  LINKEDIN_POST: "💼",
   BLOG_POST: "📝",
   GOOGLE_ADS: "🔍",
   META_ADS: "📣",
