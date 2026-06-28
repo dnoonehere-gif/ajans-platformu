@@ -1,6 +1,12 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { Star, Sparkles, Loader2, Plus, QrCode, TrendingUp, TrendingDown, Minus, RefreshCw } from "lucide-react";
+import {
+  Star, Sparkles, Loader2, Plus, QrCode,
+  TrendingUp, TrendingDown, Minus, RefreshCw,
+  BarChart3, MessageSquare, FileText, AlertCircle,
+  CheckCircle2, XCircle, MinusCircle,
+} from "lucide-react";
+import { useBrand } from "@/components/dashboard/brand-provider";
 
 type Sentiment = "POSITIVE" | "NEUTRAL" | "NEGATIVE" | null;
 
@@ -26,6 +32,22 @@ interface Stats {
   insightReport: string | null;
 }
 
+interface ThemeItem {
+  theme: string;
+  percentage: number;
+  sentiment: "POSITIVE" | "NEGATIVE" | "NEUTRAL";
+  exampleQuote: string;
+}
+
+interface ReviewReport {
+  themes: ThemeItem[];
+  overallSentiment: "POSITIVE" | "NEGATIVE" | "NEUTRAL";
+  summary: string;
+  strongPoints: string[];
+  weakPoints: string[];
+  totalAnalyzed: number;
+}
+
 const SENTIMENT_LABEL: Record<string, string> = {
   POSITIVE: "Olumlu", NEUTRAL: "Nötr", NEGATIVE: "Olumsuz",
 };
@@ -38,12 +60,216 @@ const SOURCE_LABEL: Record<string, string> = {
   GOOGLE: "Google", QR: "QR", MANUAL: "Manuel", CHATBOT: "Chatbot",
 };
 
+function StarRow({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Star key={n} className="h-3.5 w-3.5" fill={rating >= n ? "#f59e0b" : "none"} stroke={rating >= n ? "#f59e0b" : "currentColor"} />
+      ))}
+    </div>
+  );
+}
+
+function SentimentIcon({ s }: { s?: Sentiment }) {
+  if (s === "POSITIVE") return <TrendingUp className="h-3.5 w-3.5" />;
+  if (s === "NEGATIVE") return <TrendingDown className="h-3.5 w-3.5" />;
+  return <Minus className="h-3.5 w-3.5" />;
+}
+
+// ── AI Tema Raporu Bileşeni ──
+function ThemeReport({ brandId, brandName }: { brandId: string; brandName: string }) {
+  const [report, setReport] = useState<ReviewReport | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function generate() {
+    setLoading(true);
+    setError("");
+    const res = await fetch(`/api/review/${brandId}/report`, { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) setError(data.error ?? "Rapor oluşturulamadı");
+    else setReport(data.report);
+    setLoading(false);
+  }
+
+  const sentimentBg = {
+    POSITIVE: "from-green-500/10 to-green-500/5 border-green-500/20",
+    NEGATIVE: "from-red-500/10 to-red-500/5 border-red-500/20",
+    NEUTRAL: "from-yellow-500/10 to-yellow-500/5 border-yellow-500/20",
+  };
+  const sentimentText = {
+    POSITIVE: "text-green-400",
+    NEGATIVE: "text-red-400",
+    NEUTRAL: "text-yellow-400",
+  };
+  const sentimentBar = {
+    POSITIVE: "bg-green-500",
+    NEGATIVE: "bg-red-500",
+    NEUTRAL: "bg-yellow-400",
+  };
+
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center gap-5 py-20">
+      <div className="relative flex h-20 w-20 items-center justify-center">
+        <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-[hsl(var(--primary))]" />
+        <Sparkles className="h-8 w-8 text-[hsl(var(--primary))]" />
+      </div>
+      <div className="text-center">
+        <p className="font-semibold">AI yorumları analiz ediyor</p>
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">{brandName} · Temalar çıkarılıyor...</p>
+        <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">20–40 saniye sürebilir</p>
+      </div>
+    </div>
+  );
+
+  if (!report) return (
+    <div className="flex flex-col items-center justify-center gap-6 py-16 text-center">
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[hsl(var(--primary)/0.12)]">
+        <BarChart3 className="h-8 w-8 text-[hsl(var(--primary))]" />
+      </div>
+      <div>
+        <p className="text-lg font-bold">AI Tema Raporu</p>
+        <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+          Tüm yorumlarınızı tarayarak öne çıkan temaları<br />ve yüzdelik dağılımları çıkarır.
+        </p>
+      </div>
+      {error && (
+        <p className="flex items-center gap-1.5 text-sm text-red-400">
+          <AlertCircle className="h-4 w-4" /> {error}
+        </p>
+      )}
+      <button
+        onClick={generate}
+        className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-7 py-3 font-semibold text-white transition hover:opacity-90"
+      >
+        <Sparkles className="h-4 w-4" />
+        Rapor Oluştur
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Başlık + Yenile */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-lg font-bold">AI Tema Raporu</p>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">
+            {report.totalAnalyzed} yorum analiz edildi
+          </p>
+        </div>
+        <button
+          onClick={generate}
+          className="flex items-center gap-1.5 rounded-xl border border-[hsl(var(--border))] px-4 py-2 text-sm font-medium transition hover:bg-[hsl(var(--accent))]"
+        >
+          <RefreshCw className="h-3.5 w-3.5" /> Yenile
+        </button>
+      </div>
+
+      {/* Genel özet */}
+      <div className="glass rounded-2xl p-6">
+        <div className="mb-3 flex items-center gap-2">
+          <FileText className="h-4 w-4 text-[hsl(var(--primary))]" />
+          <p className="font-semibold">Genel Değerlendirme</p>
+          <span className={`ml-auto rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+            report.overallSentiment === "POSITIVE" ? "bg-green-500/15 text-green-400"
+            : report.overallSentiment === "NEGATIVE" ? "bg-red-500/15 text-red-400"
+            : "bg-yellow-500/15 text-yellow-400"
+          }`}>
+            {SENTIMENT_LABEL[report.overallSentiment]}
+          </span>
+        </div>
+        <p className="text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">{report.summary}</p>
+
+        <div className="mt-5 grid grid-cols-2 gap-4">
+          <div className="rounded-xl bg-green-500/8 p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-green-400" />
+              <p className="text-sm font-semibold text-green-400">Güçlü Yönler</p>
+            </div>
+            <ul className="space-y-1">
+              {report.strongPoints.map((p, i) => (
+                <li key={i} className="flex items-start gap-1.5 text-xs text-[hsl(var(--foreground))]">
+                  <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-green-400" />
+                  {p}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-xl bg-red-500/8 p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <XCircle className="h-4 w-4 text-red-400" />
+              <p className="text-sm font-semibold text-red-400">Gelişim Alanları</p>
+            </div>
+            <ul className="space-y-1">
+              {report.weakPoints.map((p, i) => (
+                <li key={i} className="flex items-start gap-1.5 text-xs text-[hsl(var(--foreground))]">
+                  <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" />
+                  {p}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Tema kartları */}
+      <div>
+        <p className="mb-3 text-sm font-semibold text-[hsl(var(--muted-foreground))]">
+          ÖNE ÇIKAN TEMALAR
+        </p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {report.themes.map((theme, i) => (
+            <div
+              key={i}
+              className={`relative overflow-hidden rounded-2xl border bg-gradient-to-br p-5 ${sentimentBg[theme.sentiment]}`}
+            >
+              {/* Yüzde */}
+              <div className="mb-3 flex items-start justify-between">
+                <p className={`text-4xl font-black ${sentimentText[theme.sentiment]}`}>
+                  %{theme.percentage}
+                </p>
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                  theme.sentiment === "POSITIVE" ? "bg-green-500/20 text-green-400"
+                  : theme.sentiment === "NEGATIVE" ? "bg-red-500/20 text-red-400"
+                  : "bg-yellow-500/20 text-yellow-400"
+                }`}>
+                  {theme.sentiment === "POSITIVE" ? "olumlu" : theme.sentiment === "NEGATIVE" ? "olumsuz" : "nötr"}
+                </span>
+              </div>
+
+              {/* Tema adı */}
+              <p className="mb-2 text-base font-bold">{theme.theme}</p>
+
+              {/* Bar */}
+              <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-[hsl(var(--muted)/0.4)]">
+                <div
+                  className={`h-full rounded-full transition-all ${sentimentBar[theme.sentiment]}`}
+                  style={{ width: `${Math.min(theme.percentage, 100)}%` }}
+                />
+              </div>
+
+              {/* Alıntı */}
+              {theme.exampleQuote && (
+                <p className="text-xs italic text-[hsl(var(--muted-foreground))]">
+                  &ldquo;{theme.exampleQuote}&rdquo;
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ReviewsPage() {
-  const [brandId, setBrandId] = useState("");
-  const [loaded, setLoaded] = useState(false);
+  const { activeBrand } = useBrand();
+  const brandId = activeBrand?.id ?? "";
+
   const [reviews, setReviews] = useState<Review[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
-  const [tab, setTab] = useState<"reviews" | "stats" | "qr">("reviews");
+  const [tab, setTab] = useState<"reviews" | "stats" | "rapor" | "qr">("reviews");
   const [filter, setFilter] = useState<string>("ALL");
   const [analyzing, setAnalyzing] = useState(false);
   const [insightLoading, setInsightLoading] = useState(false);
@@ -51,8 +277,6 @@ export default function ReviewsPage() {
   const [qrCodes, setQrCodes] = useState<{ id: string; slug: string; label?: string; scanCount: number }[]>([]);
   const [qrLabel, setQrLabel] = useState("");
   const [creatingQr, setCreatingQr] = useState(false);
-
-  // Manuel yorum ekleme
   const [showAddForm, setShowAddForm] = useState(false);
   const [newRating, setNewRating] = useState(5);
   const [newText, setNewText] = useState("");
@@ -60,6 +284,7 @@ export default function ReviewsPage() {
   const [addingReview, setAddingReview] = useState(false);
 
   const loadReviews = useCallback(async () => {
+    if (!brandId) return;
     setLoadingReviews(true);
     const sentiment = filter !== "ALL" ? `&sentiment=${filter}` : "";
     const res = await fetch(`/api/review/${brandId}?${sentiment}`);
@@ -69,20 +294,18 @@ export default function ReviewsPage() {
   }, [brandId, filter]);
 
   const loadStats = useCallback(async () => {
+    if (!brandId) return;
     const res = await fetch(`/api/review/${brandId}/stats`);
     const data = await res.json();
     setStats(data);
   }, [brandId]);
 
-  async function loadAll() {
-    if (!brandId.trim()) return;
-    setLoaded(true);
-    await Promise.all([loadReviews(), loadStats()]);
-  }
-
   useEffect(() => {
-    if (loaded) loadReviews();
-  }, [filter, loaded, loadReviews]);
+    loadReviews();
+    loadStats();
+  }, [loadReviews, loadStats]);
+
+  useEffect(() => { if (brandId) loadReviews(); }, [filter, brandId, loadReviews]);
 
   async function runAnalysis() {
     setAnalyzing(true);
@@ -128,257 +351,264 @@ export default function ReviewsPage() {
     setAddingReview(false);
   }
 
-  const sentimentIcon = (s?: Sentiment) => {
-    if (s === "POSITIVE") return <TrendingUp className="h-3.5 w-3.5" />;
-    if (s === "NEGATIVE") return <TrendingDown className="h-3.5 w-3.5" />;
-    return <Minus className="h-3.5 w-3.5" />;
-  };
+  if (!activeBrand) return (
+    <div className="flex h-64 items-center justify-center text-[hsl(var(--muted-foreground))]">
+      Önce bir marka seçin
+    </div>
+  );
+
+  const TABS = [
+    { key: "reviews", label: "Yorumlar", icon: MessageSquare },
+    { key: "stats", label: "İstatistikler", icon: BarChart3 },
+    { key: "rapor", label: "AI Raporu", icon: Sparkles },
+    { key: "qr", label: "QR Kodlar", icon: QrCode },
+  ] as const;
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-12">
-      <div className="mb-8 flex items-center gap-3">
-        <Star className="h-8 w-8 text-[hsl(var(--primary))]" />
+    <div className="p-8">
+      {/* Başlık */}
+      <div className="mb-6 flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[hsl(var(--primary)/0.12)]">
+          <Star className="h-5 w-5 text-[hsl(var(--primary))]" />
+        </div>
         <div>
           <h1 className="text-2xl font-bold">Yorum Analizi</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">Müşteri yorumlarını topla, AI ile analiz et, içgörü kazan.</p>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">
+            {activeBrand.name} · {stats?.totalReviews ?? 0} yorum
+          </p>
         </div>
       </div>
 
-      {!loaded && (
-        <div className="glass flex gap-2 rounded-2xl p-5">
-          <input
-            type="text"
-            placeholder="Marka ID gir..."
-            value={brandId}
-            onChange={(e) => setBrandId(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && loadAll()}
-            className="flex-1 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary))] transition"
-          />
-          <button onClick={loadAll} className="rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">
-            Yükle
+      {/* Sekmeler */}
+      <div className="mb-6 flex gap-1 rounded-xl bg-[hsl(var(--muted)/0.5)] p-1 w-fit">
+        {TABS.map(({ key, label, icon: Icon }) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition ${
+              tab === key
+                ? "bg-[hsl(var(--background))] shadow-sm text-[hsl(var(--foreground))]"
+                : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+            }`}
+          >
+            <Icon className="h-3.5 w-3.5" />
+            {label}
           </button>
+        ))}
+      </div>
+
+      {/* ── YORUMLAR ── */}
+      {tab === "reviews" && (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {["ALL", "POSITIVE", "NEUTRAL", "NEGATIVE"].map((f) => (
+              <button key={f} onClick={() => setFilter(f)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                  filter === f ? "bg-[hsl(var(--primary))] text-white" : "bg-[hsl(var(--muted))] hover:bg-[hsl(var(--border))]"
+                }`}>
+                {f === "ALL" ? "Tümü" : SENTIMENT_LABEL[f]}
+              </button>
+            ))}
+            <div className="ml-auto flex gap-2">
+              <button onClick={() => setShowAddForm(!showAddForm)}
+                className="flex items-center gap-1.5 rounded-lg bg-[hsl(var(--muted))] px-3 py-1.5 text-xs font-medium transition hover:bg-[hsl(var(--border))]">
+                <Plus className="h-3.5 w-3.5" /> Manuel Ekle
+              </button>
+              <button onClick={runAnalysis} disabled={analyzing}
+                className="flex items-center gap-1.5 rounded-lg bg-[hsl(var(--primary))] px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
+                {analyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                AI Analiz Et
+              </button>
+            </div>
+          </div>
+
+          {showAddForm && (
+            <form onSubmit={addManualReview} className="glass space-y-3 rounded-2xl p-5">
+              <div className="flex gap-3">
+                <input type="text" placeholder="İsim (opsiyonel)" value={newAuthor}
+                  onChange={(e) => setNewAuthor(e.target.value)}
+                  className="flex-1 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition" />
+                <select value={newRating} onChange={(e) => setNewRating(Number(e.target.value))}
+                  className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition">
+                  {[1, 2, 3, 4, 5].map((r) => <option key={r} value={r}>{r} ★</option>)}
+                </select>
+              </div>
+              <textarea required rows={3} placeholder="Yorum metni..." value={newText}
+                onChange={(e) => setNewText(e.target.value)}
+                className="w-full resize-none rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition" />
+              <button type="submit" disabled={addingReview}
+                className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
+                {addingReview ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Ekle
+              </button>
+            </form>
+          )}
+
+          {loadingReviews ? (
+            <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--primary))]" /></div>
+          ) : reviews.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-16 text-center">
+              <MessageSquare className="h-10 w-10 text-[hsl(var(--muted-foreground)/0.3)]" />
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">Yorum bulunamadı</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {reviews.map((review) => (
+                <div key={review.id} className="glass rounded-2xl p-5">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[hsl(var(--primary)/0.1)] text-xs font-bold text-[hsl(var(--primary))]">
+                        {(review.authorName ?? "?").slice(0, 1).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{review.authorName ?? "Anonim"}</p>
+                        <p className="text-[10px] text-[hsl(var(--muted-foreground))]">{SOURCE_LABEL[review.source]}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <StarRow rating={review.rating} />
+                      {review.sentiment && (
+                        <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${SENTIMENT_COLOR[review.sentiment]}`}>
+                          <SentimentIcon s={review.sentiment} /> {SENTIMENT_LABEL[review.sentiment]}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {review.text && <p className="text-sm text-[hsl(var(--foreground))]">{review.text}</p>}
+                  {review.aiSummary && (
+                    <p className="mt-2 text-xs italic text-[hsl(var(--muted-foreground))]">✦ {review.aiSummary}</p>
+                  )}
+                  {review.topics.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {review.topics.map((t) => (
+                        <span key={t} className="rounded-full bg-[hsl(var(--primary)/0.12)] px-2 py-0.5 text-xs text-[hsl(var(--primary))]">{t}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {loaded && (
-        <>
-          {/* Tab bar */}
-          <div className="mb-6 flex gap-1 rounded-xl bg-[hsl(var(--muted)/0.5)] p-1">
-            {(["reviews", "stats", "qr"] as const).map((t) => (
-              <button key={t} onClick={() => setTab(t)}
-                className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${tab === t ? "bg-[hsl(var(--background))] shadow-sm" : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"}`}>
-                {t === "reviews" ? "Yorumlar" : t === "stats" ? "İstatistikler" : "QR Kodlar"}
-              </button>
+      {/* ── İSTATİSTİKLER ── */}
+      {tab === "stats" && stats && (
+        <div className="space-y-5">
+          <div className="grid grid-cols-4 gap-3">
+            {[
+              { label: "Toplam", value: stats.totalReviews, cls: "" },
+              { label: "Olumlu", value: stats.sentiment.POSITIVE, cls: "text-green-400" },
+              { label: "Nötr", value: stats.sentiment.NEUTRAL, cls: "text-yellow-400" },
+              { label: "Olumsuz", value: stats.sentiment.NEGATIVE, cls: "text-red-400" },
+            ].map((item) => (
+              <div key={item.label} className="glass rounded-2xl p-4 text-center">
+                <p className={`text-2xl font-bold ${item.cls}`}>{item.value}</p>
+                <p className="text-xs text-[hsl(var(--muted-foreground))]">{item.label}</p>
+              </div>
             ))}
           </div>
 
-          {/* YORUMLAR */}
-          {tab === "reviews" && (
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-2">
-                {/* Filtreler */}
-                {["ALL", "POSITIVE", "NEUTRAL", "NEGATIVE"].map((f) => (
-                  <button key={f} onClick={() => setFilter(f)}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${filter === f ? "bg-[hsl(var(--primary))] text-white" : "bg-[hsl(var(--muted))] hover:bg-[hsl(var(--border))]"}`}>
-                    {f === "ALL" ? "Tümü" : SENTIMENT_LABEL[f]}
-                  </button>
-                ))}
-                <div className="ml-auto flex gap-2">
-                  <button onClick={() => setShowAddForm(!showAddForm)}
-                    className="flex items-center gap-1.5 rounded-lg bg-[hsl(var(--muted))] px-3 py-1.5 text-xs font-medium transition hover:bg-[hsl(var(--border))]">
-                    <Plus className="h-3.5 w-3.5" /> Manuel Ekle
-                  </button>
-                  <button onClick={runAnalysis} disabled={analyzing}
-                    className="flex items-center gap-1.5 rounded-lg bg-[hsl(var(--primary))] px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
-                    {analyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                    AI Analiz Et
-                  </button>
-                </div>
-              </div>
-
-              {showAddForm && (
-                <form onSubmit={addManualReview} className="glass rounded-2xl p-5 space-y-3">
-                  <div className="flex gap-3">
-                    <input type="text" placeholder="İsim (opsiyonel)" value={newAuthor} onChange={(e) => setNewAuthor(e.target.value)}
-                      className="flex-1 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition" />
-                    <select value={newRating} onChange={(e) => setNewRating(Number(e.target.value))}
-                      className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition">
-                      {[1,2,3,4,5].map((r) => <option key={r} value={r}>{r} ★</option>)}
-                    </select>
-                  </div>
-                  <textarea required rows={3} placeholder="Yorum metni..." value={newText} onChange={(e) => setNewText(e.target.value)}
-                    className="w-full resize-none rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition" />
-                  <button type="submit" disabled={addingReview}
-                    className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
-                    {addingReview ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Ekle
-                  </button>
-                </form>
-              )}
-
-              {loadingReviews ? (
-                <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--primary))]" /></div>
-              ) : reviews.length === 0 ? (
-                <p className="py-10 text-center text-sm text-[hsl(var(--muted-foreground))]">Yorum bulunamadı.</p>
-              ) : (
-                <div className="space-y-3">
-                  {reviews.map((review) => (
-                    <div key={review.id} className="glass rounded-2xl p-5">
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">{review.authorName ?? "Anonim"}</span>
-                          <span className="text-xs text-[hsl(var(--muted-foreground))]">• {SOURCE_LABEL[review.source]}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="flex">
-                            {[1,2,3,4,5].map((s) => (
-                              <Star key={s} className="h-3.5 w-3.5" fill={review.rating >= s ? "#f59e0b" : "none"} stroke={review.rating >= s ? "#f59e0b" : "currentColor"} />
-                            ))}
-                          </div>
-                          {review.sentiment && (
-                            <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${SENTIMENT_COLOR[review.sentiment]}`}>
-                              {sentimentIcon(review.sentiment)} {SENTIMENT_LABEL[review.sentiment]}
-                            </span>
-                          )}
-                        </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="glass rounded-2xl p-5">
+              <p className="mb-3 text-sm font-semibold">Puan Dağılımı</p>
+              <div className="space-y-2">
+                {[...stats.ratingDist].reverse().map(({ rating, count }) => {
+                  const max = Math.max(...stats.ratingDist.map((r) => r.count), 1);
+                  return (
+                    <div key={rating} className="flex items-center gap-2 text-xs">
+                      <span className="w-6 text-right">{rating}★</span>
+                      <div className="flex-1 h-2 rounded-full bg-[hsl(var(--muted))]">
+                        <div className="h-2 rounded-full bg-amber-400" style={{ width: `${(count / max) * 100}%` }} />
                       </div>
-                      {review.text && <p className="text-sm text-[hsl(var(--foreground))]">{review.text}</p>}
-                      {review.aiSummary && (
-                        <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))] italic">AI: {review.aiSummary}</p>
-                      )}
-                      {review.topics.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {review.topics.map((t) => (
-                            <span key={t} className="rounded-full bg-[hsl(var(--primary)/0.12)] px-2 py-0.5 text-xs text-[hsl(var(--primary))]">{t}</span>
-                          ))}
-                        </div>
-                      )}
+                      <span className="w-5 text-[hsl(var(--muted-foreground))]">{count}</span>
                     </div>
-                  ))}
-                </div>
-              )}
+                  );
+                })}
+              </div>
+              <p className="mt-3 text-center text-sm">
+                Ort: <span className="font-bold text-amber-400">{stats.avgRating?.toFixed(1) ?? "—"}</span> / 5
+              </p>
             </div>
-          )}
 
-          {/* İSTATİSTİKLER */}
-          {tab === "stats" && stats && (
-            <div className="space-y-5">
-              {/* Özet kartlar */}
-              <div className="grid grid-cols-4 gap-3">
-                {[
-                  { label: "Toplam", value: stats.totalReviews, color: "text-[hsl(var(--foreground))]" },
-                  { label: "Olumlu", value: stats.sentiment.POSITIVE, color: "text-green-400" },
-                  { label: "Nötr", value: stats.sentiment.NEUTRAL, color: "text-yellow-400" },
-                  { label: "Olumsuz", value: stats.sentiment.NEGATIVE, color: "text-red-400" },
-                ].map((item) => (
-                  <div key={item.label} className="glass rounded-2xl p-4 text-center">
-                    <p className={`text-2xl font-bold ${item.color}`}>{item.value}</p>
-                    <p className="text-xs text-[hsl(var(--muted-foreground))]">{item.label}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                {/* Puan dağılımı */}
-                <div className="glass rounded-2xl p-5">
-                  <p className="mb-3 text-sm font-semibold">Puan Dağılımı</p>
-                  <div className="space-y-2">
-                    {[...stats.ratingDist].reverse().map(({ rating, count }) => {
-                      const max = Math.max(...stats.ratingDist.map((r) => r.count), 1);
-                      return (
-                        <div key={rating} className="flex items-center gap-2 text-xs">
-                          <span className="w-6 text-right">{rating}★</span>
-                          <div className="flex-1 rounded-full bg-[hsl(var(--muted))] h-2">
-                            <div className="h-2 rounded-full bg-[hsl(var(--primary))]" style={{ width: `${(count / max) * 100}%` }} />
-                          </div>
-                          <span className="w-5 text-[hsl(var(--muted-foreground))]">{count}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <p className="mt-3 text-center text-sm">
-                    Ort: <span className="font-bold text-[hsl(var(--primary))]">{stats.avgRating?.toFixed(1) ?? "—"}</span> / 5
-                  </p>
-                </div>
-
-                {/* En çok konular */}
-                <div className="glass rounded-2xl p-5">
-                  <p className="mb-3 text-sm font-semibold">Öne Çıkan Konular</p>
-                  <div className="space-y-2">
-                    {stats.topTopics.slice(0, 6).map(({ topic, count }) => {
-                      const max = Math.max(...stats.topTopics.map((t) => t.count), 1);
-                      return (
-                        <div key={topic} className="flex items-center gap-2 text-xs">
-                          <span className="flex-1 truncate">{topic}</span>
-                          <div className="w-20 rounded-full bg-[hsl(var(--muted))] h-2">
-                            <div className="h-2 rounded-full bg-[hsl(var(--primary)/0.7)]" style={{ width: `${(count / max) * 100}%` }} />
-                          </div>
-                          <span className="w-5 text-[hsl(var(--muted-foreground))]">{count}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* AI İçgörü Raporu */}
-              <div className="glass rounded-2xl p-5">
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="text-sm font-semibold">AI İçgörü Raporu</p>
-                  <button onClick={getInsightReport} disabled={insightLoading}
-                    className="flex items-center gap-1.5 rounded-lg bg-[hsl(var(--primary))] px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
-                    {insightLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-                    {stats.insightReport ? "Yenile" : "Rapor Oluştur"}
-                  </button>
-                </div>
-                {stats.insightReport ? (
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-[hsl(var(--foreground))]">{stats.insightReport}</p>
-                ) : (
-                  <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                    {stats.unanalyzed > 0
-                      ? `${stats.unanalyzed} yorum henüz analiz edilmedi. "AI Analiz Et" butonunu kullan.`
-                      : "Rapor oluşturmak için butona tıkla."}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* QR KODLAR */}
-          {tab === "qr" && (
-            <div className="space-y-4">
-              <div className="glass flex gap-2 rounded-2xl p-5">
-                <input type="text" placeholder="QR etiket (opsiyonel: Masa 1, Giriş kapısı...)" value={qrLabel}
-                  onChange={(e) => setQrLabel(e.target.value)}
-                  className="flex-1 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary))] transition" />
-                <button onClick={createQr} disabled={creatingQr}
-                  className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
-                  {creatingQr ? <Loader2 className="h-4 w-4 animate-spin" /> : <QrCode className="h-4 w-4" />} Oluştur
-                </button>
-              </div>
-
-              {qrCodes.length === 0 ? (
-                <p className="py-8 text-center text-sm text-[hsl(var(--muted-foreground))]">Henüz QR kodu yok.</p>
-              ) : (
-                <div className="space-y-2">
-                  {qrCodes.map((qr) => (
-                    <div key={qr.id} className="glass flex items-center gap-4 rounded-xl px-5 py-4">
-                      <QrCode className="h-8 w-8 text-[hsl(var(--primary))]" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{qr.label ?? "QR Kodu"}</p>
-                        <p className="text-xs text-[hsl(var(--muted-foreground)]">/qr/{qr.slug}</p>
+            <div className="glass rounded-2xl p-5">
+              <p className="mb-3 text-sm font-semibold">Öne Çıkan Konular</p>
+              <div className="space-y-2">
+                {stats.topTopics.slice(0, 6).map(({ topic, count }) => {
+                  const max = Math.max(...stats.topTopics.map((t) => t.count), 1);
+                  return (
+                    <div key={topic} className="flex items-center gap-2 text-xs">
+                      <span className="flex-1 truncate">{topic}</span>
+                      <div className="w-20 h-2 rounded-full bg-[hsl(var(--muted))]">
+                        <div className="h-2 rounded-full bg-[hsl(var(--primary)/0.7)]" style={{ width: `${(count / max) * 100}%` }} />
                       </div>
-                      <span className="text-xs text-[hsl(var(--muted-foreground))]">{qr.scanCount} tarama</span>
-                      <a href={`/qr/${qr.slug}`} target="_blank" rel="noreferrer"
-                        className="rounded-lg bg-[hsl(var(--muted))] px-3 py-1.5 text-xs font-medium transition hover:bg-[hsl(var(--border))]">
-                        Aç
-                      </a>
+                      <span className="w-5 text-[hsl(var(--muted-foreground))]">{count}</span>
                     </div>
-                  ))}
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="glass rounded-2xl p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-semibold">AI İçgörü Özeti</p>
+              <button onClick={getInsightReport} disabled={insightLoading}
+                className="flex items-center gap-1.5 rounded-lg bg-[hsl(var(--primary))] px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
+                {insightLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                {stats.insightReport ? "Yenile" : "Oluştur"}
+              </button>
+            </div>
+            {stats.insightReport ? (
+              <p className="whitespace-pre-wrap text-sm leading-relaxed">{stats.insightReport}</p>
+            ) : (
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                {stats.unanalyzed > 0
+                  ? `${stats.unanalyzed} yorum henüz analiz edilmedi. "AI Analiz Et" butonunu kullan.`
+                  : "Rapor oluşturmak için butona tıkla."}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── AI RAPORU ── */}
+      {tab === "rapor" && (
+        <ThemeReport brandId={brandId} brandName={activeBrand.name} />
+      )}
+
+      {/* ── QR KODLAR ── */}
+      {tab === "qr" && (
+        <div className="space-y-4">
+          <div className="glass flex gap-2 rounded-2xl p-5">
+            <input type="text" placeholder="QR etiket (opsiyonel: Masa 1, Giriş...)" value={qrLabel}
+              onChange={(e) => setQrLabel(e.target.value)}
+              className="flex-1 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary))] transition" />
+            <button onClick={createQr} disabled={creatingQr}
+              className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
+              {creatingQr ? <Loader2 className="h-4 w-4 animate-spin" /> : <QrCode className="h-4 w-4" />} Oluştur
+            </button>
+          </div>
+          {qrCodes.length === 0 ? (
+            <p className="py-8 text-center text-sm text-[hsl(var(--muted-foreground))]">Henüz QR kodu yok.</p>
+          ) : (
+            <div className="space-y-2">
+              {qrCodes.map((qr) => (
+                <div key={qr.id} className="glass flex items-center gap-4 rounded-xl px-5 py-4">
+                  <QrCode className="h-8 w-8 text-[hsl(var(--primary))]" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{qr.label ?? "QR Kodu"}</p>
+                    <p className="text-xs text-[hsl(var(--muted-foreground))]">/qr/{qr.slug}</p>
+                  </div>
+                  <span className="text-xs text-[hsl(var(--muted-foreground))]">{qr.scanCount} tarama</span>
+                  <a href={`/qr/${qr.slug}`} target="_blank" rel="noreferrer"
+                    className="rounded-lg bg-[hsl(var(--muted))] px-3 py-1.5 text-xs font-medium transition hover:bg-[hsl(var(--border))]">
+                    Aç
+                  </a>
                 </div>
-              )}
+              ))}
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );
