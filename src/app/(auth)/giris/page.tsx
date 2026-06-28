@@ -1,11 +1,12 @@
 "use client";
+import { Suspense } from "react";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
-export default function GirisPage() {
+function GirisForm() {
   const router = useRouter();
   const params = useSearchParams();
   const [email, setEmail] = useState("");
@@ -126,5 +127,13 @@ export default function GirisPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function GirisPage() {
+  return (
+    <Suspense fallback={<div className="glass rounded-3xl p-8 h-96 animate-pulse" />}>
+      <GirisForm />
+    </Suspense>
   );
 }
