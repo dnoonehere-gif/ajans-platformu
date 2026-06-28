@@ -13,28 +13,27 @@ export function BlockRenderer({ blocks }: { blocks: Block[] }) {
 
 function BlockSection({ block }: { block: Block }) {
   switch (block.type) {
-    case "hero":
-      return <HeroBlock data={block.data} />;
-    case "features":
-      return <FeaturesBlock data={block.data} />;
-    case "about":
-      return <AboutBlock data={block.data} />;
-    case "services":
-      return <ServicesBlock data={block.data} />;
-    case "cta":
-      return <CtaBlock data={block.data} />;
-    case "contact":
-      return <ContactBlock data={block.data} />;
-    default:
-      return null;
+    case "hero":      return <HeroBlock data={block.data} />;
+    case "features":  return <FeaturesBlock data={block.data} />;
+    case "about":     return <AboutBlock data={block.data} />;
+    case "services":  return <ServicesBlock data={block.data} />;
+    case "cta":       return <CtaBlock data={block.data} />;
+    case "contact":   return <ContactBlock data={block.data} />;
+    default:          return null;
   }
 }
 
 function HeroBlock({ data }: { data: Record<string, unknown> }) {
+  const bg = (data.bgColor as string) ?? "#6366f1";
   return (
-    <section className="relative overflow-hidden px-6 py-28 text-center"
-      style={{ background: `linear-gradient(135deg, ${data.bgColor as string}22 0%, transparent 60%)` }}>
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_50%_0%,hsl(var(--primary)/0.15),transparent)]" />
+    <section
+      className="relative overflow-hidden px-6 py-28 text-center"
+      style={{ background: `linear-gradient(135deg, ${bg}33 0%, ${bg}08 60%)` }}
+    >
+      <div
+        className="absolute inset-0 -z-10"
+        style={{ background: `radial-gradient(60% 60% at 50% 0%, ${bg}28, transparent)` }}
+      />
       <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight md:text-5xl">
         {data.headline as string}
       </h1>
@@ -42,8 +41,11 @@ function HeroBlock({ data }: { data: Record<string, unknown> }) {
         {data.subheadline as string}
       </p>
       <div className="mt-8">
-        <a href={data.ctaHref as string}
-          className="rounded-xl bg-[hsl(var(--primary))] px-7 py-3 font-semibold text-white shadow-lg transition hover:opacity-90">
+        <a
+          href={data.ctaHref as string}
+          className="rounded-xl px-7 py-3 font-semibold text-white shadow-lg transition hover:opacity-90"
+          style={{ backgroundColor: bg }}
+        >
           {data.cta as string}
         </a>
       </div>
@@ -57,7 +59,7 @@ function FeaturesBlock({ data }: { data: Record<string, unknown> }) {
     <section className="bg-[hsl(var(--muted)/0.3)] px-6 py-20">
       <h2 className="mb-10 text-center text-3xl font-bold">{data.title as string}</h2>
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
-        {items.map((item, i) => (
+        {items?.map((item, i) => (
           <div key={i} className="glass rounded-2xl p-6 text-center">
             <div className="mb-3 text-4xl">{item.icon}</div>
             <h3 className="mb-2 font-semibold">{item.title}</h3>
@@ -75,9 +77,9 @@ function AboutBlock({ data }: { data: Record<string, unknown> }) {
     <section className="px-6 py-20">
       <div className="mx-auto max-w-4xl">
         <h2 className="mb-6 text-3xl font-bold">{data.title as string}</h2>
-        <p className="mb-10 text-[hsl(var(--muted-foreground))] leading-relaxed">{data.body as string}</p>
+        <p className="mb-10 leading-relaxed text-[hsl(var(--muted-foreground))]">{data.body as string}</p>
         <div className="grid grid-cols-3 gap-6 text-center">
-          {stats.map((s, i) => (
+          {stats?.map((s, i) => (
             <div key={i} className="glass rounded-2xl p-6">
               <div className="text-3xl font-bold text-[hsl(var(--primary))]">{s.value}</div>
               <div className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{s.label}</div>
@@ -95,7 +97,7 @@ function ServicesBlock({ data }: { data: Record<string, unknown> }) {
     <section className="bg-[hsl(var(--muted)/0.3)] px-6 py-20">
       <h2 className="mb-10 text-center text-3xl font-bold">{data.title as string}</h2>
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 md:grid-cols-2">
-        {items.map((item, i) => (
+        {items?.map((item, i) => (
           <div key={i} className="glass flex items-start gap-4 rounded-2xl p-6">
             <span className="text-3xl">{item.icon}</span>
             <div>
@@ -110,13 +112,17 @@ function ServicesBlock({ data }: { data: Record<string, unknown> }) {
 }
 
 function CtaBlock({ data }: { data: Record<string, unknown> }) {
+  const btnColor = (data.buttonColor as string) ?? "#6366f1";
   return (
     <section className="px-6 py-20 text-center">
-      <div className="mx-auto max-w-2xl glass rounded-3xl p-12">
+      <div className="glass mx-auto max-w-2xl rounded-3xl p-12">
         <h2 className="mb-4 text-3xl font-bold">{data.title as string}</h2>
         <p className="mb-8 text-[hsl(var(--muted-foreground))]">{data.body as string}</p>
-        <a href={data.buttonHref as string}
-          className="rounded-xl bg-[hsl(var(--primary))] px-8 py-3 font-semibold text-white shadow-lg transition hover:opacity-90">
+        <a
+          href={data.buttonHref as string}
+          className="rounded-xl px-8 py-3 font-semibold text-white shadow-lg transition hover:opacity-90"
+          style={{ backgroundColor: btnColor }}
+        >
           {data.buttonText as string}
         </a>
       </div>
@@ -130,14 +136,22 @@ function ContactBlock({ data }: { data: Record<string, unknown> }) {
       <h2 className="mb-10 text-center text-3xl font-bold">{data.title as string}</h2>
       <div className="mx-auto max-w-md space-y-4 text-center">
         {data.phone && (
-          <p className="text-lg">📞 <a href={`tel:${data.phone}`} className="hover:text-[hsl(var(--primary))]">{data.phone as string}</a></p>
+          <p className="text-lg">
+            📞{" "}
+            <a href={`tel:${data.phone}`} className="hover:text-[hsl(var(--primary))]">
+              {data.phone as string}
+            </a>
+          </p>
         )}
         {data.email && (
-          <p className="text-lg">✉️ <a href={`mailto:${data.email}`} className="hover:text-[hsl(var(--primary))]">{data.email as string}</a></p>
+          <p className="text-lg">
+            ✉️{" "}
+            <a href={`mailto:${data.email}`} className="hover:text-[hsl(var(--primary))]">
+              {data.email as string}
+            </a>
+          </p>
         )}
-        {data.address && (
-          <p className="text-lg">📍 {data.address as string}</p>
-        )}
+        {data.address && <p className="text-lg">📍 {data.address as string}</p>}
       </div>
     </section>
   );

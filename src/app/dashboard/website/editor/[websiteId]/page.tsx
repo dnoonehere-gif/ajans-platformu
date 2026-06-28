@@ -1,6 +1,9 @@
 "use client";
-import { useEffect, useState, use } from "react";
-import { Eye, EyeOff, Save, Loader2, Globe, ChevronLeft } from "lucide-react";
+import { useEffect, useState, use, useRef } from "react";
+import {
+  Eye, EyeOff, Save, Loader2, Globe, ChevronLeft,
+  Sparkles, Send, RotateCcw, Check, Pencil, Bot,
+} from "lucide-react";
 import Link from "next/link";
 import { BlockRenderer } from "@/components/website/block-renderer";
 import type { Block } from "@/server/ai/website-generator";
@@ -20,6 +23,23 @@ interface Website {
   pages: WebsitePage[];
 }
 
+interface ChatMessage {
+  role: "user" | "ai";
+  content: string;
+  loading?: boolean;
+}
+
+const SUGGESTIONS = [
+  "Butonları kırmızı yap",
+  "Hero arka planını lacivert yap",
+  "Başlığı daha etkileyici yaz",
+  "Hizmetlere bir tane daha ekle",
+  "İletişim bölümüne e-posta ekle",
+  "Butonları yeşil yap",
+  "Özellikleri 4'e çıkar",
+  "CTA metnini değiştir",
+];
+
 export default function WebsiteEditorPage({
   params,
 }: {
@@ -27,33 +47,50 @@ export default function WebsiteEditorPage({
 }) {
   const { websiteId } = use(params);
   const [website, setWebsite] = useState<Website | null>(null);
-  const [activePageIndex, setActivePageIndex] = useState(0);
-  const [editingBlock, setEditingBlock] = useState<Block | null>(null);
+  const [blocks, setBlocks] = useState<Block[]>([]);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [publishing, setPublishing] = useState(false);
-  const [view, setView] = useState<"preview" | "edit">("preview");
+  const [view, setView] = useState<"split" | "preview">("split");
+
+  // AI Chat
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { role: "ai", content: "Merhaba! Web sitenizi düzenlememe yardımcı olabilirim. Ne değiştirmek istersiniz?" },
+  ]);
+  const [input, setInput] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [history, setHistory] = useState<Block[][]>([]);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch(`/api/website/${websiteId}`)
       .then((r) => r.json())
       .then((d) => {
-        if (d.website) setWebsite(d.website);
+        if (d.website) {
+          setWebsite(d.website);
+          setBlocks(d.website.pages[0]?.blocks ?? []);
+        }
       });
   }, [websiteId]);
 
-  const activePage = website?.pages[activePageIndex];
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-  async function saveBlocks(blocks: Block[]) {
+  const activePage = website?.pages[0];
+
+  async function saveBlocks(b: Block[]) {
     if (!website || !activePage) return;
     setSaving(true);
-    const res = await fetch(`/api/website/${website.brandId}`, {
+    setSaved(false);
+    await fetch(`/api/website/${website.brandId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pageId: activePage.id, blocks }),
+      body: JSON.stringify({ pageId: activePage.id, blocks: b }),
     });
-    const data = await res.json();
-    if (data.website) setWebsite(data.website);
     setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   }
 
   async function togglePublish() {
@@ -62,26 +99,57 @@ export default function WebsiteEditorPage({
     const res = await fetch(`/api/website/${website.brandId}/publish`, { method: "POST" });
     const data = await res.json();
     if (typeof data.isPublished === "boolean") {
-      setWebsite((w) => w ? { ...w, isPublished: data.isPublished } : w);
+      setWebsite((w) => (w ? { ...w, isPublished: data.isPublished } : w));
     }
     setPublishing(false);
   }
 
-  function updateBlockField(blockId: string, field: string, value: unknown) {
-    if (!activePage) return;
-    const updated = activePage.blocks.map((b) =>
-      b.id === blockId ? { ...b, data: { ...b.data, [field]: value } } : b
-    );
-    setWebsite((w) =>
-      w
-        ? {
-            ...w,
-            pages: w.pages.map((p, i) =>
-              i === activePageIndex ? { ...p, blocks: updated } : p
-            ),
-          }
-        : w
-    );
+  async function sendInstruction(instruction: string) {
+    if (!instruction.trim() || aiLoading || !website) return;
+
+    setHistory((h) => [...h, blocks]);
+    setMessages((m) => [
+      ...m,
+      { role: "user", content: instruction },
+      { role: "ai", content: "", loading: true },
+    ]);
+    setInput("");
+    setAiLoading(true);
+
+    try {
+      const res = await fetch("/api/website/ai-edit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ websiteId, instruction, blocks }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error ?? "Hata");
+
+      setBlocks(data.blocks);
+      setMessages((m) => [
+        ...m.slice(0, -1),
+        { role: "ai", content: "✅ Değişiklik uygulandı! Önizlemede görebilirsiniz." },
+      ]);
+
+      // Otomatik kaydet
+      await saveBlocks(data.blocks);
+    } catch (e) {
+      setMessages((m) => [
+        ...m.slice(0, -1),
+        { role: "ai", content: `❌ Hata: ${e instanceof Error ? e.message : "Bir sorun oluştu"}` },
+      ]);
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
+  function undo() {
+    if (history.length === 0) return;
+    const prev = history[history.length - 1];
+    setBlocks(prev);
+    setHistory((h) => h.slice(0, -1));
+    setMessages((m) => [...m, { role: "ai", content: "↩️ Son değişiklik geri alındı." }]);
   }
 
   if (!website) {
@@ -93,123 +161,216 @@ export default function WebsiteEditorPage({
   }
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      {/* Üst araç çubuğu */}
-      <header className="flex items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--background))] px-5 py-3">
+    <div className="flex h-screen flex-col overflow-hidden bg-[hsl(var(--background))]">
+      {/* ── Üst Araç Çubuğu ── */}
+      <header className="flex shrink-0 items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] px-5 py-3">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/website" className="rounded-lg p-1.5 hover:bg-[hsl(var(--muted))] transition">
+          <Link
+            href="/dashboard/website"
+            className="rounded-lg p-1.5 text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
+          >
             <ChevronLeft className="h-5 w-5" />
           </Link>
           <Globe className="h-5 w-5 text-[hsl(var(--primary))]" />
           <span className="font-semibold">{website.title}</span>
-          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${website.isPublished ? "bg-green-500/15 text-green-400" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}>
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+              website.isPublished
+                ? "bg-green-500/15 text-green-400"
+                : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
+            }`}
+          >
             {website.isPublished ? "Yayında" : "Taslak"}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Geri al */}
           <button
-            onClick={() => setView(view === "preview" ? "edit" : "preview")}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium hover:bg-[hsl(var(--muted))] transition"
+            onClick={undo}
+            disabled={history.length === 0}
+            title="Geri Al"
+            className="rounded-lg p-2 text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))] disabled:opacity-30"
           >
-            {view === "preview" ? <><Eye className="h-4 w-4" /> Önizleme</> : <><EyeOff className="h-4 w-4" /> Düzenle</>}
+            <RotateCcw className="h-4 w-4" />
           </button>
 
+          {/* Görünüm */}
           <button
-            onClick={() => activePage && saveBlocks(activePage.blocks)}
+            onClick={() => setView(view === "split" ? "preview" : "split")}
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
+          >
+            {view === "split" ? (
+              <><Eye className="h-4 w-4" /> Tam Ekran</>
+            ) : (
+              <><Pencil className="h-4 w-4" /> Düzenleyici</>
+            )}
+          </button>
+
+          {/* Kaydet */}
+          <button
+            onClick={() => saveBlocks(blocks)}
             disabled={saving}
             className="flex items-center gap-1.5 rounded-lg bg-[hsl(var(--muted))] px-3 py-1.5 text-sm font-medium transition hover:bg-[hsl(var(--border))] disabled:opacity-50"
           >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Kaydet
+            {saving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : saved ? (
+              <Check className="h-4 w-4 text-green-400" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            {saved ? "Kaydedildi" : "Kaydet"}
           </button>
 
+          {/* Yayınla */}
           <button
             onClick={togglePublish}
             disabled={publishing}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold text-white transition disabled:opacity-50 ${website.isPublished ? "bg-red-500 hover:bg-red-600" : "bg-[hsl(var(--primary))] hover:opacity-90"}`}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold text-white transition disabled:opacity-50 ${
+              website.isPublished
+                ? "bg-red-500 hover:bg-red-600"
+                : "bg-[hsl(var(--primary))] hover:opacity-90"
+            }`}
           >
-            {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : website.isPublished ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {publishing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : website.isPublished ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
             {website.isPublished ? "Yayından Kaldır" : "Yayınla"}
           </button>
         </div>
       </header>
 
+      {/* ── Ana İçerik ── */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sol panel — blok listesi (edit modunda) */}
-        {view === "edit" && (
-          <aside className="w-64 shrink-0 overflow-y-auto border-r border-[hsl(var(--border))] bg-[hsl(var(--background))] p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-              Bloklar
-            </p>
-            <div className="space-y-1.5">
-              {activePage?.blocks.map((block) => (
-                <button
-                  key={block.id}
-                  onClick={() => setEditingBlock(editingBlock?.id === block.id ? null : block)}
-                  className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition ${editingBlock?.id === block.id ? "bg-[hsl(var(--primary)/0.15)] text-[hsl(var(--primary))]" : "hover:bg-[hsl(var(--muted))]"}`}
-                >
-                  <span>{blockIcon(block.type)}</span>
-                  <span className="capitalize">{blockLabel(block.type)}</span>
-                </button>
-              ))}
+        {/* ── Sol Panel: AI Chat ── */}
+        {view === "split" && (
+          <aside className="flex w-80 shrink-0 flex-col border-r border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+            {/* Başlık */}
+            <div className="flex items-center gap-2 border-b border-[hsl(var(--border))] px-4 py-3">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[hsl(var(--primary)/0.12)]">
+                <Bot className="h-4 w-4 text-[hsl(var(--primary))]" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">AI Editör</p>
+                <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Doğal dille düzenle</p>
+              </div>
             </div>
 
-            {/* Blok düzenleyici */}
-            {editingBlock && (
-              <div className="mt-5 space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                  Düzenle — {blockLabel(editingBlock.type)}
-                </p>
-                {Object.entries(editingBlock.data).map(([key, val]) => {
-                  if (typeof val !== "string") return null;
-                  return (
-                    <div key={key}>
-                      <label className="mb-1 block text-xs text-[hsl(var(--muted-foreground))]">{key}</label>
-                      <textarea
-                        rows={2}
-                        value={val}
-                        onChange={(e) => {
-                          updateBlockField(editingBlock.id, key, e.target.value);
-                          setEditingBlock({ ...editingBlock, data: { ...editingBlock.data, [key]: e.target.value } });
-                        }}
-                        className="w-full resize-none rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-xs outline-none focus:border-[hsl(var(--primary))] transition"
-                      />
+            {/* Mesajlar */}
+            <div className="flex-1 space-y-3 overflow-y-auto p-4">
+              {messages.map((msg, i) => (
+                <div
+                  key={i}
+                  className={`flex gap-2 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
+                >
+                  {msg.role === "ai" && (
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary)/0.12)]">
+                      <Sparkles className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />
                     </div>
-                  );
-                })}
+                  )}
+                  <div
+                    className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${
+                      msg.role === "user"
+                        ? "rounded-tr-sm bg-[hsl(var(--primary))] text-white"
+                        : "rounded-tl-sm bg-[hsl(var(--muted)/0.7)] text-[hsl(var(--foreground))]"
+                    }`}
+                  >
+                    {msg.loading ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <span>Düzenleniyor...</span>
+                      </div>
+                    ) : (
+                      msg.content
+                    )}
+                  </div>
+                </div>
+              ))}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Öneriler */}
+            {messages.length <= 2 && (
+              <div className="border-t border-[hsl(var(--border))] px-4 py-3">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                  Öneriler
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {SUGGESTIONS.slice(0, 4).map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => sendInstruction(s)}
+                      disabled={aiLoading}
+                      className="rounded-lg border border-[hsl(var(--border))] px-2.5 py-1 text-xs transition hover:border-[hsl(var(--primary)/0.5)] hover:bg-[hsl(var(--accent))] disabled:opacity-50"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
+
+            {/* Input */}
+            <div className="border-t border-[hsl(var(--border))] p-4">
+              <div className="flex items-end gap-2">
+                <textarea
+                  rows={2}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      sendInstruction(input);
+                    }
+                  }}
+                  placeholder="Butonları kırmızı yap..."
+                  disabled={aiLoading}
+                  className="flex-1 resize-none rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2.5 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.15)] placeholder:text-[hsl(var(--muted-foreground))] disabled:opacity-50"
+                />
+                <button
+                  onClick={() => sendInstruction(input)}
+                  disabled={!input.trim() || aiLoading}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--primary))] text-white transition hover:opacity-90 disabled:opacity-40"
+                >
+                  {aiLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+              <p className="mt-1.5 text-[10px] text-[hsl(var(--muted-foreground))]">
+                Enter ile gönder · Shift+Enter yeni satır
+              </p>
+            </div>
           </aside>
         )}
 
-        {/* Sağ panel — önizleme */}
-        <main className="flex-1 overflow-y-auto bg-[hsl(var(--background))]">
-          {activePage ? (
-            <BlockRenderer blocks={activePage.blocks} />
-          ) : (
-            <div className="flex h-full items-center justify-center text-[hsl(var(--muted-foreground))]">
-              Sayfa bulunamadı
-            </div>
-          )}
+        {/* ── Sağ Panel: Önizleme ── */}
+        <main className="flex-1 overflow-y-auto">
+          {/* Önizleme şeridi */}
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.9)] px-5 py-2 backdrop-blur">
+            <span className="text-xs text-[hsl(var(--muted-foreground))]">
+              Canlı Önizleme
+            </span>
+            {aiLoading && (
+              <span className="flex items-center gap-1.5 text-xs text-[hsl(var(--primary))]">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                AI düzenleniyor...
+              </span>
+            )}
+          </div>
+
+          <div className={`transition-opacity duration-300 ${aiLoading ? "opacity-60" : "opacity-100"}`}>
+            <BlockRenderer blocks={blocks} />
+          </div>
         </main>
       </div>
     </div>
   );
-}
-
-function blockIcon(type: string) {
-  const icons: Record<string, string> = {
-    hero: "🦸", features: "⚡", about: "ℹ️",
-    services: "🛠️", cta: "📣", contact: "📞",
-  };
-  return icons[type] ?? "📄";
-}
-
-function blockLabel(type: string) {
-  const labels: Record<string, string> = {
-    hero: "Hero", features: "Özellikler", about: "Hakkımızda",
-    services: "Hizmetler", cta: "Çağrı", contact: "İletişim",
-  };
-  return labels[type] ?? type;
 }
