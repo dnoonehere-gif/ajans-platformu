@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
-export default function SifremiSifirlaPage() {
+function SifremiSifirlaForm() {
   const router = useRouter();
   const params = useSearchParams();
   const token = params.get("token") ?? "";
@@ -101,5 +101,13 @@ export default function SifremiSifirlaPage() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function SifremiSifirlaPage() {
+  return (
+    <Suspense fallback={<div className="glass rounded-3xl p-8 h-64 animate-pulse" />}>
+      <SifremiSifirlaForm />
+    </Suspense>
   );
 }

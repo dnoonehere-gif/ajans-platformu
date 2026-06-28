@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Star, RefreshCw, Loader2, Unlink, CheckCircle2,
@@ -173,7 +173,7 @@ function PlacesSearch({ brandId, onSynced }: { brandId: string; onSynced: () => 
   );
 }
 
-export default function GooglePage() {
+function GoogleContent() {
   const { activeBrand } = useBrand();
   const searchParams = useSearchParams();
 
@@ -490,5 +490,14 @@ export default function GooglePage() {
         </div>
       )}
     </div>
+  );
+}
+
+
+export default function GooglePage() {
+  return (
+    <Suspense fallback={<div className="p-8"><div className="h-64 animate-pulse rounded-2xl bg-[hsl(var(--muted)/0.3)]" /></div>}>
+      <GoogleContent />
+    </Suspense>
   );
 }
