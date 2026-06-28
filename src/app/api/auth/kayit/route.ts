@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendVerificationEmail, sendWelcomeEmail } from "@/lib/email";
 import { randomBytes } from "crypto";
+import { auditFromRequest } from "@/server/audit/log";
 
 const schema = z.object({
   name: z.string().min(2, "Ad en az 2 karakter olmalı"),
@@ -49,6 +50,10 @@ export async function POST(req: NextRequest) {
   } catch {
     // Mail gönderilemese de kayıt tamamlanır
   }
+
+  auditFromRequest("auth.register", user.id, {
+    entity: "User", entityId: user.id, metadata: { email, name },
+  }).catch(() => null);
 
   return NextResponse.json({ ok: true, userId: user.id }, { status: 201 });
 }

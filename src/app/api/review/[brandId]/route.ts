@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { sendNotification } from "@/server/notifications/send";
 import { sendNegativeReviewAlertEmail } from "@/lib/email";
+import { auditFromRequest } from "@/server/audit/log";
 
 const postSchema = z.object({
   authorName: z.string().optional(),
@@ -64,8 +65,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ bra
     data: { brandId, ...parsed.data },
   });
 
-  // Yorum bildirimi
   const userId = (session.user as { id: string }).id;
+  auditFromRequest("review.create", userId, {
+    entity: "Review", entityId: review.id,
+    metadata: { brandId, rating: parsed.data.rating, source: parsed.data.source },
+  }).catch(() => null);
+
+  // Yorum bildirimi
   const isNegative = parsed.data.rating <= 2;
   await sendNotification({
     userId,

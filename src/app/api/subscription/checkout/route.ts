@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { sendNotification } from "@/server/notifications/send";
 import { sendSubscriptionConfirmEmail } from "@/lib/email";
+import { auditFromRequest } from "@/server/audit/log";
 
 const schema = z.object({
   brandId: z.string(),
@@ -83,6 +84,11 @@ export async function POST(req: NextRequest) {
       endsAt: trialEndsAt?.toISOString(),
     }).catch(() => null);
   }
+
+  auditFromRequest("subscription.create", userId, {
+    entity: "Subscription", entityId: subscription.id,
+    metadata: { brandId, planId: plan.id, planName: plan.name },
+  }).catch(() => null);
 
   // TODO: PayTR / Shopier ödeme bağlantısı oluştur
   const checkoutUrl = null;

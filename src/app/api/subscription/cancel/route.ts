@@ -3,6 +3,7 @@ import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { sendNotification } from "@/server/notifications/send";
 import { sendSubscriptionCancelEmail } from "@/lib/email";
+import { auditFromRequest } from "@/server/audit/log";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -49,6 +50,11 @@ export async function POST(req: NextRequest) {
       endsAt: updated.endsAt?.toISOString(),
     }).catch(() => null);
   }
+
+  auditFromRequest("subscription.cancel", (session.user as { id: string }).id, {
+    entity: "Subscription", entityId: updated.id,
+    metadata: { brandId, planName: updated.plan.name },
+  }).catch(() => null);
 
   return NextResponse.json({ subscription: updated });
 }

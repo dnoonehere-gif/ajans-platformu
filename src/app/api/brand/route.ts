@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth-guard";
+import { auditFromRequest } from "@/server/audit/log";
 
 export async function POST(req: NextRequest) {
   const user = await getAuthUser();
@@ -41,6 +42,10 @@ export async function POST(req: NextRequest) {
       logoUrl:     parsed.data.logoUrl     || null,
     },
   });
+
+  auditFromRequest("brand.create", user.id, {
+    entity: "Brand", entityId: brand.id, metadata: { name: brand.name, slug: brand.slug },
+  }).catch(() => null);
 
   return NextResponse.json({ brand }, { status: 201 });
 }

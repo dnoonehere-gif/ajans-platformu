@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { generateContent } from "@/server/ai/content-generator";
 import { z } from "zod";
 import type { ContentType } from "@prisma/client";
+import { auditFromRequest } from "@/server/audit/log";
 
 const CONTENT_TYPES: ContentType[] = [
   "INSTAGRAM_POST", "REELS_IDEA", "STORY_IDEA", "FACEBOOK_POST", "LINKEDIN_POST",
@@ -57,6 +58,10 @@ export async function POST(req: NextRequest) {
   await prisma.aiUsage.create({
     data: { brandId, feature: "content", model: "claude-sonnet-4-6", tokensIn: 0, tokensOut: 0 },
   });
+
+  auditFromRequest("content.generate", (session.user as { id: string }).id, {
+    entity: "ContentItem", entityId: item.id, metadata: { brandId, type, topic },
+  }).catch(() => null);
 
   return NextResponse.json({ item });
 }

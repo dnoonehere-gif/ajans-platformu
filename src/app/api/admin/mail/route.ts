@@ -3,6 +3,7 @@ import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { sendCustomEmail, sendBulkEmail } from "@/lib/email";
 import { z } from "zod";
+import { auditFromRequest } from "@/server/audit/log";
 
 const schema = z.object({
   subject: z.string().min(1),
@@ -40,6 +41,10 @@ export async function POST(req: NextRequest) {
     const emails = users.map((u) => u.email).filter(Boolean) as string[];
     if (emails.length) { await sendBulkEmail(emails, subject, content); sent = emails.length; }
   }
+
+  auditFromRequest("admin.mail_send", user.id, {
+    metadata: { target, subject, sent },
+  }).catch(() => null);
 
   return NextResponse.json({ ok: true, sent });
 }

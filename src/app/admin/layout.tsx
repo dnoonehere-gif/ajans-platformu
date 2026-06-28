@@ -1,7 +1,7 @@
 import { auth } from "@/server/auth/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, Users, Building2, Package, CreditCard, Brain, Bot, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Building2, Package, CreditCard, Brain, Bot, LogOut, ScrollText } from "lucide-react";
 
 const NAV = [
   { href: "/admin", label: "Genel Bakış", icon: LayoutDashboard, exact: true },
@@ -11,6 +11,7 @@ const NAV = [
   { href: "/admin/odemeler", label: "Ödemeler", icon: CreditCard },
   { href: "/admin/ai", label: "AI Kullanımı", icon: Brain },
   { href: "/admin/chatbot", label: "Chatbot", icon: Bot },
+  { href: "/admin/loglar", label: "Sistem Logları", icon: ScrollText },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
