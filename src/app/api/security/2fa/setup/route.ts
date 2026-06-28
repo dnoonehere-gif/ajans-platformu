@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
-import { generateTotpSecret, getTotpUri, generateQrCodeDataUrl } from "@/server/security/totp";
+import { generateTotpSecret, getTotpUri, generateQrCodeDataUrl, verifyTotp } from "@/server/security/totp";
 import { rateLimit, getRateLimitKey, LIMITS } from "@/server/security/rate-limit";
 import { NextRequest } from "next/server";
 import { auditFromRequest } from "@/server/audit/log";
 
-// GET — yeni secret üret + QR kodu döndür (henüz aktif etme)
 export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
@@ -20,16 +19,14 @@ export async function GET(req: NextRequest) {
   if (user.twoFactorEnabled) return NextResponse.json({ error: "2FA zaten aktif" }, { status: 400 });
 
   const secret = generateTotpSecret();
-  const uri = getTotpUri(user.email!, secret);
+  const uri = await getTotpUri(user.email!, secret);
   const qrCode = await generateQrCodeDataUrl(uri);
 
-  // Secret'i geçici olarak kaydet (doğrulanmamış)
   await prisma.user.update({ where: { id: userId }, data: { twoFactorSecret: secret } });
 
   return NextResponse.json({ secret, qrCode, uri });
 }
 
-// POST — TOTP kodu doğrula ve 2FA'yı aktif et
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
@@ -45,8 +42,7 @@ export async function POST(req: NextRequest) {
   if (!user?.twoFactorSecret) return NextResponse.json({ error: "Önce QR kodu okutun" }, { status: 400 });
   if (user.twoFactorEnabled) return NextResponse.json({ error: "2FA zaten aktif" }, { status: 400 });
 
-  const { verifyTotp } = await import("@/server/security/totp");
-  if (!verifyTotp(token, user.twoFactorSecret)) {
+  if (!(await verifyTotp(token, user.twoFactorSecret))) {
     return NextResponse.json({ error: "Geçersiz kod. Lütfen tekrar deneyin." }, { status: 400 });
   }
 
@@ -56,7 +52,6 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true });
 }
 
-// DELETE — 2FA'yı devre dışı bırak
 export async function DELETE(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
@@ -70,8 +65,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "2FA aktif değil" }, { status: 400 });
   }
 
-  const { verifyTotp } = await import("@/server/security/totp");
-  if (!verifyTotp(token, user.twoFactorSecret)) {
+  if (!(await verifyTotp(token, user.twoFactorSecret))) {
     return NextResponse.json({ error: "Geçersiz kod" }, { status: 400 });
   }
 

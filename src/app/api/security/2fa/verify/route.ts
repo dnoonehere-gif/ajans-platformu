@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "2FA aktif değil" }, { status: 400 });
   }
 
-  if (!verifyTotp(token, user.twoFactorSecret)) {
+  if (!(await verifyTotp(token, user.twoFactorSecret))) {
     auditFromRequest("auth.login", userId, { metadata: { result: "2fa_failed" } }).catch(() => null);
     return NextResponse.json({ error: "Geçersiz kod" }, { status: 400 });
   }
