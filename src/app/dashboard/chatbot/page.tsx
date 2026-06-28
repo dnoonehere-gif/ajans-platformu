@@ -1,52 +1,72 @@
 "use client";
-import { useState, useEffect } from "react";
-import { Bot, Plus, Trash2, Save, MessageSquare, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import {
+  Bot, Plus, Trash2, Save, MessageSquare, Loader2,
+  ChevronDown, ChevronUp, Sparkles, Settings, BookOpen,
+  Copy, Check, Code2, Search, X, ZapIcon,
+} from "lucide-react";
+import { useBrand } from "@/components/dashboard/brand-provider";
+import { ChatWidget } from "@/components/chatbot/chat-widget";
 
-const CATEGORIES = ["ürün", "hizmet", "menü", "sss", "saat", "adres", "kampanya", "diğer"];
+const CATEGORIES = ["sss", "ürün", "hizmet", "menü", "saat", "adres", "kampanya", "fiyat", "iletişim", "diğer"];
+const CAT_COLORS: Record<string, string> = {
+  sss: "bg-blue-500/10 text-blue-400",
+  ürün: "bg-purple-500/10 text-purple-400",
+  hizmet: "bg-teal-500/10 text-teal-400",
+  menü: "bg-orange-500/10 text-orange-400",
+  saat: "bg-yellow-500/10 text-yellow-400",
+  adres: "bg-green-500/10 text-green-400",
+  kampanya: "bg-pink-500/10 text-pink-400",
+  fiyat: "bg-indigo-500/10 text-indigo-400",
+  iletişim: "bg-cyan-500/10 text-cyan-400",
+  diğer: "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]",
+};
 
 interface KnowledgeEntry {
-  id: string;
-  category: string;
-  question?: string | null;
-  content: string;
+  id: string; category: string; question?: string | null; content: string;
 }
-
+interface Message {
+  id: string; role: string; content: string; createdAt: string;
+}
+interface Conversation {
+  id: string; createdAt: string; visitorId?: string | null; messages: Message[];
+}
 interface Chatbot {
-  id: string;
-  brandId: string;
-  name: string;
-  systemPrompt?: string | null;
-  isActive: boolean;
+  id: string; name: string; systemPrompt?: string | null; isActive: boolean;
   knowledgeBase: KnowledgeEntry[];
 }
 
-interface Conversation {
-  id: string;
-  createdAt: string;
-  messages: { role: string; content: string; createdAt: string }[];
-}
+type Tab = "settings" | "knowledge" | "conversations" | "embed";
 
 export default function ChatbotPage() {
-  const [brandId, setBrandId] = useState("");
+  const { activeBrand } = useBrand();
+  const brandId = activeBrand?.id ?? "";
+
   const [chatbot, setChatbot] = useState<Chatbot | null>(null);
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState<"settings" | "knowledge" | "conversations">("settings");
+  const [tab, setTab] = useState<Tab>("settings");
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [convLoading, setConvLoading] = useState(false);
   const [openConv, setOpenConv] = useState<string | null>(null);
+  const [kSearch, setKSearch] = useState("");
+  const [kCatFilter, setKCatFilter] = useState("all");
+  const [copied, setCopied] = useState<string | null>(null);
+  const [previewKey, setPreviewKey] = useState(0);
 
-  // Ayar formu
-  const [name, setName] = useState("");
+  // Form state
+  const [name, setName] = useState("Asistan");
   const [systemPrompt, setSystemPrompt] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  // Bilgi girişi
+  // Knowledge form
   const [kCategory, setKCategory] = useState("sss");
   const [kQuestion, setKQuestion] = useState("");
   const [kContent, setKContent] = useState("");
   const [kLoading, setKLoading] = useState(false);
 
-  async function loadChatbot() {
-    if (!brandId.trim()) return;
+  const loadChatbot = useCallback(async () => {
+    if (!brandId) return;
     setLoading(true);
     const res = await fetch(`/api/chatbot/${brandId}`);
     const data = await res.json();
@@ -55,26 +75,46 @@ export default function ChatbotPage() {
       setName(data.chatbot.name);
       setSystemPrompt(data.chatbot.systemPrompt ?? "");
       setIsActive(data.chatbot.isActive);
+    } else {
+      setChatbot(null);
     }
     setLoading(false);
-  }
+  }, [brandId]);
+
+  useEffect(() => { loadChatbot(); }, [loadChatbot]);
+
+  const loadConversations = useCallback(async () => {
+    if (!brandId) return;
+    setConvLoading(true);
+    const res = await fetch(`/api/chatbot/${brandId}/conversations`);
+    const data = await res.json();
+    if (data.conversations) setConversations(data.conversations);
+    setConvLoading(false);
+  }, [brandId]);
+
+  useEffect(() => {
+    if (tab === "conversations" && chatbot) loadConversations();
+  }, [tab, chatbot, loadConversations]);
 
   async function saveSettings(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
+    setSaving(true);
     const res = await fetch("/api/chatbot/setup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ brandId, name, systemPrompt, isActive }),
     });
     const data = await res.json();
-    if (data.chatbot) setChatbot((c) => c ? { ...c, ...data.chatbot } : data.chatbot);
-    setLoading(false);
+    if (data.chatbot) {
+      await loadChatbot();
+      setPreviewKey((k) => k + 1);
+    }
+    setSaving(false);
   }
 
   async function addKnowledge(e: React.FormEvent) {
     e.preventDefault();
-    if (!chatbot) return;
+    if (!chatbot || !kContent.trim()) return;
     setKLoading(true);
     const res = await fetch(`/api/chatbot/${brandId}/knowledge`, {
       method: "POST",
@@ -95,211 +135,456 @@ export default function ChatbotPage() {
     setChatbot((c) => c ? { ...c, knowledgeBase: c.knowledgeBase.filter((k) => k.id !== id) } : c);
   }
 
-  async function loadConversations() {
-    const res = await fetch(`/api/chatbot/${brandId}/conversations`);
-    const data = await res.json();
-    if (data.conversations) setConversations(data.conversations);
+  function copyText(text: string, key: string) {
+    navigator.clipboard.writeText(text);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 2000);
   }
 
-  useEffect(() => {
-    if (tab === "conversations" && chatbot) loadConversations();
-  }, [tab, chatbot]);
+  const filteredKnowledge = chatbot?.knowledgeBase.filter((k) => {
+    const matchCat = kCatFilter === "all" || k.category === kCatFilter;
+    const matchSearch = !kSearch || k.content.toLowerCase().includes(kSearch.toLowerCase()) || k.question?.toLowerCase().includes(kSearch.toLowerCase());
+    return matchCat && matchSearch;
+  }) ?? [];
+
+  const totalMessages = conversations.reduce((sum, c) => sum + c.messages.length, 0);
+  const avgMessages = conversations.length ? Math.round(totalMessages / conversations.length) : 0;
+  const primaryColor = activeBrand?.primaryColor ?? "#6366f1";
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+
+  if (!activeBrand) return (
+    <div className="flex h-64 items-center justify-center text-[hsl(var(--muted-foreground))]">
+      Önce bir marka seçin
+    </div>
+  );
+
+  const embedIframe = `<iframe\n  src="${origin}/chat/${brandId}"\n  width="400"\n  height="600"\n  frameborder="0"\n  style="border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15)"\n></iframe>`;
+  const embedScript = `<script>\n(function() {\n  var btn = document.createElement('button');\n  btn.innerHTML = '💬';\n  btn.style.cssText = 'position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:${primaryColor};color:white;font-size:24px;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:9999';\n  var frame = document.createElement('iframe');\n  frame.src = '${origin}/chat/${brandId}';\n  frame.style.cssText = 'position:fixed;bottom:96px;right:24px;width:380px;height:560px;border:none;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);z-index:9998;display:none';\n  var open = false;\n  btn.onclick = function() { open=!open; frame.style.display=open?'block':'none'; };\n  document.body.appendChild(btn);\n  document.body.appendChild(frame);\n})();\n<\/script>`;
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-12">
-      <div className="mb-8 flex items-center gap-3">
-        <Bot className="h-8 w-8 text-[hsl(var(--primary))]" />
-        <div>
-          <h1 className="text-2xl font-bold">AI Chatbot</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">Markana özel chatbot kur, bilgi tabanı ekle, konuşmaları izle.</p>
-        </div>
-      </div>
+    <div className="flex h-[calc(100vh-64px)] overflow-hidden">
 
-      {/* Marka ID girişi */}
-      {!chatbot && (
-        <div className="glass mb-6 flex gap-2 rounded-2xl p-5">
-          <input
-            type="text"
-            placeholder="Marka ID gir..."
-            value={brandId}
-            onChange={(e) => setBrandId(e.target.value)}
-            className="flex-1 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary))] transition"
-          />
-          <button
-            onClick={loadChatbot}
-            disabled={loading}
-            className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Yükle"}
-          </button>
-        </div>
-      )}
+      {/* Sol Panel */}
+      <div className="flex w-full flex-col overflow-y-auto xl:w-[calc(100%-400px)]">
+        <div className="flex-1 space-y-5 p-6 lg:p-8">
 
-      {chatbot && (
-        <>
-          {/* Tab bar */}
-          <div className="mb-6 flex gap-1 rounded-xl bg-[hsl(var(--muted)/0.5)] p-1">
-            {(["settings", "knowledge", "conversations"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${tab === t ? "bg-[hsl(var(--background))] shadow-sm" : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"}`}
-              >
-                {t === "settings" ? "Ayarlar" : t === "knowledge" ? "Bilgi Tabanı" : "Konuşmalar"}
-              </button>
-            ))}
-          </div>
-
-          {/* AYARLAR */}
-          {tab === "settings" && (
-            <form onSubmit={saveSettings} className="glass rounded-2xl p-6 space-y-4">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">Bot Adı</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary))] transition"
-                />
+          {/* Header */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${primaryColor}22` }}>
+                <Bot className="h-5 w-5" style={{ color: primaryColor }} />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium">Özel Sistem Talimatı</label>
-                <textarea
-                  rows={5}
-                  value={systemPrompt}
-                  onChange={(e) => setSystemPrompt(e.target.value)}
-                  placeholder="Botun nasıl davranmasını istiyorsun? Tonlama, kısıtlamalar, özel talimatlar..."
-                  className="w-full resize-none rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary))] transition"
-                />
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsActive(!isActive)}
-                  className={`relative h-6 w-11 rounded-full transition ${isActive ? "bg-[hsl(var(--primary))]" : "bg-[hsl(var(--muted))]"}`}
-                >
-                  <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${isActive ? "left-5" : "left-0.5"}`} />
-                </button>
-                <span className="text-sm">{isActive ? "Aktif" : "Pasif"}</span>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-              >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                Kaydet
-              </button>
-            </form>
-          )}
-
-          {/* BİLGİ TABANI */}
-          {tab === "knowledge" && (
-            <div className="space-y-4">
-              <form onSubmit={addKnowledge} className="glass rounded-2xl p-6 space-y-3">
-                <p className="text-sm font-semibold">Yeni Bilgi Ekle</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="mb-1 block text-xs text-[hsl(var(--muted-foreground))]">Kategori</label>
-                    <select
-                      value={kCategory}
-                      onChange={(e) => setKCategory(e.target.value)}
-                      className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition"
-                    >
-                      {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs text-[hsl(var(--muted-foreground))]">Soru (opsiyonel)</label>
-                    <input
-                      type="text"
-                      value={kQuestion}
-                      onChange={(e) => setKQuestion(e.target.value)}
-                      placeholder="Fiyatlarınız nedir?"
-                      className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs text-[hsl(var(--muted-foreground))]">İçerik</label>
-                  <textarea
-                    rows={3}
-                    required
-                    value={kContent}
-                    onChange={(e) => setKContent(e.target.value)}
-                    placeholder="Bu sorunun cevabı veya bilgi içeriği..."
-                    className="w-full resize-none rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={kLoading}
-                  className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-                >
-                  {kLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                  Ekle
-                </button>
-              </form>
-
-              <div className="space-y-2">
-                {chatbot.knowledgeBase.length === 0 && (
-                  <p className="py-8 text-center text-sm text-[hsl(var(--muted-foreground))]">Henüz bilgi eklenmedi.</p>
-                )}
-                {chatbot.knowledgeBase.map((k) => (
-                  <div key={k.id} className="glass flex items-start gap-3 rounded-xl p-4">
-                    <span className="rounded-lg bg-[hsl(var(--primary)/0.15)] px-2 py-0.5 text-xs font-medium text-[hsl(var(--primary))]">{k.category}</span>
-                    <div className="flex-1 min-w-0">
-                      {k.question && <p className="text-xs font-medium text-[hsl(var(--muted-foreground))] mb-0.5">{k.question}</p>}
-                      <p className="text-sm truncate">{k.content}</p>
-                    </div>
-                    <button
-                      onClick={() => deleteKnowledge(k.id)}
-                      className="shrink-0 rounded-lg p-1.5 text-[hsl(var(--muted-foreground))] hover:bg-red-500/10 hover:text-red-400 transition"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
+                <h1 className="text-2xl font-bold">AI Chatbot</h1>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">{activeBrand.name} · {chatbot ? chatbot.name : "Kurulum gerekli"}</p>
               </div>
             </div>
-          )}
+            {chatbot && (
+              <span className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
+                chatbot.isActive ? "bg-green-500/10 text-green-400" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
+              }`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${chatbot.isActive ? "bg-green-400" : "bg-[hsl(var(--muted-foreground))]"}`} />
+                {chatbot.isActive ? "Aktif" : "Pasif"}
+              </span>
+            )}
+          </div>
 
-          {/* KONUŞMALAR */}
-          {tab === "conversations" && (
-            <div className="space-y-2">
-              {conversations.length === 0 && (
-                <p className="py-8 text-center text-sm text-[hsl(var(--muted-foreground))]">Henüz konuşma yok.</p>
-              )}
-              {conversations.map((conv) => (
-                <div key={conv.id} className="glass rounded-xl overflow-hidden">
-                  <button
-                    onClick={() => setOpenConv(openConv === conv.id ? null : conv.id)}
-                    className="flex w-full items-center justify-between px-4 py-3 text-sm"
-                  >
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4 text-[hsl(var(--primary))]" />
-                      <span className="font-medium">{conv.messages.length} mesaj</span>
-                      <span className="text-[hsl(var(--muted-foreground))]">— {new Date(conv.createdAt).toLocaleDateString("tr-TR")}</span>
-                    </div>
-                    {openConv === conv.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                  </button>
-                  {openConv === conv.id && (
-                    <div className="border-t border-[hsl(var(--border))] px-4 py-3 space-y-2 max-h-64 overflow-y-auto">
-                      {conv.messages.map((msg, i) => (
-                        <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[80%] rounded-xl px-3 py-2 text-xs ${msg.role === "user" ? "bg-[hsl(var(--primary))] text-white" : "bg-[hsl(var(--muted))]"}`}>
-                            {msg.content}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+          {/* Stats */}
+          {chatbot && (
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Konuşma", value: conversations.length || chatbot.id ? "—" : "0", icon: MessageSquare, color: "text-blue-400" },
+                { label: "Bilgi Girişi", value: chatbot.knowledgeBase.length, icon: BookOpen, color: "text-teal-400" },
+                { label: "Ort. Mesaj", value: avgMessages || "—", icon: ZapIcon, color: "text-purple-400" },
+              ].map((s) => (
+                <div key={s.label} className="glass rounded-xl p-4">
+                  <s.icon className={`mb-1.5 h-4 w-4 ${s.color}`} />
+                  <p className="text-xl font-bold">{s.value}</p>
+                  <p className="text-xs text-[hsl(var(--muted-foreground))]">{s.label}</p>
                 </div>
               ))}
             </div>
           )}
-        </>
-      )}
+
+          {/* Tabs */}
+          <div className="flex gap-1 rounded-xl bg-[hsl(var(--muted)/0.5)] p-1">
+            {([
+              { key: "settings", label: "Ayarlar", icon: Settings },
+              { key: "knowledge", label: "Bilgi Tabanı", icon: BookOpen },
+              { key: "conversations", label: "Konuşmalar", icon: MessageSquare },
+              { key: "embed", label: "Entegrasyon", icon: Code2 },
+            ] as { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[]).map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition ${
+                  tab === t.key ? "bg-[hsl(var(--background))] shadow-sm text-[hsl(var(--foreground))]" : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+                }`}
+              >
+                <t.icon className="h-3.5 w-3.5" />{t.label}
+              </button>
+            ))}
+          </div>
+
+          {loading ? (
+            <div className="flex h-32 items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-[hsl(var(--primary))]" />
+            </div>
+          ) : (
+            <>
+              {/* AYARLAR */}
+              {tab === "settings" && (
+                <form onSubmit={saveSettings} className="glass space-y-5 rounded-2xl p-6">
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium">Bot Adı</label>
+                    <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Asistan, Yardımcı, Mia..."
+                      className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm outline-none transition focus:border-[hsl(var(--primary))]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Sistem Talimatı</label>
+                    <p className="mb-2 text-xs text-[hsl(var(--muted-foreground))]">
+                      Botun kişiliğini, tonunu ve davranışını özelleştir. Marka bilgi tabanı otomatik eklenir.
+                    </p>
+                    <textarea
+                      rows={5}
+                      value={systemPrompt}
+                      onChange={(e) => setSystemPrompt(e.target.value)}
+                      placeholder={`Örnek: Samimi ve arkadaşça bir ton kullan. Ürün fiyatlarını asla söyleme, müşteriyi kasaya yönlendir. Şikayet geldiğinde özür dile ve müdür ile görüşmesini öner.`}
+                      className="w-full resize-none rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-3 text-sm outline-none transition focus:border-[hsl(var(--primary))] placeholder:text-[hsl(var(--muted-foreground))]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-3 block text-sm font-medium">Chatbot Durumu</label>
+                    <button
+                      type="button"
+                      onClick={() => setIsActive(!isActive)}
+                      className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition ${
+                        isActive ? "border-green-500/30 bg-green-500/5" : "border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)]"
+                      }`}
+                    >
+                      <div className={`relative h-5 w-9 rounded-full transition ${isActive ? "bg-green-500" : "bg-[hsl(var(--muted))]"}`}>
+                        <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${isActive ? "left-[18px]" : "left-0.5"}`} />
+                      </div>
+                      <span className="text-sm font-medium">{isActive ? "Aktif — ziyaretçiler chatbot'u kullanabilir" : "Pasif — chatbot devre dışı"}</span>
+                    </button>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                    style={{ background: primaryColor }}
+                  >
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {chatbot ? "Kaydet" : "Chatbot Oluştur"}
+                  </button>
+                </form>
+              )}
+
+              {/* BİLGİ TABANI */}
+              {tab === "knowledge" && (
+                <div className="space-y-4">
+                  {!chatbot ? (
+                    <div className="rounded-xl border border-dashed border-[hsl(var(--border))] p-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+                      Önce Ayarlar sekmesinden chatbot oluşturun.
+                    </div>
+                  ) : (
+                    <>
+                      <form onSubmit={addKnowledge} className="glass rounded-2xl p-5 space-y-3">
+                        <p className="text-sm font-semibold">Yeni Bilgi Ekle</p>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="mb-1 block text-xs text-[hsl(var(--muted-foreground))]">Kategori</label>
+                            <select
+                              value={kCategory}
+                              onChange={(e) => setKCategory(e.target.value)}
+                              className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition"
+                            >
+                              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="mb-1 block text-xs text-[hsl(var(--muted-foreground))]">Soru (opsiyonel)</label>
+                            <input
+                              value={kQuestion}
+                              onChange={(e) => setKQuestion(e.target.value)}
+                              placeholder="Çalışma saatleriniz nedir?"
+                              className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition"
+                            />
+                          </div>
+                        </div>
+                        <textarea
+                          rows={3}
+                          required
+                          value={kContent}
+                          onChange={(e) => setKContent(e.target.value)}
+                          placeholder="Hafta içi 09:00 – 22:00, Cumartesi-Pazar 10:00 – 23:00 arası açığız."
+                          className="w-full resize-none rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary))] transition placeholder:text-[hsl(var(--muted-foreground))]"
+                        />
+                        <button
+                          type="submit"
+                          disabled={kLoading}
+                          className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                          style={{ background: primaryColor }}
+                        >
+                          {kLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                          Ekle
+                        </button>
+                      </form>
+
+                      {chatbot.knowledgeBase.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="relative flex-1 min-w-[180px]">
+                            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[hsl(var(--muted-foreground))]" />
+                            <input
+                              value={kSearch}
+                              onChange={(e) => setKSearch(e.target.value)}
+                              placeholder="Bilgi ara..."
+                              className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] py-2 pl-9 pr-4 text-sm outline-none focus:border-[hsl(var(--primary))] transition"
+                            />
+                            {kSearch && (
+                              <button onClick={() => setKSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+                                <X className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" />
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            <button
+                              onClick={() => setKCatFilter("all")}
+                              className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${kCatFilter === "all" ? "text-white" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))]"}`}
+                              style={kCatFilter === "all" ? { background: primaryColor } : {}}
+                            >
+                              Tümü ({chatbot.knowledgeBase.length})
+                            </button>
+                            {CATEGORIES.filter((c) => chatbot.knowledgeBase.some((k) => k.category === c)).map((c) => (
+                              <button
+                                key={c}
+                                onClick={() => setKCatFilter(c)}
+                                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${kCatFilter === c ? "text-white" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))]"}`}
+                                style={kCatFilter === c ? { background: primaryColor } : {}}
+                              >{c}</button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-2">
+                        {filteredKnowledge.length === 0 && (
+                          <div className="flex flex-col items-center gap-2 py-10 text-center">
+                            <BookOpen className="h-8 w-8 text-[hsl(var(--muted-foreground)/0.3)]" />
+                            <p className="text-sm text-[hsl(var(--muted-foreground))]">
+                              {kSearch || kCatFilter !== "all" ? "Eşleşen kayıt yok" : "Henüz bilgi eklenmedi"}
+                            </p>
+                          </div>
+                        )}
+                        {filteredKnowledge.map((k) => (
+                          <div key={k.id} className="glass group flex items-start gap-3 rounded-xl p-4">
+                            <span className={`mt-0.5 shrink-0 rounded-lg px-2 py-0.5 text-xs font-medium ${CAT_COLORS[k.category] ?? CAT_COLORS["diğer"]}`}>
+                              {k.category}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              {k.question && (
+                                <p className="mb-0.5 text-xs font-medium text-[hsl(var(--muted-foreground))]">S: {k.question}</p>
+                              )}
+                              <p className="text-sm leading-relaxed">{k.content}</p>
+                            </div>
+                            <button
+                              onClick={() => deleteKnowledge(k.id)}
+                              className="shrink-0 rounded-lg p-1.5 opacity-0 text-[hsl(var(--muted-foreground))] transition group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-400"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* KONUŞMALAR */}
+              {tab === "conversations" && (
+                <div className="space-y-3">
+                  {conversations.length > 0 && (
+                    <div className="flex gap-6 rounded-xl border border-[hsl(var(--border))] px-5 py-3">
+                      <div>
+                        <span className="text-lg font-bold">{conversations.length}</span>
+                        <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">Konuşma</span>
+                      </div>
+                      <div className="w-px bg-[hsl(var(--border))]" />
+                      <div>
+                        <span className="text-lg font-bold">{totalMessages}</span>
+                        <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">Mesaj</span>
+                      </div>
+                      <div className="w-px bg-[hsl(var(--border))]" />
+                      <div>
+                        <span className="text-lg font-bold">{avgMessages}</span>
+                        <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">Ort. Mesaj/Konuşma</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {convLoading ? (
+                    <div className="flex h-32 items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-[hsl(var(--primary))]" />
+                    </div>
+                  ) : conversations.length === 0 ? (
+                    <div className="flex flex-col items-center gap-3 py-16 text-center">
+                      <MessageSquare className="h-10 w-10 text-[hsl(var(--muted-foreground)/0.3)]" />
+                      <p className="text-sm font-semibold">Henüz konuşma yok</p>
+                      <p className="text-xs text-[hsl(var(--muted-foreground))]">Chatbot'u sitenize ekleyin, konuşmalar burada görünür</p>
+                    </div>
+                  ) : (
+                    conversations.map((conv) => {
+                      const firstMsg = conv.messages.find((m) => m.role === "user");
+                      const date = new Date(conv.createdAt).toLocaleDateString("tr-TR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+                      return (
+                        <div key={conv.id} className="glass overflow-hidden rounded-xl">
+                          <button
+                            onClick={() => setOpenConv(openConv === conv.id ? null : conv.id)}
+                            className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-[hsl(var(--accent)/0.5)]"
+                          >
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: `${primaryColor}18` }}>
+                              <MessageSquare className="h-4 w-4" style={{ color: primaryColor }} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="truncate text-sm font-medium">{firstMsg?.content ?? "Konuşma"}</p>
+                              <p className="text-xs text-[hsl(var(--muted-foreground))]">{date} · {conv.messages.length} mesaj</p>
+                            </div>
+                            {openConv === conv.id ? <ChevronUp className="h-4 w-4 shrink-0 text-[hsl(var(--muted-foreground))]" /> : <ChevronDown className="h-4 w-4 shrink-0 text-[hsl(var(--muted-foreground))]" />}
+                          </button>
+                          {openConv === conv.id && (
+                            <div className="max-h-72 space-y-2 overflow-y-auto border-t border-[hsl(var(--border))] px-4 py-4">
+                              {conv.messages.map((msg, i) => (
+                                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                                  <div
+                                    className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-xs leading-relaxed ${
+                                      msg.role === "user" ? "text-white rounded-br-sm" : "bg-[hsl(var(--muted))] rounded-bl-sm"
+                                    }`}
+                                    style={msg.role === "user" ? { background: primaryColor } : {}}
+                                  >
+                                    {msg.content}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+
+              {/* ENTEGRASYON */}
+              {tab === "embed" && (
+                <div className="space-y-4">
+                  {!chatbot ? (
+                    <div className="rounded-xl border border-dashed border-[hsl(var(--border))] p-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+                      Önce Ayarlar sekmesinden chatbot oluşturun.
+                    </div>
+                  ) : (
+                    <>
+                      {/* Direkt link */}
+                      <div className="glass rounded-2xl p-5 space-y-3">
+                        <p className="text-sm font-semibold">Direkt Bağlantı</p>
+                        <p className="text-xs text-[hsl(var(--muted-foreground))]">
+                          WhatsApp, sosyal medya veya QR kod olarak paylaşın.
+                        </p>
+                        <div className="flex items-center gap-2 rounded-xl bg-[hsl(var(--muted)/0.5)] px-4 py-3">
+                          <code className="flex-1 truncate text-xs">{origin}/chat/{brandId}</code>
+                          <button
+                            onClick={() => copyText(`${origin}/chat/${brandId}`, "link")}
+                            className="shrink-0 flex items-center gap-1 rounded-lg border border-[hsl(var(--border))] px-2.5 py-1.5 text-xs transition hover:bg-[hsl(var(--accent))]"
+                          >
+                            {copied === "link" ? <><Check className="h-3 w-3 text-green-400" /> Kopyalandı</> : <><Copy className="h-3 w-3" /> Kopyala</>}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* iFrame */}
+                      <div className="glass rounded-2xl p-5 space-y-3">
+                        <p className="text-sm font-semibold">iFrame ile Göm</p>
+                        <p className="text-xs text-[hsl(var(--muted-foreground))]">Web sitenizin HTML'ine yapıştırın.</p>
+                        <div className="relative rounded-xl bg-[hsl(var(--muted)/0.5)] p-4">
+                          <pre className="overflow-x-auto text-xs leading-relaxed">{embedIframe}</pre>
+                          <button
+                            onClick={() => copyText(embedIframe, "iframe")}
+                            className="absolute right-3 top-3 flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2.5 py-1.5 text-xs font-medium transition hover:bg-[hsl(var(--accent))]"
+                          >
+                            {copied === "iframe" ? <><Check className="h-3 w-3 text-green-400" /> Kopyalandı</> : <><Copy className="h-3 w-3" /> Kopyala</>}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Floating script */}
+                      <div className="glass rounded-2xl p-5 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold">Yüzen Buton</p>
+                          <span className="rounded-full bg-[hsl(var(--primary)/0.15)] px-2 py-0.5 text-[10px] font-semibold text-[hsl(var(--primary))]">Tavsiye</span>
+                        </div>
+                        <p className="text-xs text-[hsl(var(--muted-foreground))]">
+                          Sağ alt köşede sohbet balonu. &lt;/body&gt; etiketinden önce yapıştırın.
+                        </p>
+                        <div className="relative rounded-xl bg-[hsl(var(--muted)/0.5)] p-4">
+                          <pre className="overflow-x-auto whitespace-pre-wrap text-xs leading-relaxed">{embedScript}</pre>
+                          <button
+                            onClick={() => copyText(embedScript, "script")}
+                            className="absolute right-3 top-3 flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2.5 py-1.5 text-xs font-medium transition hover:bg-[hsl(var(--accent))]"
+                          >
+                            {copied === "script" ? <><Check className="h-3 w-3 text-green-400" /> Kopyalandı</> : <><Copy className="h-3 w-3" /> Kopyala</>}
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Sağ Panel — Live Preview */}
+      <div className="hidden xl:flex xl:w-[400px] xl:flex-col xl:border-l xl:border-[hsl(var(--border))]">
+        <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-5 py-3">
+          <p className="text-sm font-semibold">Canlı Önizleme</p>
+          <button
+            onClick={() => setPreviewKey((k) => k + 1)}
+            className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] px-2.5 py-1.5 text-xs text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))]"
+          >
+            <Sparkles className="h-3 w-3" /> Sıfırla
+          </button>
+        </div>
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {chatbot && chatbot.isActive ? (
+            <ChatWidget
+              key={previewKey}
+              brandId={brandId}
+              botName={chatbot.name}
+              primaryColor={primaryColor}
+              embedded
+            />
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: `${primaryColor}15` }}>
+                <Bot className="h-8 w-8" style={{ color: primaryColor }} />
+              </div>
+              <p className="text-sm font-semibold">{chatbot ? "Chatbot pasif" : "Chatbot kurulmadı"}</p>
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">
+                {chatbot ? "Ayarlar sekmesinden aktif hale getirin" : "Ayarlar sekmesinden chatbot oluşturun"}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 }
