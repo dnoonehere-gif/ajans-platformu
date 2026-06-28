@@ -1,0 +1,45 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/server/auth/auth";
+import { prisma } from "@/lib/prisma";
+import { sendCustomEmail, sendBulkEmail } from "@/lib/email";
+import { z } from "zod";
+
+const schema = z.object({
+  subject: z.string().min(1),
+  content: z.string().min(1),
+  target: z.enum(["all", "user", "role"]).default("all"),
+  userId: z.string().optional(),
+  role: z.string().optional(),
+});
+
+export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  const user = session.user as { id: string; role?: string };
+  if (user.role !== "SUPER_ADMIN" && user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Yetersiz yetki" }, { status: 403 });
+  }
+
+  const body = await req.json();
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
+
+  const { subject, content, target, userId, role } = parsed.data;
+
+  let sent = 0;
+
+  if (target === "user" && userId) {
+    const u = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    if (u?.email) { await sendCustomEmail(u.email, subject, content); sent = 1; }
+  } else if (target === "role" && role) {
+    const users = await prisma.user.findMany({ where: { role: role as never }, select: { email: true } });
+    const emails = users.map((u) => u.email).filter(Boolean) as string[];
+    if (emails.length) { await sendBulkEmail(emails, subject, content); sent = emails.length; }
+  } else {
+    const users = await prisma.user.findMany({ select: { email: true } });
+    const emails = users.map((u) => u.email).filter(Boolean) as string[];
+    if (emails.length) { await sendBulkEmail(emails, subject, content); sent = emails.length; }
+  }
+
+  return NextResponse.json({ ok: true, sent });
+}

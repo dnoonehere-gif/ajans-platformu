@@ -3,6 +3,7 @@ import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { sendNotification } from "@/server/notifications/send";
+import { sendNegativeReviewAlertEmail } from "@/lib/email";
 
 const postSchema = z.object({
   authorName: z.string().optional(),
@@ -76,6 +77,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ bra
     body: parsed.data.text.slice(0, 120),
     data: { reviewId: review.id, rating: parsed.data.rating, source: parsed.data.source },
   });
+
+  if (isNegative) {
+    const dbUser = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+    if (dbUser?.email) {
+      sendNegativeReviewAlertEmail(dbUser.email, {
+        brandName: brand.name,
+        rating: parsed.data.rating,
+        reviewText: parsed.data.text,
+        reviewId: review.id,
+      }).catch(() => null);
+    }
+  }
 
   return NextResponse.json({ review });
 }

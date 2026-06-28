@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Users, Building2, MessageSquare, Star, Brain, TrendingUp } from "lucide-react";
+import { MailSender } from "@/components/admin/mail-sender";
 
 export default async function AdminPage() {
   const [
@@ -127,6 +128,11 @@ export default async function AdminPage() {
             })}
           </div>
         </div>
+      </div>
+
+      {/* Mail gönderim paneli */}
+      <div className="mt-6 max-w-lg">
+        <MailSender />
       </div>
     </div>
   );

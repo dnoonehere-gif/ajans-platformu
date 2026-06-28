@@ -3,6 +3,7 @@ import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { sendNotification } from "@/server/notifications/send";
+import { sendSubscriptionConfirmEmail } from "@/lib/email";
 
 const schema = z.object({
   brandId: z.string(),
@@ -71,6 +72,17 @@ export async function POST(req: NextRequest) {
     body: `${plan.trialDays} günlük ücretsiz denemeniz başladı. İyi kullanımlar!`,
     data: { planId: plan.id, planName: plan.name, subscriptionId: subscription.id },
   });
+
+  // Abonelik onay maili
+  const dbUser = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } });
+  if (dbUser?.email) {
+    sendSubscriptionConfirmEmail(dbUser.email, {
+      name: dbUser.name ?? "Kullanıcı",
+      planName: plan.name,
+      trialDays: plan.trialDays,
+      endsAt: trialEndsAt?.toISOString(),
+    }).catch(() => null);
+  }
 
   // TODO: PayTR / Shopier ödeme bağlantısı oluştur
   const checkoutUrl = null;

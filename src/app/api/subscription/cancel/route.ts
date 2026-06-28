@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { sendNotification } from "@/server/notifications/send";
+import { sendSubscriptionCancelEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -39,6 +40,15 @@ export async function POST(req: NextRequest) {
       ? `${new Date(updated.endsAt).toLocaleDateString("tr-TR")} tarihine kadar kullanmaya devam edebilirsiniz.`
       : "Aboneliğiniz iptal edildi.",
   });
+
+  const dbUser = await prisma.user.findUnique({ where: { id: (session.user as { id: string }).id }, select: { email: true, name: true } });
+  if (dbUser?.email) {
+    sendSubscriptionCancelEmail(dbUser.email, {
+      name: dbUser.name ?? "Kullanıcı",
+      planName: updated.plan.name,
+      endsAt: updated.endsAt?.toISOString(),
+    }).catch(() => null);
+  }
 
   return NextResponse.json({ subscription: updated });
 }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { sendVerificationEmail } from "@/lib/email";
+import { sendVerificationEmail, sendWelcomeEmail } from "@/lib/email";
 import { randomBytes } from "crypto";
 
 const schema = z.object({
@@ -42,6 +42,10 @@ export async function POST(req: NextRequest) {
 
   try {
     await sendVerificationEmail(email, token);
+    // Doğrulama sonrası hoş geldin maili için token'ı kaydettik,
+    // welcome mail doğrulamadan sonra /mail-dogrulama route'unda gönderilebilir.
+    // Ancak UX iyileştirmesi: hemen de gönderebiliriz.
+    sendWelcomeEmail(email, name).catch(() => null);
   } catch {
     // Mail gönderilemese de kayıt tamamlanır
   }
