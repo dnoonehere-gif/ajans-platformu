@@ -18,7 +18,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ bran
   const url = `${origin}/qr/${qr.slug}`;
   const png = await generateQrPng(url);
 
-  return new NextResponse(png, {
+  return new NextResponse(png as unknown as BodyInit, {
     headers: {
       "Content-Type": "image/png",
       "Content-Disposition": `attachment; filename="qr-${qr.slug}.png"`,

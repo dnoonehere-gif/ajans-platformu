@@ -138,20 +138,20 @@ function ContactBlock({ data }: { data: Record<string, unknown> }) {
         {data.phone && (
           <p className="text-lg">
             📞{" "}
-            <a href={`tel:${data.phone}`} className="hover:text-[hsl(var(--primary))]">
-              {data.phone as string}
+            <a href={`tel:${String(data.phone)}`} className="hover:text-[hsl(var(--primary))]">
+              {String(data.phone)}
             </a>
           </p>
         )}
         {data.email && (
           <p className="text-lg">
             ✉️{" "}
-            <a href={`mailto:${data.email}`} className="hover:text-[hsl(var(--primary))]">
-              {data.email as string}
+            <a href={`mailto:${String(data.email)}`} className="hover:text-[hsl(var(--primary))]">
+              {String(data.email)}
             </a>
           </p>
         )}
-        {data.address && <p className="text-lg">📍 {data.address as string}</p>}
+        {data.address && <p className="text-lg">📍 {String(data.address)}</p>}
       </div>
     </section>
   );

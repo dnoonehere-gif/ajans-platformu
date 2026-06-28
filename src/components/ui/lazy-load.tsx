@@ -55,7 +55,7 @@ export function CardSkeleton({ rows = 3 }: { rows?: number }) {
     <div className="glass rounded-2xl p-5 space-y-3">
       <Skeleton className="h-4 w-1/3" />
       {Array.from({ length: rows }).map((_, i) => (
-        <Skeleton key={i} className="h-3 w-full" style={{ width: `${70 + Math.random() * 30}%` }} />
+        <div key={i} className={`animate-pulse rounded-lg bg-[hsl(var(--muted)/0.6)] h-3`} style={{ width: `${70 + Math.random() * 30}%` }} />
       ))}
     </div>
   );
@@ -89,8 +89,7 @@ export function ChartSkeleton({ height = "h-48" }: { height?: string }) {
       <Skeleton className="h-4 w-1/4 mb-4" />
       <div className="flex items-end gap-2 h-32">
         {Array.from({ length: 12 }).map((_, i) => (
-          <Skeleton key={i} className="flex-1 rounded-sm"
-            style={{ height: `${30 + Math.random() * 70}%` }} />
+          <div key={i} className="animate-pulse rounded-sm bg-[hsl(var(--muted)/0.6)] flex-1" style={{ height: `${30 + Math.random() * 70}%` }} />
         ))}
       </div>
     </div>

@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     await sendNotification({ userId, type: type as never, title, body: notifBody });
     count = 1;
   } else if (target === "role" && role) {
-    const users = await prisma.user.findMany({ where: { role: role as never }, select: { id: true } });
+    const users = await prisma.user.findMany({ where: { globalRole: role as never }, select: { id: true } });
     const ids = users.map((u) => u.id);
     if (ids.length) await sendNotificationToMany(ids, { type: type as never, title, body: notifBody });
     count = ids.length;

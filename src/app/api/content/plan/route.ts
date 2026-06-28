@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       type: "CONTENT_PLAN",
       title: generated.title,
       body: generated.body,
-      meta: generated.meta ?? {},
+      meta: (generated.meta ?? {}) as Record<string, unknown>,
       createdById: (session.user as { id: string }).id,
     },
   });

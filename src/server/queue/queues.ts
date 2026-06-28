@@ -5,7 +5,8 @@
 import { Queue } from "bullmq";
 import { redis } from "@/lib/redis";
 
-const connection = redis;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const connection = redis as any;
 
 /** Kuyruk adları - merkezi tanım */
 export const QUEUE_NAMES = {
