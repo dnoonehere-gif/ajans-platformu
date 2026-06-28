@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { sendNotification } from "@/server/notifications/send";
 
 const schema = z.object({
   brandId: z.string(),
@@ -62,8 +63,16 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  await sendNotification({
+    userId,
+    brandId,
+    type: "subscription_started",
+    title: `${plan.name} planı başlatıldı`,
+    body: `${plan.trialDays} günlük ücretsiz denemeniz başladı. İyi kullanımlar!`,
+    data: { planId: plan.id, planName: plan.name, subscriptionId: subscription.id },
+  });
+
   // TODO: PayTR / Shopier ödeme bağlantısı oluştur
-  // Şimdilik checkout URL'i placeholder
   const checkoutUrl = null;
 
   return NextResponse.json({ subscription, checkoutUrl });

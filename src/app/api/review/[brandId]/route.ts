@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { sendNotification } from "@/server/notifications/send";
 
 const postSchema = z.object({
   authorName: z.string().optional(),
@@ -60,6 +61,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ bra
 
   const review = await prisma.review.create({
     data: { brandId, ...parsed.data },
+  });
+
+  // Yorum bildirimi
+  const userId = (session.user as { id: string }).id;
+  const isNegative = parsed.data.rating <= 2;
+  await sendNotification({
+    userId,
+    brandId,
+    type: isNegative ? "negative_review" : "new_review",
+    title: isNegative
+      ? `${parsed.data.rating}⭐ Olumsuz yorum alındı`
+      : `${parsed.data.rating}⭐ Yeni yorum alındı`,
+    body: parsed.data.text.slice(0, 120),
+    data: { reviewId: review.id, rating: parsed.data.rating, source: parsed.data.source },
   });
 
   return NextResponse.json({ review });

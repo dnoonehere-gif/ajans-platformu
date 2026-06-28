@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { BrandProvider } from "@/components/dashboard/brand-provider";
 import { BrandSwitcher } from "@/components/dashboard/brand-switcher";
+import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { signOut } from "@/server/auth/auth";
 
 const NAV = [
@@ -99,6 +100,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
         {/* İçerik */}
         <main className="ml-64 flex-1 min-h-screen overflow-auto">
+          {/* Topbar */}
+          <div className="sticky top-0 z-30 flex h-14 items-center justify-end border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] px-6 backdrop-blur">
+            <NotificationBell />
+          </div>
           {children}
         </main>
       </div>

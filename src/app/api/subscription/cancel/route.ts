@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
+import { sendNotification } from "@/server/notifications/send";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -27,6 +28,16 @@ export async function POST(req: NextRequest) {
       endsAt: subscription.trialEndsAt ?? new Date(),
     },
     include: { plan: true },
+  });
+
+  await sendNotification({
+    userId: (session.user as { id: string }).id,
+    brandId,
+    type: "subscription_canceled",
+    title: "Abonelik iptal edildi",
+    body: updated.endsAt
+      ? `${new Date(updated.endsAt).toLocaleDateString("tr-TR")} tarihine kadar kullanmaya devam edebilirsiniz.`
+      : "Aboneliğiniz iptal edildi.",
   });
 
   return NextResponse.json({ subscription: updated });
