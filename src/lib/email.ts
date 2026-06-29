@@ -1,10 +1,10 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = `Ajans Platformu <onboarding@resend.dev>`;
 const BASE_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 
 async function sendMail(to: string | string[], subject: string, html: string) {
+  const resend = new Resend(process.env.RESEND_API_KEY ?? "placeholder");
   await resend.emails.send({ from: FROM, to, subject, html });
 }
 
