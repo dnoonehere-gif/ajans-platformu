@@ -1,4 +1,6 @@
-import { auth } from "@/server/auth/auth";
+import { getToken } from "next-auth/jwt";
+import { headers, cookies } from "next/headers";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { GlobalRole, BrandRole } from "@prisma/client";
 import { canGlobal, canBrand } from "@/lib/rbac";
@@ -10,15 +12,33 @@ export interface AuthUser {
 }
 
 /** Oturumu doğrular ve kullanıcıyı döndürür. Yoksa null. */
-export async function getAuthUser(): Promise<AuthUser | null> {
-  const session = await auth();
-  if (!session?.user) return null;
-  const user = session.user as { id?: string; email?: string; role?: string };
-  if (!user.id || !user.email) return null;
+export async function getAuthUser(req?: NextRequest): Promise<AuthUser | null> {
+  const secret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+
+  let token;
+  if (req) {
+    token = await getToken({ req, secret });
+  } else {
+    // Route handler'larda req olmayabilir — headers/cookies API ile sentetik Request oluştur
+    const cookieStore = await cookies();
+    const headerStore = await headers();
+    const cookieHeader = cookieStore.getAll().map((c) => `${c.name}=${c.value}`).join("; ");
+    const host = headerStore.get("host") ?? "localhost";
+    const proto = headerStore.get("x-forwarded-proto") ?? "https";
+    const syntheticReq = new NextRequest(`${proto}://${host}/api/__auth_check`, {
+      headers: { cookie: cookieHeader, host },
+    });
+    token = await getToken({ req: syntheticReq, secret });
+  }
+
+  if (!token) return null;
+  const id = token.sub ?? (token.id as string | undefined);
+  const email = token.email as string | undefined;
+  if (!id || !email) return null;
   return {
-    id: user.id,
-    email: user.email,
-    role: (user.role ?? "CUSTOMER") as GlobalRole,
+    id,
+    email,
+    role: ((token.role as string) ?? "CUSTOMER") as GlobalRole,
   };
 }
 
