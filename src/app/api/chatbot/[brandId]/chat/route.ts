@@ -5,8 +5,8 @@ import { z } from "zod";
 
 const schema = z.object({
   message: z.string().min(1).max(1000),
-  conversationId: z.string().optional(),
-  visitorId: z.string().optional(),
+  conversationId: z.string().nullish(),
+  visitorId: z.string().nullish(),
 });
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ brandId: string }> }) {

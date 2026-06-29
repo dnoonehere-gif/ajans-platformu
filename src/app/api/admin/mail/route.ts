@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/server/auth/auth";
+import { getAuthUser } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { sendCustomEmail, sendBulkEmail } from "@/lib/email";
 import { z } from "zod";
@@ -14,9 +14,8 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
-  const user = session.user as { id: string; role?: string };
+  const user = await getAuthUser(req);
+  if (!user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
   if (user.role !== "SUPER_ADMIN" && user.role !== "ADMIN") {
     return NextResponse.json({ error: "Yetersiz yetki" }, { status: 403 });
   }
@@ -43,7 +42,7 @@ export async function POST(req: NextRequest) {
   }
 
   auditFromRequest("admin.mail_send", user.id, {
-    metadata: { target, subject, sent },
+    entity: "Mail", metadata: { target, subject, sent },
   }).catch(() => null);
 
   return NextResponse.json({ ok: true, sent });

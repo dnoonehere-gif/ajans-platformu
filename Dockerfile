@@ -12,10 +12,10 @@ COPY . .
 RUN npx prisma generate
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/ajans"
-ENV AUTH_SECRET="build-time-placeholder-secret-min-32-chars-xx"
-ENV NEXTAUTH_URL="http://localhost:3000"
-RUN npm run build
+RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/ajans" \
+    AUTH_SECRET="build-time-placeholder-secret-min-32-chars-xx" \
+    NEXTAUTH_URL="http://localhost:3000" \
+    npm run build
 
 FROM node:22-alpine AS runner
 RUN apk add --no-cache libc6-compat openssl curl
