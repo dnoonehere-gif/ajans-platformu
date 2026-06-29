@@ -82,8 +82,8 @@ export function MailSender() {
 
       {target === "user" && (
         <div className="mb-4">
-          <label className="mb-2 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Kullanıcı ID</label>
-          <input value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="cuid..."
+          <label className="mb-2 block text-xs font-medium text-[hsl(var(--muted-foreground))]">E-posta adresi</label>
+          <input value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="ornek@mail.com" type="email"
             className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary)/0.5)]" />
         </div>
       )}
