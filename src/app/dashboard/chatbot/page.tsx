@@ -158,8 +158,9 @@ export default function ChatbotPage() {
     </div>
   );
 
-  const embedIframe = `<iframe\n  src="${origin}/chat/${brandId}"\n  width="400"\n  height="600"\n  frameborder="0"\n  style="border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15)"\n></iframe>`;
-  const embedScript = `<script>\n(function() {\n  var btn = document.createElement('button');\n  btn.innerHTML = '💬';\n  btn.style.cssText = 'position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:${primaryColor};color:white;font-size:24px;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:9999';\n  var frame = document.createElement('iframe');\n  frame.src = '${origin}/chat/${brandId}';\n  frame.style.cssText = 'position:fixed;bottom:96px;right:24px;width:380px;height:560px;border:none;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);z-index:9998;display:none';\n  var open = false;\n  btn.onclick = function() { open=!open; frame.style.display=open?'block':'none'; };\n  document.body.appendChild(btn);\n  document.body.appendChild(frame);\n})();\n<\/script>`;
+  const brandSlug = activeBrand.slug;
+  const embedIframe = `<iframe\n  src="${origin}/chat/${brandSlug}"\n  width="400"\n  height="600"\n  frameborder="0"\n  style="border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15)"\n></iframe>`;
+  const embedScript = `<script>\n(function() {\n  var btn = document.createElement('button');\n  btn.innerHTML = '💬';\n  btn.style.cssText = 'position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:${primaryColor};color:white;font-size:24px;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:9999';\n  var frame = document.createElement('iframe');\n  frame.src = '${origin}/chat/${brandSlug}';\n  frame.style.cssText = 'position:fixed;bottom:96px;right:24px;width:380px;height:560px;border:none;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.2);z-index:9998;display:none';\n  var open = false;\n  btn.onclick = function() { open=!open; frame.style.display=open?'block':'none'; };\n  document.body.appendChild(btn);\n  document.body.appendChild(frame);\n})();\n<\/script>`;
 
   return (
     <div className="flex h-[calc(100vh-64px)] overflow-hidden">
@@ -498,7 +499,7 @@ export default function ChatbotPage() {
                           WhatsApp, sosyal medya veya QR kod olarak paylaşın.
                         </p>
                         <div className="flex items-center gap-2 rounded-xl bg-[hsl(var(--muted)/0.5)] px-4 py-3">
-                          <code className="flex-1 truncate text-xs">{origin}/chat/{brandId}</code>
+                          <code className="flex-1 truncate text-xs">{origin}/chat/{brandSlug}</code>
                           <button
                             onClick={() => copyText(`${origin}/chat/${brandId}`, "link")}
                             className="shrink-0 flex items-center gap-1 rounded-lg border border-[hsl(var(--border))] px-2.5 py-1.5 text-xs transition hover:bg-[hsl(var(--accent))]"
