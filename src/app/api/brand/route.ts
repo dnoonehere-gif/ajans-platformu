@@ -9,17 +9,18 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
 
   const body = await req.json();
+  const nullish = z.string().nullish().transform((v) => v ?? undefined);
   const parsed = z.object({
     name: z.string().min(2, "Marka adı en az 2 karakter olmalı"),
     slug: z.string().min(2).regex(/^[a-z0-9-]+$/, "Slug sadece küçük harf, rakam ve tire içerebilir"),
-    description: z.string().optional(),
-    email:       z.string().email().optional().or(z.literal("")),
-    phone:       z.string().optional(),
-    address:     z.string().optional(),
-    instagram:   z.string().optional(),
-    whatsapp:    z.string().optional(),
-    sector:      z.string().optional(),
-    logoUrl:     z.string().url().optional(),
+    description: nullish,
+    email:       z.string().email().optional().nullable().or(z.literal("")).transform((v) => v ?? undefined),
+    phone:       nullish,
+    address:     nullish,
+    instagram:   nullish,
+    whatsapp:    nullish,
+    sector:      nullish,
+    logoUrl:     z.string().url().optional().nullable().transform((v) => v ?? undefined),
   }).safeParse(body);
 
   if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
