@@ -32,7 +32,7 @@ export default function QrFeedbackPage({ params }: { params: Promise<{ slug: str
   const active = hover || rating;
 
   useEffect(() => {
-    fetch(`/api/qr/${slug}`)
+    fetch(`/api/qr/public/${slug}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.error) setNotFound(true);
@@ -45,7 +45,7 @@ export default function QrFeedbackPage({ params }: { params: Promise<{ slug: str
     if (rating === 0) { setError("Lütfen bir puan verin."); return; }
     setLoading(true);
     setError("");
-    const res = await fetch(`/api/qr/${slug}`, {
+    const res = await fetch(`/api/qr/public/${slug}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ rating, text: text || "—", authorName: authorName || undefined }),
