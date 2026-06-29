@@ -102,8 +102,7 @@ export default function MarkaOlusturPage() {
 
     const data = await res.json();
     if (!res.ok) { setError(data.error ?? "Hata oluştu"); setLoading(false); return; }
-    router.push("/dashboard");
-    router.refresh();
+    window.location.href = "/dashboard";
   }
 
   const progress = ((step - 1) / (STEPS.length - 1)) * 100;
