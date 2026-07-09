@@ -57,7 +57,7 @@ export default function MenuPage() {
     const res = await fetch(`/api/menu/${brandId}`);
     const d = await res.json();
     setMenu(d.menu);
-    if (d.menu) setOpenCats(new Set(d.menu.categories.map((c: MenuCategory) => c.id)));
+    if (d.menu) setOpenCats(new Set((d.menu.categories ?? []).map((c: MenuCategory) => c.id)));
     setLoading(false);
   }, [brandId]);
 

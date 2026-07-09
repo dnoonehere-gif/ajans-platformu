@@ -143,9 +143,9 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
                     {item.description && (
                       <p className="mt-1 text-sm text-gray-500 leading-relaxed">{item.description}</p>
                     )}
-                    {item.allergens.length > 0 && (
+                    {(item.allergens ?? []).length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
-                        {item.allergens.map(a => (
+                        {(item.allergens ?? []).map(a => (
                           <span key={a} className="rounded-md bg-red-50 px-1.5 py-0.5 text-[10px] font-medium text-red-600">{a}</span>
                         ))}
                       </div>
