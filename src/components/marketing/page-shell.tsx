@@ -5,11 +5,11 @@ const FOOTER_COLS: { title: string; links: { label: string; href: string }[] }[]
   {
     title: "Ürün",
     links: [
-      { label: "Özellikler", href: "/#özellikler" },
+      { label: "Özellikler", href: "/#ozellikler" },
       { label: "Fiyatlar", href: "/fiyatlar" },
-      { label: "Website Builder", href: "/#özellikler" },
-      { label: "Dijital Menü", href: "/#özellikler" },
-      { label: "QR Geri Bildirim", href: "/#özellikler" },
+      { label: "Website Builder", href: "/#ozellikler" },
+      { label: "Dijital Menü", href: "/#ozellikler" },
+      { label: "QR Geri Bildirim", href: "/#ozellikler" },
     ],
   },
   {
@@ -44,7 +44,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
             <span className="font-bold text-gray-900">Novelya</span>
           </Link>
           <nav className="hidden items-center gap-6 text-sm font-medium text-gray-500 md:flex">
-            <Link href="/#özellikler" className="transition hover:text-gray-900">Özellikler</Link>
+            <Link href="/#ozellikler" className="transition hover:text-gray-900">Özellikler</Link>
             <Link href="/fiyatlar" className="transition hover:text-gray-900">Fiyatlar</Link>
             <Link href="/sss" className="transition hover:text-gray-900">SSS</Link>
             <Link href="/iletisim" className="transition hover:text-gray-900">İletişim</Link>

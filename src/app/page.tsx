@@ -6,6 +6,7 @@ import {
   Sparkles, Bot, BarChart3, QrCode, Globe, Star,
   ArrowRight, CheckCircle2, Zap, Shield, TrendingUp,
   MessageSquare, Users, ChevronRight, Play,
+  UtensilsCrossed, MapPin, Building2,
 } from "lucide-react";
 
 /* ── Yüzen şekil arka planı ────────────────────────────────── */
@@ -101,6 +102,10 @@ const FEATURES = [
   { icon: BarChart3, title: "AI Dashboard", desc: "Günlük otomatik performans özeti, öneriler ve büyüme analizi.", color: "bg-gradient-to-br from-emerald-500 to-teal-600", delay: 300 },
   { icon: QrCode, title: "QR Geri Bildirim", desc: "Müşteri yorumlarını QR kod ile toplayın, yapay zekâ ile analiz edin.", color: "bg-gradient-to-br from-orange-500 to-red-500", delay: 400 },
   { icon: Star, title: "Yorum Analizi", desc: "Google yorumlarınızı çekin, duygu analizi yapın, iyileştirme önerileri alın.", color: "bg-gradient-to-br from-yellow-500 to-orange-500", delay: 500 },
+  { icon: UtensilsCrossed, title: "Dijital Menü", desc: "Restoran ve kafeler için QR menü; görsel menü, web sayfası ve otomatik QR tek tıkla.", color: "bg-gradient-to-br from-rose-500 to-pink-600", delay: 600 },
+  { icon: MapPin, title: "Google Business", desc: "Google işletme profilinizi bağlayın, konum ve yorumlarınızı tek panelden yönetin.", color: "bg-gradient-to-br from-sky-500 to-blue-600", delay: 700 },
+  { icon: Building2, title: "Şube Yönetimi", desc: "Birden fazla şubenizi, adreslerini ve çalışanlarını tek yerden yönetin.", color: "bg-gradient-to-br from-teal-500 to-emerald-600", delay: 800 },
+  { icon: Users, title: "Takım & Yetkiler", desc: "Ekibinizi davet edin, rol bazlı yetkilerle güvenli iş birliği yapın.", color: "bg-gradient-to-br from-indigo-500 to-violet-600", delay: 900 },
 ];
 
 const STEPS = [
@@ -130,9 +135,9 @@ export default function AnaSayfa() {
             <span className="text-sm font-bold text-gray-900">Novelya</span>
           </div>
           <div className="hidden items-center gap-8 md:flex">
-            {["Özellikler", "Nasıl Çalışır?", "Fiyatlar"].map((l) => (
-              <a key={l} href={`#${l.toLowerCase().replace(/[^a-z]/g, "")}`} className="text-sm text-gray-500 transition hover:text-gray-900">{l}</a>
-            ))}
+            <a href="#ozellikler" className="text-sm text-gray-500 transition hover:text-gray-900">Özellikler</a>
+            <a href="#nasil-calisir" className="text-sm text-gray-500 transition hover:text-gray-900">Nasıl Çalışır?</a>
+            <Link href="/fiyatlar" className="text-sm text-gray-500 transition hover:text-gray-900">Fiyatlar</Link>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/giris" className="text-sm font-medium text-gray-600 transition hover:text-gray-900">Giriş Yap</Link>
@@ -283,7 +288,7 @@ export default function AnaSayfa() {
       </section>
 
       {/* ── Özellikler ── */}
-      <section id="özellikler" className="py-24 px-6">
+      <section id="ozellikler" className="py-24 px-6">
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-1.5 text-xs font-semibold text-violet-700">
@@ -310,7 +315,7 @@ export default function AnaSayfa() {
       </section>
 
       {/* ── Nasıl Çalışır ── */}
-      <section id="nasılçalışır" className="py-24 px-6 bg-gradient-to-b from-white to-violet-50/50">
+      <section id="nasil-calisir" className="py-24 px-6 bg-gradient-to-b from-white to-violet-50/50">
         <div className="mx-auto max-w-5xl">
           <div className="mb-16 text-center">
             <h2 className="text-4xl font-black text-gray-900 md:text-5xl">
@@ -419,7 +424,7 @@ export default function AnaSayfa() {
             <div>
               <p className="text-sm font-bold text-gray-900">Ürün</p>
               <ul className="mt-4 space-y-2.5 text-sm text-gray-500">
-                <li><a href="#özellikler" className="transition hover:text-violet-700">Özellikler</a></li>
+                <li><a href="#ozellikler" className="transition hover:text-violet-700">Özellikler</a></li>
                 <li><a href="/fiyatlar" className="transition hover:text-violet-700">Fiyatlar</a></li>
                 <li><a href="/kayit" className="transition hover:text-violet-700">Ücretsiz Başla</a></li>
               </ul>
