@@ -2,39 +2,154 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Premium tema değişkenleri - Light */
-:root {
+/* ─── RENK TEMAları ─────────────────────────────────────────── */
+
+/* MOR (varsayılan) */
+:root,
+[data-color="purple"] {
   --background: 240 20% 99%;
   --foreground: 240 10% 8%;
+  --card: 0 0% 100%;
   --primary: 245 80% 62%;
   --primary-foreground: 0 0% 100%;
+  --accent: 245 60% 96%;
   --muted: 240 12% 94%;
   --muted-foreground: 240 6% 40%;
   --border: 240 12% 88%;
+  --ring: 245 80% 62%;
   --radius: 0.875rem;
 }
-
-/* Dark tema */
-.dark {
+.dark[data-color="purple"],
+.dark:not([data-color]) {
   --background: 240 12% 6%;
   --foreground: 240 10% 96%;
+  --card: 240 10% 9%;
   --primary: 250 85% 68%;
   --primary-foreground: 0 0% 100%;
+  --accent: 240 8% 14%;
   --muted: 240 8% 14%;
   --muted-foreground: 240 6% 65%;
   --border: 240 8% 20%;
 }
 
+/* MAVİ */
+[data-color="blue"] {
+  --background: 210 20% 99%;
+  --foreground: 210 10% 8%;
+  --card: 0 0% 100%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 217 60% 96%;
+  --muted: 210 12% 94%;
+  --muted-foreground: 210 6% 40%;
+  --border: 210 12% 88%;
+  --ring: 217 91% 60%;
+}
+.dark[data-color="blue"] {
+  --background: 222 20% 6%;
+  --foreground: 210 10% 96%;
+  --card: 222 18% 9%;
+  --primary: 217 91% 65%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 222 12% 14%;
+  --muted: 222 12% 14%;
+  --muted-foreground: 210 6% 65%;
+  --border: 222 10% 20%;
+}
+
+/* YEŞİL */
+[data-color="green"] {
+  --background: 140 20% 99%;
+  --foreground: 140 10% 8%;
+  --card: 0 0% 100%;
+  --primary: 142 71% 45%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 142 50% 95%;
+  --muted: 140 12% 94%;
+  --muted-foreground: 140 6% 40%;
+  --border: 140 12% 88%;
+  --ring: 142 71% 45%;
+}
+.dark[data-color="green"] {
+  --background: 150 15% 6%;
+  --foreground: 140 10% 96%;
+  --card: 150 12% 9%;
+  --primary: 142 71% 52%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 150 10% 14%;
+  --muted: 150 10% 14%;
+  --muted-foreground: 140 6% 65%;
+  --border: 150 8% 20%;
+}
+
+/* TURUNCU */
+[data-color="orange"] {
+  --background: 30 20% 99%;
+  --foreground: 30 10% 8%;
+  --card: 0 0% 100%;
+  --primary: 25 95% 53%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 25 80% 96%;
+  --muted: 30 12% 94%;
+  --muted-foreground: 30 6% 40%;
+  --border: 30 12% 88%;
+  --ring: 25 95% 53%;
+}
+.dark[data-color="orange"] {
+  --background: 24 15% 6%;
+  --foreground: 30 10% 96%;
+  --card: 24 12% 9%;
+  --primary: 25 95% 58%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 24 10% 14%;
+  --muted: 24 10% 14%;
+  --muted-foreground: 30 6% 65%;
+  --border: 24 8% 20%;
+}
+
+/* PEMBE */
+[data-color="rose"] {
+  --background: 340 20% 99%;
+  --foreground: 340 10% 8%;
+  --card: 0 0% 100%;
+  --primary: 336 80% 58%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 336 60% 96%;
+  --muted: 340 12% 94%;
+  --muted-foreground: 340 6% 40%;
+  --border: 340 12% 88%;
+  --ring: 336 80% 58%;
+}
+.dark[data-color="rose"] {
+  --background: 340 15% 6%;
+  --foreground: 340 10% 96%;
+  --card: 340 12% 9%;
+  --primary: 336 80% 65%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 340 10% 14%;
+  --muted: 340 10% 14%;
+  --muted-foreground: 340 6% 65%;
+  --border: 340 8% 20%;
+}
+
+/* ─── TEMEL STİLLER ─────────────────────────────────────────── */
+
 * { border-color: hsl(var(--border)); }
+
 body {
   background: hsl(var(--background));
   color: hsl(var(--foreground));
   font-feature-settings: "ss01", "cv01";
 }
 
-/* Glassmorphism yardımcı sınıfı */
 .glass {
   background: hsl(var(--background) / 0.6);
   backdrop-filter: blur(16px);
   border: 1px solid hsl(var(--border) / 0.6);
+}
+
+.glass-card {
+  background: hsl(var(--card) / 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid hsl(var(--border) / 0.5);
 }

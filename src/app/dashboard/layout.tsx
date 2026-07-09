@@ -3,11 +3,12 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   LayoutDashboard, Globe, Bot, Star, Sparkles, QrCode,
-  Users, Settings, LogOut, Shield, ChevronRight, Building2, MapPin, CreditCard,
+  Users, Settings, LogOut, Shield, ChevronRight, Building2, MapPin, CreditCard, Palette,
 } from "lucide-react";
 import { BrandProvider } from "@/components/dashboard/brand-provider";
 import { BrandSwitcher } from "@/components/dashboard/brand-switcher";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
+import { ThemeSwitcher } from "@/components/dashboard/theme-switcher";
 import { signOut } from "@/server/auth/auth";
 
 const NAV = [
@@ -78,6 +79,18 @@ export default async function DashboardLayout({ children }: { children: React.Re
               </Link>
             )}
           </nav>
+
+          {/* Tema seçici */}
+          <div className="border-t border-[hsl(var(--border))]">
+            <details className="group">
+              <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:text-[hsl(var(--foreground))]">
+                <Palette className="h-4 w-4 shrink-0" />
+                <span className="flex-1">Tema</span>
+                <ChevronRight className="h-3 w-3 transition group-open:rotate-90" />
+              </summary>
+              <ThemeSwitcher />
+            </details>
+          </div>
 
           {/* Kullanıcı */}
           <div className="border-t border-[hsl(var(--border))] p-3">
