@@ -223,6 +223,7 @@ model Brand {
   analyticsEvents AnalyticsEvent[]
   dashboardSummaries DashboardSummary[]
   aiUsages       AiUsage[]
+  menu           Menu?
 
   @@index([ownerId])
 }
@@ -643,6 +644,62 @@ model AuditLog {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([action, createdAt])
+}
+
+// -------------------------------------------------------------
+//  MENÜ SİSTEMİ
+// -------------------------------------------------------------
+
+/// Dijital menü (markaya 1-1)
+model Menu {
+  id          String   @id @default(cuid())
+  brandId     String   @unique
+  title       String   @default("Menümüz")
+  description String?
+  currency    String   @default("₺")
+  isPublished Boolean  @default(false)
+  theme       String   @default("modern") // modern | classic | minimal
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  brand      Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  categories MenuCategory[]
+}
+
+/// Menü kategorisi (Başlangıçlar, Ana Yemekler, İçecekler vb.)
+model MenuCategory {
+  id          String   @id @default(cuid())
+  menuId      String
+  name        String
+  description String?
+  emoji       String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  menu  Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  items MenuItem[]
+
+  @@index([menuId, order])
+}
+
+/// Menü ürünü
+model MenuItem {
+  id          String   @id @default(cuid())
+  categoryId  String
+  name        String
+  description String?
+  price       Float?
+  imageUrl    String?
+  isAvailable Boolean  @default(true)
+  isPopular   Boolean  @default(false)
+  allergens   String[]
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId, order])
 }
 
 /// Arka plan görev kaydı (BullMQ kuyruğu ile eşlenir)
