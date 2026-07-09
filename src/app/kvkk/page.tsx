@@ -20,7 +20,7 @@ export default function KvkkPage() {
         <h2>1. Veri Sorumlusu</h2>
         <p>
           Kişisel verileriniz, veri sorumlusu olarak Novelya tarafından aşağıda
-          açıklanan kapsamda işlenmektedir. İletişim: <a href="mailto:kvkk@novelya.com">kvkk@novelya.com</a>.
+          açıklanan kapsamda işlenmektedir. İletişim: <a href="mailto:kvkk@novelya.com.tr">kvkk@novelya.com.tr</a>.
         </p>
 
         <h2>2. İşlenen Kişisel Veriler</h2>
@@ -75,7 +75,7 @@ export default function KvkkPage() {
 
         <h2>8. Başvuru</h2>
         <p>
-          Haklarınıza ilişkin taleplerinizi <a href="mailto:kvkk@novelya.com">kvkk@novelya.com</a>
+          Haklarınıza ilişkin taleplerinizi <a href="mailto:kvkk@novelya.com.tr">kvkk@novelya.com.tr</a>
           adresine iletebilirsiniz. Başvurularınız en geç 30 gün içinde ücretsiz olarak
           sonuçlandırılır.
         </p>

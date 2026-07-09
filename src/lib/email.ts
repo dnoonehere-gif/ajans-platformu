@@ -33,7 +33,7 @@ function layout(opts: { preheader?: string; body: string; footerNote?: string })
         <tr>
           <td style="padding:20px 32px;border-top:1px solid #2a2a35;background:#13131a;">
             <p style="margin:0 0 6px;font-size:12px;color:#666;">${opts.footerNote ?? "Bu e-postayı hesabınızla ilgili bir işlem nedeniyle aldınız."}</p>
-            <p style="margin:0;font-size:12px;color:#444;">© ${new Date().getFullYear()} Novelya &nbsp;·&nbsp;<a href="${BASE_URL}" style="color:#6366f1;text-decoration:none;">novelya.com</a></p>
+            <p style="margin:0;font-size:12px;color:#444;">© ${new Date().getFullYear()} Novelya &nbsp;·&nbsp;<a href="${BASE_URL}" style="color:#6366f1;text-decoration:none;">novelya.com.tr</a></p>
           </td>
         </tr>
       </table>

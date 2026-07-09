@@ -216,7 +216,7 @@ export default function AnaSayfa() {
               <div className="h-3 w-3 rounded-full bg-yellow-400" />
               <div className="h-3 w-3 rounded-full bg-green-400" />
               <div className="ml-4 flex-1 rounded-lg bg-white/80 px-3 py-1 text-xs text-gray-400 border border-gray-200">
-                novelya.com/dashboard
+                novelya.com.tr/dashboard
               </div>
             </div>
             {/* Dashboard önizleme */}
