@@ -163,6 +163,25 @@ export async function sendCustomEmail(to: string, subject: string, content: stri
   }));
 }
 
+export async function sendContactEmail(opts: {
+  name: string; email: string; subject: string; message: string;
+}) {
+  const to = process.env.CONTACT_EMAIL ?? "dnoonehere@gmail.com";
+  await sendMail(to, `İletişim formu: ${opts.subject}`, layout({
+    preheader: `${opts.name} bir mesaj gönderdi.`,
+    body: `
+      ${h("Yeni iletişim mesajı 📬")}
+      ${infoBox(`
+        <p style="margin:0 0 6px;font-size:13px;color:#a0a0b8;"><strong style="color:#f0f0ff;">Ad:</strong> ${opts.name}</p>
+        <p style="margin:0 0 6px;font-size:13px;color:#a0a0b8;"><strong style="color:#f0f0ff;">E-posta:</strong> ${opts.email}</p>
+        <p style="margin:0;font-size:13px;color:#a0a0b8;"><strong style="color:#f0f0ff;">Konu:</strong> ${opts.subject}</p>
+      `)}
+      ${p(opts.message.replace(/</g, "&lt;").replace(/\n/g, "<br/>"))}
+      ${note(`Yanıtlamak için doğrudan ${opts.email} adresine e-posta gönderebilirsiniz.`)}
+    `,
+  }));
+}
+
 export async function sendBulkEmail(addresses: string[], subject: string, content: string) {
   const chunks: string[][] = [];
   for (let i = 0; i < addresses.length; i += 50) chunks.push(addresses.slice(i, i + 50));

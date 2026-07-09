@@ -403,21 +403,55 @@ export default function AnaSayfa() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-gray-100 bg-white/80 py-12 px-6 backdrop-blur">
-        <div className="mx-auto max-w-6xl">
-          <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600">
-                <span className="text-sm font-black text-white">A</span>
+      <footer className="border-t border-gray-100 bg-white/80 px-6 backdrop-blur">
+        <div className="mx-auto max-w-6xl py-14">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+            <div className="col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600">
+                  <span className="text-sm font-black text-white">A</span>
+                </div>
+                <span className="font-bold text-gray-900">Ajans Platformu</span>
               </div>
-              <span className="font-bold text-gray-900">Ajans Platformu</span>
+              <p className="mt-4 max-w-xs text-sm leading-relaxed text-gray-500">
+                İşletmeniz için yapay zeka destekli dijital ajans: website, chatbot,
+                içerik, menü ve müşteri yönetimi tek platformda.
+              </p>
             </div>
-            <div className="flex items-center gap-6 text-sm text-gray-400">
-              <a href="/gizlilik" className="hover:text-gray-700 transition">Gizlilik</a>
-              <a href="/kullanim-sartlari" className="hover:text-gray-700 transition">Kullanım Şartları</a>
-              <a href="/iletisim" className="hover:text-gray-700 transition">İletişim</a>
+
+            <div>
+              <p className="text-sm font-bold text-gray-900">Ürün</p>
+              <ul className="mt-4 space-y-2.5 text-sm text-gray-500">
+                <li><a href="#özellikler" className="transition hover:text-violet-700">Özellikler</a></li>
+                <li><a href="/fiyatlar" className="transition hover:text-violet-700">Fiyatlar</a></li>
+                <li><a href="/kayit" className="transition hover:text-violet-700">Ücretsiz Başla</a></li>
+              </ul>
             </div>
-            <p className="text-sm text-gray-400">© 2026 Ajans Platformu</p>
+
+            <div>
+              <p className="text-sm font-bold text-gray-900">Kurumsal</p>
+              <ul className="mt-4 space-y-2.5 text-sm text-gray-500">
+                <li><a href="/hakkimizda" className="transition hover:text-violet-700">Hakkımızda</a></li>
+                <li><a href="/iletisim" className="transition hover:text-violet-700">İletişim</a></li>
+                <li><a href="/sss" className="transition hover:text-violet-700">SSS</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="text-sm font-bold text-gray-900">Yasal</p>
+              <ul className="mt-4 space-y-2.5 text-sm text-gray-500">
+                <li><a href="/kullanim-sartlari" className="transition hover:text-violet-700">Kullanım Şartları</a></li>
+                <li><a href="/gizlilik" className="transition hover:text-violet-700">Gizlilik Politikası</a></li>
+                <li><a href="/kvkk" className="transition hover:text-violet-700">KVKK Aydınlatma</a></li>
+                <li><a href="/cerez-politikasi" className="transition hover:text-violet-700">Çerez Politikası</a></li>
+                <li><a href="/iade-politikasi" className="transition hover:text-violet-700">İade &amp; İptal</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-100 pt-6 text-sm text-gray-400 sm:flex-row">
+            <p>© {new Date().getFullYear()} Ajans Platformu. Tüm hakları saklıdır.</p>
+            <p>Türkiye’de sevgiyle geliştirildi ✨</p>
           </div>
         </div>
       </footer>
