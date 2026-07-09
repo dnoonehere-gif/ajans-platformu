@@ -5,7 +5,7 @@ import Link from "next/link";
 import { PageShell } from "@/components/marketing/page-shell";
 
 const CONTACT = [
-  { icon: Mail, title: "E-posta", value: "destek@ajansplatformu.com", href: "mailto:destek@ajansplatformu.com" },
+  { icon: Mail, title: "E-posta", value: "destek@novelya.com", href: "mailto:destek@novelya.com" },
   { icon: Clock, title: "Yanıt Süresi", value: "Genellikle 24 saat içinde" },
   { icon: MessageSquare, title: "Destek", value: "Hesabınızdan canlı destek" },
 ];

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LogoMark } from "@/components/logo";
 
 const FOOTER_COLS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -39,10 +40,8 @@ export function PageShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600">
-              <span className="text-sm font-black text-white">A</span>
-            </div>
-            <span className="font-bold text-gray-900">Ajans Platformu</span>
+            <LogoMark size={32} />
+            <span className="font-bold text-gray-900">Novelya</span>
           </Link>
           <nav className="hidden items-center gap-6 text-sm font-medium text-gray-500 md:flex">
             <Link href="/#özellikler" className="transition hover:text-gray-900">Özellikler</Link>
@@ -74,10 +73,8 @@ export function PageShell({ children }: { children: React.ReactNode }) {
             {/* Marka */}
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600">
-                  <span className="text-sm font-black text-white">A</span>
-                </div>
-                <span className="font-bold text-gray-900">Ajans Platformu</span>
+                <LogoMark size={32} />
+                <span className="font-bold text-gray-900">Novelya</span>
               </div>
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-gray-500">
                 İşletmeniz için yapay zeka destekli dijital ajans:
@@ -103,7 +100,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-100 pt-6 text-sm text-gray-400 sm:flex-row">
-            <p>© {new Date().getFullYear()} Ajans Platformu. Tüm hakları saklıdır.</p>
+            <p>© {new Date().getFullYear()} Novelya. Tüm hakları saklıdır.</p>
             <p>Türkiye’de sevgiyle geliştirildi ✨</p>
           </div>
         </div>

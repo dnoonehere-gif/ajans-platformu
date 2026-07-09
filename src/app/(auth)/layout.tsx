@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { LogoMark } from "@/components/logo";
 
-export const metadata: Metadata = { title: "Giriş — Ajans Platformu" };
+export const metadata: Metadata = { title: "Giriş — Novelya" };
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -8,11 +9,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[hsl(var(--primary))]">
-            <span className="text-xl font-black text-white">A</span>
-          </div>
+          <LogoMark size={48} className="mx-auto mb-3" />
           <p className="text-xs font-semibold uppercase tracking-widest text-[hsl(var(--muted-foreground))]">
-            Ajans Platformu
+            Novelya
           </p>
         </div>
         {children}

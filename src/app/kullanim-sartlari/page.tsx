@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { PageShell, LegalArticle } from "@/components/marketing/page-shell";
 
 export const metadata: Metadata = {
-  title: "Kullanım Şartları | Ajans Platformu",
-  description: "Ajans Platformu hizmetlerini kullanırken geçerli olan kullanım şartları ve koşulları.",
+  title: "Kullanım Şartları | Novelya",
+  description: "Novelya hizmetlerini kullanırken geçerli olan kullanım şartları ve koşulları.",
 };
 
 export default function KullanimSartlariPage() {
@@ -11,7 +11,7 @@ export default function KullanimSartlariPage() {
     <PageShell>
       <LegalArticle title="Kullanım Şartları" updated="9 Temmuz 2026">
         <p>
-          Bu Kullanım Şartları (“Şartlar”), Ajans Platformu (“Platform”) hizmetlerini
+          Bu Kullanım Şartları (“Şartlar”), Novelya (“Platform”) hizmetlerini
           kullanımınızı düzenler. Platforma kayıt olarak veya hizmetleri kullanarak bu
           Şartları kabul etmiş sayılırsınız. Şartları kabul etmiyorsanız hizmetleri
           kullanmamalısınız.

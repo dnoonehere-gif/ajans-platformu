@@ -25,12 +25,6 @@ const nextConfig = {
 
   // Webpack optimizasyonları
   webpack(config, { isServer }) {
-    // SVG'leri React component'e çevir
-    config.module.rules.push({
-      test: /\.svg$/,
-      use: ["@svgr/webpack"],
-    });
-
     // Server bundle'ından client-only paketleri dışla
     if (isServer) {
       config.externals = [...(config.externals ?? []), "canvas", "jsdom"];

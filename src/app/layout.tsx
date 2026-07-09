@@ -4,7 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { MotionProvider } from "@/components/motion-provider";
 
 export const metadata: Metadata = {
-  title: "Ajans Platformu — Yapay Zekâ Destekli Dijital Ajans",
+  title: "Novelya — Yapay Zekâ Destekli Dijital Ajans",
   description: "Türkiye'deki işletmeler için yapay zekâ destekli, çok kiracılı SaaS dijital ajans platformu.",
 };
 

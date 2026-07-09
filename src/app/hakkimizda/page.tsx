@@ -4,8 +4,8 @@ import { Rocket, Target, Heart, ShieldCheck, Sparkles, Users, ArrowRight } from 
 import { PageShell } from "@/components/marketing/page-shell";
 
 export const metadata: Metadata = {
-  title: "Hakkımızda | Ajans Platformu",
-  description: "Ajans Platformu; küçük ve orta ölçekli işletmelerin dijital varlığını yapay zeka ile güçlendiren tek platform.",
+  title: "Hakkımızda | Novelya",
+  description: "Novelya; küçük ve orta ölçekli işletmelerin dijital varlığını yapay zeka ile güçlendiren tek platform.",
 };
 
 const VALUES = [
@@ -36,7 +36,7 @@ export default function HakkimizdaPage() {
             İşletmelerin dijital <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">ajansı</span>, tek platformda
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-gray-600">
-            Ajans Platformu; kafeler, restoranlar, mağazalar ve hizmet işletmeleri için
+            Novelya; kafeler, restoranlar, mağazalar ve hizmet işletmeleri için
             website, chatbot, içerik üretimi, dijital menü ve müşteri yönetimini yapay zeka
             ile birleştiren bir dijital ajans platformudur. Amacımız, pahalı ajanslara
             ihtiyaç duymadan her işletmenin profesyonel bir dijital varlığa kavuşmasını

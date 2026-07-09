@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { PageShell, LegalArticle } from "@/components/marketing/page-shell";
 
 export const metadata: Metadata = {
-  title: "Gizlilik Politikası | Ajans Platformu",
-  description: "Ajans Platformu olarak kişisel verilerinizi nasıl topladığımız, kullandığımız ve koruduğumuza dair gizlilik politikamız.",
+  title: "Gizlilik Politikası | Novelya",
+  description: "Novelya olarak kişisel verilerinizi nasıl topladığımız, kullandığımız ve koruduğumuza dair gizlilik politikamız.",
 };
 
 export default function GizlilikPage() {
@@ -11,7 +11,7 @@ export default function GizlilikPage() {
     <PageShell>
       <LegalArticle title="Gizlilik Politikası" updated="9 Temmuz 2026">
         <p>
-          Ajans Platformu (“Platform”, “biz”) olarak gizliliğinize önem veriyoruz.
+          Novelya (“Platform”, “biz”) olarak gizliliğinize önem veriyoruz.
           Bu Gizlilik Politikası; hizmetlerimizi kullandığınızda hangi kişisel verileri
           topladığımızı, bunları neden ve nasıl işlediğimizi, kimlerle paylaştığımızı ve
           haklarınızı açıklar. Verilerinizin işlenmesine ilişkin yasal aydınlatma için
@@ -86,7 +86,7 @@ export default function GizlilikPage() {
 
         <h2>9. İletişim</h2>
         <p>
-          Gizlilikle ilgili sorularınız için <a href="mailto:destek@ajansplatformu.com">destek@ajansplatformu.com</a>
+          Gizlilikle ilgili sorularınız için <a href="mailto:destek@novelya.com">destek@novelya.com</a>
           adresinden bize ulaşabilirsiniz.
         </p>
       </LegalArticle>

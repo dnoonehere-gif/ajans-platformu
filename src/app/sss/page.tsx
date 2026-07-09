@@ -8,7 +8,7 @@ interface Faq { q: string; a: string; cat: string }
 
 const FAQS: Faq[] = [
   // Genel
-  { cat: "Genel", q: "Ajans Platformu nedir?", a: "Ajans Platformu; website oluşturma, chatbot, yapay zeka içerik üretimi, dijital menü, QR geri bildirim ve müşteri yönetimini tek çatı altında toplayan, işletmeler için tasarlanmış bir dijital ajans platformudur." },
+  { cat: "Genel", q: "Novelya nedir?", a: "Novelya; website oluşturma, chatbot, yapay zeka içerik üretimi, dijital menü, QR geri bildirim ve müşteri yönetimini tek çatı altında toplayan, işletmeler için tasarlanmış bir dijital ajans platformudur." },
   { cat: "Genel", q: "Teknik bilgim yok, yine de kullanabilir miyim?", a: "Evet. Platform, teknik bilgi gerektirmeden kullanılacak şekilde tasarlandı. Bilgileri girmeniz yeterli; website, menü ve içerikler otomatik olarak oluşturulur." },
   { cat: "Genel", q: "Hangi işletmeler için uygun?", a: "Kafeler, restoranlar, mağazalar, güzellik salonları, oteller ve hizmet veren tüm küçük-orta ölçekli işletmeler için uygundur." },
   // Fiyatlandırma

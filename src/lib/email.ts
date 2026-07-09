@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const FROM = `Ajans Platformu <onboarding@resend.dev>`;
+const FROM = `Novelya <onboarding@resend.dev>`;
 const BASE_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 
 async function sendMail(to: string | string[], subject: string, html: string) {
@@ -14,7 +14,7 @@ function layout(opts: { preheader?: string; body: string; footerNote?: string })
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ajans Platformu</title>
+  <title>Novelya</title>
 </head>
 <body style="margin:0;padding:0;background:#0f0f13;font-family:'Segoe UI',Arial,sans-serif;">
   ${opts.preheader ? `<div style="display:none;max-height:0;overflow:hidden;">${opts.preheader}</div>` : ""}
@@ -24,8 +24,8 @@ function layout(opts: { preheader?: string; body: string; footerNote?: string })
         <tr>
           <td style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:28px 32px;">
             <div style="display:inline-flex;align-items:center;gap:10px;">
-              <div style="width:32px;height:32px;background:rgba(255,255,255,0.2);border-radius:8px;display:inline-block;text-align:center;line-height:32px;font-size:16px;font-weight:900;color:#fff;">A</div>
-              <span style="color:#fff;font-size:16px;font-weight:700;margin-left:8px;">Ajans Platformu</span>
+              <div style="width:32px;height:32px;background:rgba(255,255,255,0.2);border-radius:8px;display:inline-block;text-align:center;line-height:32px;font-size:16px;font-weight:900;color:#fff;">N</div>
+              <span style="color:#fff;font-size:16px;font-weight:700;margin-left:8px;">Novelya</span>
             </div>
           </td>
         </tr>
@@ -33,7 +33,7 @@ function layout(opts: { preheader?: string; body: string; footerNote?: string })
         <tr>
           <td style="padding:20px 32px;border-top:1px solid #2a2a35;background:#13131a;">
             <p style="margin:0 0 6px;font-size:12px;color:#666;">${opts.footerNote ?? "Bu e-postayı hesabınızla ilgili bir işlem nedeniyle aldınız."}</p>
-            <p style="margin:0;font-size:12px;color:#444;">© ${new Date().getFullYear()} Ajans Platformu &nbsp;·&nbsp;<a href="${BASE_URL}" style="color:#6366f1;text-decoration:none;">ajansplatformu.com</a></p>
+            <p style="margin:0;font-size:12px;color:#444;">© ${new Date().getFullYear()} Novelya &nbsp;·&nbsp;<a href="${BASE_URL}" style="color:#6366f1;text-decoration:none;">novelya.com</a></p>
           </td>
         </tr>
       </table>
@@ -53,11 +53,11 @@ const note = (t: string) => `<p style="margin:16px 0 0;font-size:12px;color:#555
 
 export async function sendVerificationEmail(email: string, token: string) {
   const url = `${BASE_URL}/mail-dogrulama?token=${token}`;
-  await sendMail(email, "E-posta adresinizi doğrulayın — Ajans Platformu", layout({
+  await sendMail(email, "E-posta adresinizi doğrulayın — Novelya", layout({
     preheader: "Hesabınızı etkinleştirmek için e-postanızı doğrulayın.",
     body: `
       ${h("Hoş geldiniz! 🎉")}
-      ${p("Ajans Platformu'na kaydolduğunuz için teşekkürler. Hesabınızı etkinleştirmek için aşağıdaki butona tıklayın.")}
+      ${p("Novelya'ya kaydolduğunuz için teşekkürler. Hesabınızı etkinleştirmek için aşağıdaki butona tıklayın.")}
       ${cta("E-postamı Doğrula", url)}
       ${divider()}
       ${note("Bu link <strong>24 saat</strong> geçerlidir.")}
@@ -68,7 +68,7 @@ export async function sendVerificationEmail(email: string, token: string) {
 
 export async function sendPasswordResetEmail(email: string, token: string) {
   const url = `${BASE_URL}/sifremi-sifirla?token=${token}`;
-  await sendMail(email, "Şifre sıfırlama isteği — Ajans Platformu", layout({
+  await sendMail(email, "Şifre sıfırlama isteği — Novelya", layout({
     preheader: "Şifrenizi sıfırlamak için butona tıklayın.",
     body: `
       ${h("Şifrenizi sıfırlayın 🔑")}
@@ -82,11 +82,11 @@ export async function sendPasswordResetEmail(email: string, token: string) {
 }
 
 export async function sendWelcomeEmail(email: string, name: string) {
-  await sendMail(email, "Ajans Platformu'na hoş geldiniz!", layout({
+  await sendMail(email, "Novelya'ya hoş geldiniz!", layout({
     preheader: "14 günlük ücretsiz denemeniz başladı.",
     body: `
       ${h(`Merhaba ${name}! 👋`)}
-      ${p("Ajans Platformu'na hoş geldiniz.")}
+      ${p("Novelya'ya hoş geldiniz.")}
       ${infoBox(`
         <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#f0f0ff;">Neler yapabilirsiniz?</p>
         <table cellpadding="0" cellspacing="0" style="font-size:13px;color:#a0a0b8;width:100%;">
@@ -119,7 +119,7 @@ export async function sendTeamInviteEmail(email: string, opts: {
 export async function sendSubscriptionConfirmEmail(email: string, opts: {
   name: string; planName: string; trialDays: number; endsAt?: string;
 }) {
-  await sendMail(email, `${opts.planName} planınız başladı — Ajans Platformu`, layout({
+  await sendMail(email, `${opts.planName} planınız başladı — Novelya`, layout({
     body: `
       ${h("Aboneliğiniz başladı 🚀")}
       ${p(`Merhaba <strong style="color:#f0f0ff;">${opts.name}</strong>, ${badge(opts.planName, "#22c55e")} planınız aktif!`)}
@@ -131,7 +131,7 @@ export async function sendSubscriptionConfirmEmail(email: string, opts: {
 export async function sendSubscriptionCancelEmail(email: string, opts: {
   name: string; planName: string; endsAt?: string;
 }) {
-  await sendMail(email, "Aboneliğiniz iptal edildi — Ajans Platformu", layout({
+  await sendMail(email, "Aboneliğiniz iptal edildi — Novelya", layout({
     body: `
       ${h("Abonelik iptali")}
       ${p(`Merhaba <strong style="color:#f0f0ff;">${opts.name}</strong>, <strong style="color:#f0f0ff;">${opts.planName}</strong> planınız iptal edildi.`)}

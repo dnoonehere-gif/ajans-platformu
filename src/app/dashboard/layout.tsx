@@ -1,4 +1,5 @@
 import { auth } from "@/server/auth/auth";
+import { LogoMark } from "@/components/logo";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
@@ -42,11 +43,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
           {/* Logo */}
           <div className="flex h-16 items-center gap-3 border-b border-[hsl(var(--border))] px-5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[hsl(var(--primary))]">
-              <span className="text-sm font-black text-white">A</span>
-            </div>
+            <LogoMark size={32} />
             <div>
-              <p className="text-sm font-bold leading-tight">Ajans Platformu</p>
+              <p className="text-sm font-bold leading-tight">Novelya</p>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Dashboard</p>
             </div>
           </div>

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { PageShell, LegalArticle } from "@/components/marketing/page-shell";
 
 export const metadata: Metadata = {
-  title: "İade & İptal Politikası | Ajans Platformu",
-  description: "Ajans Platformu abonelikleri için iptal, iade ve cayma hakkı koşulları.",
+  title: "İade & İptal Politikası | Novelya",
+  description: "Novelya abonelikleri için iptal, iade ve cayma hakkı koşulları.",
 };
 
 export default function IadePolitikasiPage() {
@@ -11,7 +11,7 @@ export default function IadePolitikasiPage() {
     <PageShell>
       <LegalArticle title="İade & İptal Politikası" updated="9 Temmuz 2026">
         <p>
-          Bu politika, Ajans Platformu ücretli aboneliklerine ilişkin iptal, iade ve cayma
+          Bu politika, Novelya ücretli aboneliklerine ilişkin iptal, iade ve cayma
           hakkı koşullarını açıklar. Abonelik satın alarak bu koşulları kabul etmiş
           sayılırsınız.
         </p>

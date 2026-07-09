@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { PageShell, LegalArticle } from "@/components/marketing/page-shell";
 
 export const metadata: Metadata = {
-  title: "Çerez Politikası | Ajans Platformu",
-  description: "Ajans Platformu'nun web sitesinde kullanılan çerezler ve bunları nasıl yönetebileceğinize dair bilgiler.",
+  title: "Çerez Politikası | Novelya",
+  description: "Novelya'nın web sitesinde kullanılan çerezler ve bunları nasıl yönetebileceğinize dair bilgiler.",
 };
 
 export default function CerezPolitikasiPage() {
@@ -11,7 +11,7 @@ export default function CerezPolitikasiPage() {
     <PageShell>
       <LegalArticle title="Çerez Politikası" updated="9 Temmuz 2026">
         <p>
-          Bu Çerez Politikası, Ajans Platformu web sitesinde ve uygulamasında çerezleri ve
+          Bu Çerez Politikası, Novelya web sitesinde ve uygulamasında çerezleri ve
           benzeri teknolojileri nasıl kullandığımızı açıklar. Sitemizi kullanarak bu
           politikada açıklanan çerez kullanımını kabul etmiş olursunuz.
         </p>

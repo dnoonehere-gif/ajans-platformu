@@ -176,7 +176,7 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
               <MapPin className="h-4 w-4 mt-0.5 shrink-0" /> {brand.address}
             </div>
           )}
-          <p className="text-center text-xs text-gray-300 pt-4">Ajans Platformu ile güçlendirilmiştir</p>
+          <p className="text-center text-xs text-gray-300 pt-4">Novelya ile güçlendirilmiştir</p>
         </div>
       </div>
     </div>

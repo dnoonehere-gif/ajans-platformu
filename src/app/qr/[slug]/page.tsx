@@ -207,7 +207,7 @@ export default function QrFeedbackPage({ params }: { params: Promise<{ slug: str
         </form>
 
         <p className="mt-6 text-center text-xs text-[hsl(var(--muted-foreground))]">
-          Ajans Platformu ile güçlendirilmiştir
+          Novelya ile güçlendirilmiştir
         </p>
       </div>
     </div>

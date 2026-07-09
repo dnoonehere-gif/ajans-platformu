@@ -1,7 +1,7 @@
 import * as otplib from "otplib";
 import QRCode from "qrcode";
 
-const APP_NAME = "Ajans Platformu";
+const APP_NAME = "Novelya";
 
 export function generateTotpSecret(): string {
   return otplib.generateSecret();

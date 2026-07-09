@@ -1,4 +1,5 @@
 "use client";
+import { LogoMark } from "@/components/logo";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
@@ -125,10 +126,8 @@ export default function AnaSayfa() {
       <nav className={`fixed top-0 z-50 w-full transition-all duration-300 ${scrolled ? "border-b border-white/80 bg-white/90 shadow-sm backdrop-blur" : "bg-transparent"}`}>
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 shadow-lg shadow-violet-500/30">
-              <span className="text-sm font-black text-white">A</span>
-            </div>
-            <span className="text-sm font-bold text-gray-900">Ajans Platformu</span>
+            <LogoMark size={32} />
+            <span className="text-sm font-bold text-gray-900">Novelya</span>
           </div>
           <div className="hidden items-center gap-8 md:flex">
             {["Özellikler", "Nasıl Çalışır?", "Fiyatlar"].map((l) => (
@@ -152,7 +151,7 @@ export default function AnaSayfa() {
           {/* Badge */}
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-1.5 text-xs font-semibold text-violet-700">
             <Zap className="h-3.5 w-3.5" />
-            Türkiye&apos;nin İlk AI Ajans Platformu
+            Türkiye&apos;nin Yeni Nesil AI Dijital Ajansı
           </div>
 
           {/* Başlık */}
@@ -212,7 +211,7 @@ export default function AnaSayfa() {
               <div className="h-3 w-3 rounded-full bg-yellow-400" />
               <div className="h-3 w-3 rounded-full bg-green-400" />
               <div className="ml-4 flex-1 rounded-lg bg-white/80 px-3 py-1 text-xs text-gray-400 border border-gray-200">
-                ajansplatformu.com/dashboard
+                novelya.com/dashboard
               </div>
             </div>
             {/* Dashboard önizleme */}
@@ -408,10 +407,8 @@ export default function AnaSayfa() {
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600">
-                  <span className="text-sm font-black text-white">A</span>
-                </div>
-                <span className="font-bold text-gray-900">Ajans Platformu</span>
+                <LogoMark size={32} />
+                <span className="font-bold text-gray-900">Novelya</span>
               </div>
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-gray-500">
                 İşletmeniz için yapay zeka destekli dijital ajans: website, chatbot,
@@ -450,7 +447,7 @@ export default function AnaSayfa() {
           </div>
 
           <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-100 pt-6 text-sm text-gray-400 sm:flex-row">
-            <p>© {new Date().getFullYear()} Ajans Platformu. Tüm hakları saklıdır.</p>
+            <p>© {new Date().getFullYear()} Novelya. Tüm hakları saklıdır.</p>
             <p>Türkiye’de sevgiyle geliştirildi ✨</p>
           </div>
         </div>

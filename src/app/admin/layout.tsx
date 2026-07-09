@@ -1,4 +1,5 @@
 import { auth } from "@/server/auth/auth";
+import { LogoMark } from "@/components/logo";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { LayoutDashboard, Users, Building2, Package, CreditCard, Brain, Bot, LogOut, ScrollText } from "lucide-react";
@@ -25,11 +26,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <aside className="fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-[hsl(var(--border))] bg-[hsl(var(--card))]">
         {/* Logo */}
         <div className="flex h-16 items-center gap-3 border-b border-[hsl(var(--border))] px-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[hsl(var(--primary))]">
-            <span className="text-sm font-black text-white">A</span>
-          </div>
+          <LogoMark size={32} />
           <div>
-            <p className="text-sm font-bold">Ajans Platformu</p>
+            <p className="text-sm font-bold">Novelya</p>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Admin Panel</p>
           </div>
         </div>

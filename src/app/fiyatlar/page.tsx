@@ -1,4 +1,5 @@
 "use client";
+import { LogoMark } from "@/components/logo";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Check, Loader2, Zap, Building2, Rocket } from "lucide-react";
@@ -74,10 +75,8 @@ export default function PricingPage() {
       <div className="border-b border-[hsl(var(--border))]">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[hsl(var(--primary))]">
-              <span className="text-sm font-black text-white">A</span>
-            </div>
-            <span className="font-bold">Ajans Platformu</span>
+            <LogoMark size={32} />
+            <span className="font-bold">Novelya</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/giris" className="text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition">

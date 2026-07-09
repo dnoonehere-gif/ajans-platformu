@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PageShell, LegalArticle } from "@/components/marketing/page-shell";
 
 export const metadata: Metadata = {
-  title: "KVKK Aydınlatma Metni | Ajans Platformu",
+  title: "KVKK Aydınlatma Metni | Novelya",
   description: "6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında kişisel verilerinizin işlenmesine ilişkin aydınlatma metni.",
 };
 
@@ -12,15 +12,15 @@ export default function KvkkPage() {
       <LegalArticle title="KVKK Aydınlatma Metni" updated="9 Temmuz 2026">
         <p>
           İşbu aydınlatma metni, 6698 sayılı Kişisel Verilerin Korunması Kanunu (“KVKK”)
-          kapsamında, veri sorumlusu sıfatıyla Ajans Platformu tarafından hazırlanmıştır.
+          kapsamında, veri sorumlusu sıfatıyla Novelya tarafından hazırlanmıştır.
           Amacımız, kişisel verilerinizin hangi amaçlarla işlendiği konusunda sizi
           bilgilendirmektir.
         </p>
 
         <h2>1. Veri Sorumlusu</h2>
         <p>
-          Kişisel verileriniz, veri sorumlusu olarak Ajans Platformu tarafından aşağıda
-          açıklanan kapsamda işlenmektedir. İletişim: <a href="mailto:kvkk@ajansplatformu.com">kvkk@ajansplatformu.com</a>.
+          Kişisel verileriniz, veri sorumlusu olarak Novelya tarafından aşağıda
+          açıklanan kapsamda işlenmektedir. İletişim: <a href="mailto:kvkk@novelya.com">kvkk@novelya.com</a>.
         </p>
 
         <h2>2. İşlenen Kişisel Veriler</h2>
@@ -75,7 +75,7 @@ export default function KvkkPage() {
 
         <h2>8. Başvuru</h2>
         <p>
-          Haklarınıza ilişkin taleplerinizi <a href="mailto:kvkk@ajansplatformu.com">kvkk@ajansplatformu.com</a>
+          Haklarınıza ilişkin taleplerinizi <a href="mailto:kvkk@novelya.com">kvkk@novelya.com</a>
           adresine iletebilirsiniz. Başvurularınız en geç 30 gün içinde ücretsiz olarak
           sonuçlandırılır.
         </p>
