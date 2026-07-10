@@ -152,7 +152,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold">
             {activeBrand ? `${activeBrand.name}` : "Dashboard"}
           </h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">Genel performans özeti</p>
+          <p className="flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))]"><span className="nv-live-dot" />Genel performans özeti</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => activeBrand && loadDashboard(activeBrand.id)} disabled={loading}
@@ -177,7 +177,7 @@ export default function DashboardPage() {
           {/* KPI Cards */}
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {/* Toplam Yorum */}
-            <div className="glass rounded-2xl p-4">
+            <div className="glass nv-enter nv-enter-1 nv-card-hover rounded-2xl p-4">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Toplam Yorum</span>
                 <Star className="h-4 w-4 text-yellow-400" />
@@ -190,7 +190,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Ortalama Puan */}
-            <div className="glass rounded-2xl p-4">
+            <div className="glass nv-enter nv-enter-2 nv-card-hover rounded-2xl p-4">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Ort. Puan</span>
                 <TrendingUp className="h-4 w-4 text-green-400" />
@@ -207,7 +207,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Bu Hafta */}
-            <div className="glass rounded-2xl p-4">
+            <div className="glass nv-enter nv-enter-3 nv-card-hover rounded-2xl p-4">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Bu Hafta</span>
                 <TrendingUp className="h-4 w-4 text-blue-400" />
@@ -220,7 +220,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Olumlu Oran */}
-            <div className="glass rounded-2xl p-4">
+            <div className="glass nv-enter nv-enter-4 nv-card-hover rounded-2xl p-4">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Olumlu Oran</span>
                 <CheckCircle className="h-4 w-4 text-green-400" />
@@ -238,7 +238,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Secondary KPI row */}
-          <div className="grid grid-cols-3 gap-3 md:grid-cols-6">
+          <div className="nv-enter nv-enter-5 grid grid-cols-3 gap-3 md:grid-cols-6">
             {[
               { label: "Olumlu", value: kpis!.sentiment.positive, color: "text-green-400 bg-green-500/10" },
               { label: "Nötr", value: kpis!.sentiment.neutral, color: "text-yellow-400 bg-yellow-500/10" },
@@ -256,7 +256,7 @@ export default function DashboardPage() {
 
           {/* 30-Day Trend Chart */}
           <LazySection fallback={<ChartSkeleton height="h-64" />}>
-          <div className="glass rounded-2xl p-5">
+          <div className="glass nv-enter nv-enter-6 nv-card-hover rounded-2xl p-5">
             <div className="mb-4 flex items-center justify-between">
               <p className="text-sm font-semibold">30 Günlük Yorum Trendi</p>
               <span className="text-xs text-[hsl(var(--muted-foreground))]">{kpis!.last30Count} yorum son 30 günde</span>
@@ -284,7 +284,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
 
             {/* Rating Distribution */}
-            <div className="glass rounded-2xl p-5">
+            <div className="glass nv-card-hover rounded-2xl p-5">
               <p className="mb-4 text-sm font-semibold">Puan Dağılımı</p>
               <div className="space-y-2.5">
                 {data.ratingDist.map((r, i) => (
@@ -306,7 +306,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Sentiment Donut */}
-            <div className="glass rounded-2xl p-5">
+            <div className="glass nv-card-hover rounded-2xl p-5">
               <p className="mb-2 text-sm font-semibold">Duygu Dağılımı</p>
               {pieData.length === 0 ? (
                 <div className="flex h-40 items-center justify-center text-sm text-[hsl(var(--muted-foreground))]">Veri yok</div>
@@ -335,7 +335,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Source Breakdown */}
-            <div className="glass rounded-2xl p-5">
+            <div className="glass nv-card-hover rounded-2xl p-5">
               <p className="mb-4 text-sm font-semibold">Kaynak Dağılımı</p>
               {data.sourceDist.length === 0 ? (
                 <div className="flex h-40 items-center justify-center text-sm text-[hsl(var(--muted-foreground))]">Veri yok</div>
@@ -360,7 +360,7 @@ export default function DashboardPage() {
 
           {/* AI Performance */}
           {perf && (
-            <div className="glass rounded-2xl p-5">
+            <div className="glass nv-card-hover rounded-2xl p-5">
               <p className="mb-5 text-sm font-semibold">AI Performans Analizi</p>
               <div className="flex flex-wrap items-start gap-8">
                 <ScoreRing value={perf.overallScore} label="Genel" color="#6366f1" />
@@ -401,7 +401,7 @@ export default function DashboardPage() {
           {/* Recent Reviews + Module Shortcuts */}
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
             {/* Recent Reviews */}
-            <div className="glass col-span-2 overflow-hidden rounded-2xl">
+            <div className="glass nv-card-hover col-span-2 overflow-hidden rounded-2xl">
               <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-5 py-3">
                 <p className="text-sm font-semibold">Son Yorumlar</p>
                 <Link href="/dashboard/reviews" className="text-xs text-[hsl(var(--primary))] hover:underline">Tümünü gör →</Link>

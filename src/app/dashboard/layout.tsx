@@ -9,6 +9,7 @@ import { ThemeSwitcher } from "@/components/dashboard/theme-switcher";
 import { NavClient } from "@/components/dashboard/nav-client";
 import { SubscriptionBanner } from "@/components/dashboard/subscription-banner";
 import { MobileSidebarToggle } from "@/components/dashboard/mobile-sidebar";
+import { AmbientBackground } from "@/components/dashboard/ambient-background";
 import { DashboardColorTheme } from "@/components/theme-provider";
 import { signOut } from "@/server/auth/auth";
 
@@ -24,6 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <BrandProvider>
       <DashboardColorTheme />
       <div className="flex min-h-screen bg-[hsl(var(--background))]">
+        <AmbientBackground />
         {/* Sidebar — masaüstü */}
         <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-[hsl(var(--border))] bg-[hsl(var(--card))] lg:flex">
 
@@ -76,7 +78,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </aside>
 
         {/* İçerik */}
-        <main className="flex-1 min-h-screen overflow-auto lg:ml-64">
+        <main className="relative z-10 flex-1 min-h-screen overflow-auto lg:ml-64">
           {/* Topbar */}
           <div className="sticky top-0 z-30 flex h-14 items-center border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] px-4 backdrop-blur gap-2">
             {/* Mobil hamburger + slide-in sidebar */}
