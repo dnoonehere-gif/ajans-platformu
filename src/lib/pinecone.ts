@@ -49,7 +49,8 @@ export async function queryKnowledge(
   });
 
   return (result.result?.hits ?? []).map((h) => ({
-    text: String(h.fields?.text ?? ""),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    text: String((h.fields as any)?.text ?? ""),
     score: h._score ?? 0,
   }));
 }
