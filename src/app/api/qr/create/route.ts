@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { getBrandPlanFeatures, isUnderLimit } from "@/lib/plan-guard";
 
 const schema = z.object({
   brandId: z.string(),
@@ -26,6 +27,16 @@ export async function POST(req: NextRequest) {
     where: { id: brandId, ownerId: (session.user as { id: string }).id },
   });
   if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
+
+  // Plan limiti: QR kod sayısı
+  const features = await getBrandPlanFeatures(brandId);
+  const qrCount = await prisma.qrCode.count({ where: { brandId } });
+  if (!isUnderLimit(qrCount, features.qrCodes)) {
+    return NextResponse.json({
+      error: `Planınız en fazla ${features.qrCodes} QR kod oluşturmanıza izin veriyor. Daha fazlası için planınızı yükseltin.`,
+      code: "PLAN_LIMIT_QR",
+    }, { status: 403 });
+  }
 
   let slug = randomSlug();
   // Çakışma ihtimaline karşı

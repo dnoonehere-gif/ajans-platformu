@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth-guard";
 import { auditFromRequest } from "@/server/audit/log";
+import { getUserPlanFeatures, isUnderLimit } from "@/lib/plan-guard";
 
 export async function POST(req: NextRequest) {
   const user = await getAuthUser();
@@ -24,6 +25,16 @@ export async function POST(req: NextRequest) {
   }).safeParse(body);
 
   if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
+
+  // Plan limiti kontrolü
+  const features = await getUserPlanFeatures(user.id);
+  const brandCount = await prisma.brand.count({ where: { ownerId: user.id } });
+  if (!isUnderLimit(brandCount, features.brands)) {
+    return NextResponse.json({
+      error: `Planınız en fazla ${features.brands} marka oluşturmanıza izin veriyor. Daha fazlası için planınızı yükseltin.`,
+      code: "PLAN_LIMIT_BRANDS",
+    }, { status: 403 });
+  }
 
   const existing = await prisma.brand.findUnique({ where: { slug: parsed.data.slug } });
   if (existing) return NextResponse.json({ error: "Bu slug zaten kullanılıyor" }, { status: 409 });

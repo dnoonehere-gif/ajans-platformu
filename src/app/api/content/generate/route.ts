@@ -6,6 +6,7 @@ import { z } from "zod";
 import type { ContentType } from "@prisma/client";
 import { auditFromRequest } from "@/server/audit/log";
 import { rateLimit, getRateLimitKey, LIMITS } from "@/server/security/rate-limit";
+import { getBrandPlanFeatures, getMonthlyAiContentCount, isUnderLimit } from "@/lib/plan-guard";
 
 const CONTENT_TYPES: ContentType[] = [
   "INSTAGRAM_POST", "REELS_IDEA", "STORY_IDEA", "FACEBOOK_POST", "LINKEDIN_POST",
@@ -38,6 +39,16 @@ export async function POST(req: NextRequest) {
     where: { id: brandId, ownerId: (session.user as { id: string }).id },
   });
   if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
+
+  // Plan limiti: aylık AI içerik sayısı
+  const features = await getBrandPlanFeatures(brandId);
+  const monthlyCount = await getMonthlyAiContentCount(brandId);
+  if (!isUnderLimit(monthlyCount, features.aiContent)) {
+    return NextResponse.json({
+      error: `Bu ay ${features.aiContent} AI içerik limitinize ulaştınız. Daha fazlası için planınızı yükseltin.`,
+      code: "PLAN_LIMIT_AI_CONTENT",
+    }, { status: 403 });
+  }
 
   const generated = await generateContent(type, {
     brandName: brand.name,

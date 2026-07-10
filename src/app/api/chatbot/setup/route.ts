@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { getBrandPlanFeatures } from "@/lib/plan-guard";
 
 const schema = z.object({
   brandId: z.string(),
@@ -24,6 +25,15 @@ export async function POST(req: NextRequest) {
     where: { id: brandId, ownerId: (session.user as { id: string }).id },
   });
   if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
+
+  // Plan limiti: chatbot erişimi
+  const features = await getBrandPlanFeatures(brandId);
+  if (!features.chatbot) {
+    return NextResponse.json({
+      error: "Chatbot özelliği planınıza dahil değil. Daha yüksek bir plana geçin.",
+      code: "PLAN_LIMIT_CHATBOT",
+    }, { status: 403 });
+  }
 
   const chatbot = await prisma.chatbot.upsert({
     where: { brandId },
