@@ -56,6 +56,7 @@ export default function WebsiteEditorPage({
   const [publishing, setPublishing] = useState(false);
   const [view, setView] = useState<"split" | "preview">("split");
   const [domainHelpOpen, setDomainHelpOpen] = useState(false);
+  const [mobileTab, setMobileTab] = useState<"chat" | "preview">("chat");
 
   // AI Chat
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -171,7 +172,7 @@ export default function WebsiteEditorPage({
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[hsl(var(--background))]">
       {/* ── Üst Araç Çubuğu ── */}
-      <header className="flex shrink-0 items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] px-5 py-3">
+      <header className="flex shrink-0 flex-wrap items-center justify-between gap-y-2 border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 py-2.5 lg:px-5 lg:py-3">
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard/website"
@@ -179,8 +180,8 @@ export default function WebsiteEditorPage({
           >
             <ChevronLeft className="h-5 w-5" />
           </Link>
-          <Globe className="h-5 w-5 text-[hsl(var(--primary))]" />
-          <span className="font-semibold">{website.title}</span>
+          <Globe className="hidden h-5 w-5 text-[hsl(var(--primary))] sm:block" />
+          <span className="max-w-[120px] truncate font-semibold sm:max-w-none">{website.title}</span>
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-medium ${
               website.isPublished
@@ -202,7 +203,7 @@ export default function WebsiteEditorPage({
               className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-green-400 transition hover:bg-green-500/10"
             >
               <ExternalLink className="h-4 w-4" />
-              Siteyi Görüntüle
+              <span className="hidden sm:inline">Siteyi Görüntüle</span>
             </a>
           )}
 
@@ -214,7 +215,7 @@ export default function WebsiteEditorPage({
             title="HTML olarak indir"
           >
             <Download className="h-4 w-4" />
-            Dışa Aktar
+            <span className="hidden sm:inline">Dışa Aktar</span>
           </a>
 
           {/* Domain Yardım */}
@@ -223,7 +224,7 @@ export default function WebsiteEditorPage({
             className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
           >
             <HelpCircle className="h-4 w-4" />
-            Domain
+            <span className="hidden sm:inline">Domain</span>
             <ChevronDown className={`h-3 w-3 transition ${domainHelpOpen ? "rotate-180" : ""}`} />
           </button>
 
@@ -240,7 +241,7 @@ export default function WebsiteEditorPage({
           {/* Görünüm */}
           <button
             onClick={() => setView(view === "split" ? "preview" : "split")}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
+            className="hidden items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] lg:flex"
           >
             {view === "split" ? (
               <><Eye className="h-4 w-4" /> Tam Ekran</>
@@ -262,7 +263,7 @@ export default function WebsiteEditorPage({
             ) : (
               <Save className="h-4 w-4" />
             )}
-            {saved ? "Kaydedildi" : "Kaydet"}
+            <span className="hidden sm:inline">{saved ? "Kaydedildi" : "Kaydet"}</span>
           </button>
 
           {/* Yayınla */}
@@ -282,7 +283,8 @@ export default function WebsiteEditorPage({
             ) : (
               <Eye className="h-4 w-4" />
             )}
-            {website.isPublished ? "Yayından Kaldır" : "Yayınla"}
+            <span className="hidden sm:inline">{website.isPublished ? "Yayından Kaldır" : "Yayınla"}</span>
+            <span className="sm:hidden">{website.isPublished ? "Kaldır" : "Yayınla"}</span>
           </button>
         </div>
       </header>
@@ -341,7 +343,7 @@ export default function WebsiteEditorPage({
       <div className="flex flex-1 overflow-hidden">
         {/* ── Sol Panel: AI Chat ── */}
         {view === "split" && (
-          <aside className="flex w-80 shrink-0 flex-col border-r border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+          <aside className={`${mobileTab === "chat" ? "flex" : "hidden"} w-full shrink-0 flex-col border-r border-[hsl(var(--border))] bg-[hsl(var(--card))] lg:flex lg:w-80`}>
             {/* Başlık */}
             <div className="flex items-center gap-2 border-b border-[hsl(var(--border))] px-4 py-3">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[hsl(var(--primary)/0.12)]">
@@ -444,7 +446,7 @@ export default function WebsiteEditorPage({
         )}
 
         {/* ── Sağ Panel: Önizleme ── */}
-        <main className="flex-1 overflow-y-auto">
+        <main className={`${view === "split" && mobileTab === "chat" ? "hidden" : "block"} flex-1 overflow-y-auto lg:block`}>
           {/* Önizleme şeridi */}
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.9)] px-5 py-2 backdrop-blur">
             <span className="text-xs text-[hsl(var(--muted-foreground))]">
@@ -463,6 +465,34 @@ export default function WebsiteEditorPage({
           </div>
         </main>
       </div>
+
+      {/* ── Mobil Sekme Çubuğu ── */}
+      {view === "split" && (
+        <div className="flex shrink-0 border-t border-[hsl(var(--border))] bg-[hsl(var(--card))] pb-[env(safe-area-inset-bottom,0px)] lg:hidden">
+          <button
+            onClick={() => setMobileTab("chat")}
+            className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-semibold transition ${
+              mobileTab === "chat"
+                ? "text-[hsl(var(--primary))] border-t-2 border-[hsl(var(--primary))] -mt-px"
+                : "text-[hsl(var(--muted-foreground))]"
+            }`}
+          >
+            <Bot className="h-4 w-4" />
+            AI Editör
+          </button>
+          <button
+            onClick={() => setMobileTab("preview")}
+            className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-semibold transition ${
+              mobileTab === "preview"
+                ? "text-[hsl(var(--primary))] border-t-2 border-[hsl(var(--primary))] -mt-px"
+                : "text-[hsl(var(--muted-foreground))]"
+            }`}
+          >
+            <Eye className="h-4 w-4" />
+            Önizleme
+          </button>
+        </div>
+      )}
     </div>
   );
 }
