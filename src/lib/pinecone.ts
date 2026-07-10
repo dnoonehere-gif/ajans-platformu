@@ -21,14 +21,14 @@ export async function upsertKnowledge(
   if (!pc) return;
 
   const index = pc.index(PINECONE_INDEX);
-  await index.namespace(brandId).upsertRecords(
-    records.map((r) => ({
+  await index.namespace(brandId).upsertRecords({
+    records: records.map((r) => ({
       _id: r.id,
       text: r.text,
       brandId,
       source: r.source ?? "manual",
-    }))
-  );
+    })),
+  });
 }
 
 /**
