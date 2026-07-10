@@ -25,18 +25,26 @@ async function main() {
   // Paketler
   await prisma.plan.upsert({
     where: { slug: "baslangic" },
-    update: {},
+    update: { priceCents: 79900 },
     create: {
-      name: "Başlangıç", slug: "baslangic", priceCents: 49900, trialDays: 14,
-      features: { brands: 1, aiContentPerMonth: 50, chatbot: false },
+      name: "Başlangıç", slug: "baslangic", priceCents: 79900, trialDays: 14,
+      features: { brands: 1, teamMembers: 2, aiContent: 50, chatbot: false, reviews: false, qrCodes: 2, website: true, googleBusiness: false, seoContent: false, support: "email" },
     },
   });
   await prisma.plan.upsert({
     where: { slug: "profesyonel" },
-    update: {},
+    update: { priceCents: 149900 },
     create: {
-      name: "Profesyonel", slug: "profesyonel", priceCents: 99900, trialDays: 14,
-      features: { brands: 5, aiContentPerMonth: 300, chatbot: true },
+      name: "Profesyonel", slug: "profesyonel", priceCents: 149900, trialDays: 14,
+      features: { brands: 5, teamMembers: 10, aiContent: 300, chatbot: true, reviews: true, qrCodes: 10, website: true, googleBusiness: true, seoContent: true, support: "priority" },
+    },
+  });
+  await prisma.plan.upsert({
+    where: { slug: "isletme" },
+    update: { priceCents: 299900 },
+    create: {
+      name: "İşletme", slug: "isletme", priceCents: 299900, trialDays: 14,
+      features: { brands: -1, teamMembers: -1, aiContent: -1, chatbot: true, reviews: true, qrCodes: -1, website: true, googleBusiness: true, seoContent: true, support: "dedicated" },
     },
   });
 
