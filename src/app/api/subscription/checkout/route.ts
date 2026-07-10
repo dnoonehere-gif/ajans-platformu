@@ -59,7 +59,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const checkoutUrl = SHOPIER_LINKS[plan.slug] ?? null;
+  // Kullanıcı emailini URL'ye ekle — Shopier formu otomatik doldurur
+  // Bu sayede webhook gelen email her zaman Novelya emailiyle eşleşir
+  const dbUser = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+  const baseUrl = SHOPIER_LINKS[plan.slug] ?? null;
+  const checkoutUrl = baseUrl && dbUser?.email
+    ? `${baseUrl}?buyer_email=${encodeURIComponent(dbUser.email)}`
+    : baseUrl;
 
   return NextResponse.json({ subscription: currentSub, checkoutUrl });
 }
