@@ -1,31 +1,13 @@
 import { auth } from "@/server/auth/auth";
 import { LogoMark } from "@/components/logo";
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import {
-  LayoutDashboard, Globe, Bot, Star, Sparkles, QrCode,
-  Users, Settings, LogOut, Shield, ChevronRight, Building2, MapPin, CreditCard, Palette, UtensilsCrossed,
-} from "lucide-react";
+import { LogOut, Palette, ChevronRight } from "lucide-react";
 import { BrandProvider } from "@/components/dashboard/brand-provider";
 import { BrandSwitcher } from "@/components/dashboard/brand-switcher";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { ThemeSwitcher } from "@/components/dashboard/theme-switcher";
+import { NavClient } from "@/components/dashboard/nav-client";
 import { signOut } from "@/server/auth/auth";
-
-const NAV = [
-  { href: "/dashboard", label: "Genel Bakış", icon: LayoutDashboard },
-  { href: "/dashboard/website", label: "Website Builder", icon: Globe },
-  { href: "/dashboard/chatbot", label: "Chatbot", icon: Bot },
-  { href: "/dashboard/google", label: "Google Business", icon: MapPin },
-  { href: "/dashboard/reviews", label: "Yorum Analizi", icon: Star },
-  { href: "/dashboard/content", label: "İçerik Üreticisi", icon: Sparkles },
-  { href: "/dashboard/menu", label: "Dijital Menü", icon: UtensilsCrossed },
-  { href: "/dashboard/qr", label: "QR Geri Bildirim", icon: QrCode },
-  { href: "/dashboard/subeler", label: "Şubeler", icon: Building2 },
-  { href: "/dashboard/team", label: "Takım", icon: Users },
-  { href: "/dashboard/abonelik", label: "Abonelik", icon: CreditCard },
-  { href: "/dashboard/ayarlar", label: "Ayarlar", icon: Settings },
-];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -56,29 +38,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
 
           {/* Nav */}
-          <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
-            {NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
-              >
-                <item.icon className="h-4 w-4 shrink-0" />
-                <span className="flex-1">{item.label}</span>
-                <ChevronRight className="h-3 w-3 opacity-0 transition group-hover:opacity-40" />
-              </Link>
-            ))}
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
-              >
-                <Shield className="h-4 w-4 shrink-0 text-purple-400" />
-                <span className="flex-1">Admin Panel</span>
-                <ChevronRight className="h-3 w-3 opacity-0 transition group-hover:opacity-40" />
-              </Link>
-            )}
-          </nav>
+          <NavClient isAdmin={isAdmin} />
 
           {/* Tema seçici */}
           <div className="border-t border-[hsl(var(--border))]">

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Globe, Sparkles, Loader2, ChevronRight, ChevronLeft, Check, Palette, Phone, Building2, ImageIcon } from "lucide-react";
 import Image from "next/image";
@@ -55,9 +55,27 @@ export default function WebsitePage() {
   const router = useRouter();
   const { activeBrand } = useBrand();
 
+  const [checking, setChecking] = useState(true);
   const [step, setStep] = useState(1);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
+
+  // Mevcut website varsa editöre yönlendir
+  useEffect(() => {
+    if (!activeBrand) { setChecking(false); return; }
+    setChecking(true);
+    fetch(`/api/website/${activeBrand.id}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.website?.id) {
+          router.replace(`/dashboard/website/editor/${d.website.id}`);
+        } else {
+          setChecking(false);
+        }
+      })
+      .catch(() => setChecking(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeBrand?.id, router]);
 
   const [sector, setSector] = useState("");
   const [customSector, setCustomSector] = useState("");
@@ -121,10 +139,10 @@ export default function WebsitePage() {
     }
   }
 
-  if (!activeBrand) {
+  if (!activeBrand || checking) {
     return (
-      <div className="flex h-64 items-center justify-center text-[hsl(var(--muted-foreground))]">
-        Önce bir marka seçin
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-7 w-7 animate-spin text-[hsl(var(--primary))]" />
       </div>
     );
   }
