@@ -22,7 +22,7 @@ export async function DELETE(
   // Pinecone'dan da sil
   try {
     const pc = getPinecone();
-    if (pc) await pc.index(PINECONE_INDEX).namespace(brandId).deleteOne(id);
+    if (pc) await pc.index(PINECONE_INDEX).namespace(brandId).deleteMany([id]);
   } catch { /* sessizce geç */ }
 
   return NextResponse.json({ ok: true });
