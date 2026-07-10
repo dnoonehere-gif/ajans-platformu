@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     brandId,
     type: "subscription_started",
     title: `${plan.name} planı başlatıldı`,
-    body: `${plan.trialDays} günlük ücretsiz denemeniz başladı. İyi kullanımlar!`,
+    body: `${plan.name} planınız aktive edildi. İyi kullanımlar!`,
     data: { planId: plan.id, planName: plan.name, subscriptionId: subscription.id },
   });
 
