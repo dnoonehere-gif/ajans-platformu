@@ -50,7 +50,7 @@ export async function getUserPlanFeatures(userId: string): Promise<PlanFeatures>
 export async function getMonthlyAiContentCount(brandId: string): Promise<number> {
   const start = new Date();
   start.setDate(1); start.setHours(0, 0, 0, 0);
-  return prisma.content.count({
+  return prisma.contentItem.count({
     where: { brandId, createdAt: { gte: start } },
   });
 }
