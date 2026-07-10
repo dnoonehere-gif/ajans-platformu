@@ -19,7 +19,21 @@ const DEFAULT_FEATURES: PlanFeatures = {
   website: true, googleBusiness: false, seoContent: false, support: "email",
 };
 
-/** Markanın aktif planının özelliklerini döndürür. Plan yoksa default (en kısıtlı) döner. */
+export type SubscriptionState = "active" | "suspended" | "none";
+
+/** Markanın abonelik durumunu döndürür */
+export async function getBrandSubscriptionState(brandId: string): Promise<SubscriptionState> {
+  const sub = await prisma.subscription.findFirst({
+    where: { brandId },
+    orderBy: { createdAt: "desc" },
+  });
+  if (!sub) return "none";
+  if (sub.status === "ACTIVE" || sub.status === "TRIALING") return "active";
+  if (sub.status === "PAST_DUE" || sub.status === "EXPIRED" || sub.status === "CANCELED") return "suspended";
+  return "none";
+}
+
+/** Markanın aktif planının özelliklerini döndürür. Plan yoksa/askıdaysa default (en kısıtlı) döner. */
 export async function getBrandPlanFeatures(brandId: string): Promise<PlanFeatures> {
   const sub = await prisma.subscription.findFirst({
     where: { brandId, status: { in: ["ACTIVE", "TRIALING"] } },

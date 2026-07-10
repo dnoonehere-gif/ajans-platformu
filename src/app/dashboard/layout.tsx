@@ -7,6 +7,7 @@ import { BrandSwitcher } from "@/components/dashboard/brand-switcher";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { ThemeSwitcher } from "@/components/dashboard/theme-switcher";
 import { NavClient } from "@/components/dashboard/nav-client";
+import { SubscriptionBanner } from "@/components/dashboard/subscription-banner";
 import { signOut } from "@/server/auth/auth";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -77,6 +78,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <div className="sticky top-0 z-30 flex h-14 items-center justify-end border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] px-6 backdrop-blur">
             <NotificationBell />
           </div>
+          <SubscriptionBanner />
           {children}
         </main>
       </div>
