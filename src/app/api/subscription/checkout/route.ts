@@ -2,14 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
-import { sendNotification } from "@/server/notifications/send";
-import { sendSubscriptionConfirmEmail } from "@/lib/email";
-import { auditFromRequest } from "@/server/audit/log";
+import { Redis } from "@upstash/redis";
+
+function getUpstash() {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) return null;
+  return new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN });
+}
 
 const schema = z.object({
   brandId: z.string(),
   planId: z.string(),
-  provider: z.enum(["PAYTR", "SHOPIER"]).optional().default("SHOPIER"),
 });
 
 // Shopier ürün linkleri — plan slug → URL
@@ -39,67 +41,25 @@ export async function POST(req: NextRequest) {
   const plan = await prisma.plan.findUnique({ where: { id: planId, isActive: true } });
   if (!plan) return NextResponse.json({ error: "Plan bulunamadı" }, { status: 404 });
 
-  // Mevcut aktif aboneliği iptal et
-  await prisma.subscription.updateMany({
+  // Mevcut aboneliği getir (göstermek için, değiştirme)
+  const currentSub = await prisma.subscription.findFirst({
     where: { brandId, status: { in: ["TRIALING", "ACTIVE"] } },
-    data: { status: "CANCELED" },
-  });
-
-  // Deneme süresi hesapla
-  const trialEndsAt = plan.trialDays > 0
-    ? new Date(Date.now() + plan.trialDays * 24 * 60 * 60 * 1000)
-    : null;
-
-  // Yeni abonelik oluştur — ödeme tamamlanana kadar TRIALING
-  const subscription = await prisma.subscription.create({
-    data: {
-      brandId,
-      planId,
-      status: "TRIALING",
-      trialEndsAt,
-      provider: "PAYTR",
-    },
     include: { plan: true },
+    orderBy: { createdAt: "desc" },
   });
 
-  // Bekleyen fatura oluştur
-  await prisma.invoice.create({
-    data: {
-      subscriptionId: subscription.id,
-      amountCents: plan.priceCents,
-      currency: plan.currency,
-      status: "PENDING",
-      provider: "PAYTR",
-    },
-  });
-
-  await sendNotification({
-    userId,
-    brandId,
-    type: "subscription_started",
-    title: `${plan.name} planı başlatıldı`,
-    body: `${plan.name} planınız aktive edildi. İyi kullanımlar!`,
-    data: { planId: plan.id, planName: plan.name, subscriptionId: subscription.id },
-  });
-
-  // Abonelik onay maili
-  const dbUser = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } });
-  if (dbUser?.email) {
-    sendSubscriptionConfirmEmail(dbUser.email, {
-      name: dbUser.name ?? "Kullanıcı",
-      planName: plan.name,
-      trialDays: plan.trialDays,
-      endsAt: trialEndsAt?.toISOString(),
-    }).catch(() => null);
+  // Ödeme niyetini Redis'e kaydet (24 saat TTL)
+  // Webhook gelince bu bilgiyle subscription aktive edilecek
+  const redis = getUpstash();
+  if (redis) {
+    await redis.set(
+      `checkout:${userId}:${plan.slug}`,
+      JSON.stringify({ brandId, planId, userId, planSlug: plan.slug }),
+      { ex: 60 * 60 * 24 }
+    );
   }
 
-  auditFromRequest("subscription.create", userId, {
-    entity: "Subscription", entityId: subscription.id,
-    metadata: { brandId, planId: plan.id, planName: plan.name },
-  }).catch(() => null);
-
-  // Shopier ödeme linki
   const checkoutUrl = SHOPIER_LINKS[plan.slug] ?? null;
 
-  return NextResponse.json({ subscription, checkoutUrl });
+  return NextResponse.json({ subscription: currentSub, checkoutUrl });
 }

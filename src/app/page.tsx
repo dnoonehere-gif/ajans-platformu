@@ -179,7 +179,7 @@ export default function AnaSayfa() {
               href="/kayit"
               className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-4 text-base font-bold text-white shadow-xl shadow-violet-500/30 transition hover:shadow-violet-500/50 hover:-translate-y-0.5"
             >
-              14 Gün Ücretsiz Dene
+              Hemen Başla
               <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
             </Link>
             <Link

@@ -1,61 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Redis } from "@upstash/redis";
 import { sendSubscriptionConfirmEmail } from "@/lib/email";
+import { sendNotification } from "@/server/notifications/send";
 
-// Shopier ürün ID → plan slug eşleştirmesi
+// Shopier ürün ID → plan slug
 const PRODUCT_TO_PLAN: Record<string, string> = {
   "48849668": "baslangic",
   "48849672": "profesyonel",
   "48849675": "isletme",
 };
 
+function getUpstash() {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) return null;
+  return new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN });
+}
+
 export async function POST(req: NextRequest) {
   try {
-    // Shopier webhook token doğrulaması
     const webhookToken = process.env.SHOPIER_WEBHOOK_TOKEN;
     if (webhookToken) {
       const incoming =
         req.headers.get("x-shopier-webhook-token") ??
-        req.headers.get("authorization")?.replace("Bearer ", "") ??
-        "";
+        req.headers.get("authorization")?.replace("Bearer ", "") ?? "";
       if (incoming !== webhookToken) {
-        console.error("Shopier webhook token doğrulaması başarısız");
         return new NextResponse("FAILED", { status: 403 });
       }
     }
 
     const event = await req.json();
-
     const eventType: string = event.event ?? "";
     const data = event.data ?? {};
 
-    // Sadece sipariş tamamlandığında işlem yap
     if (eventType !== "order.fulfilled" && eventType !== "order.created") {
       return new NextResponse("OK", { status: 200 });
     }
 
     const buyerEmail: string | undefined =
       data.buyer?.email ?? data.customer?.email ?? data.email;
-
-    const productId: string | undefined =
+    const productId: string =
       String(data.product?.id ?? data.product_id ?? data.items?.[0]?.product_id ?? "");
-
-    const orderId: string | undefined =
+    const orderId: string =
       String(data.id ?? data.order_id ?? "");
-
     const totalValue: number =
       data.total ?? data.total_price ?? data.amount ?? 0;
 
     if (!buyerEmail || !productId) {
-      console.error("Shopier webhook: eksik alan", { buyerEmail, productId, eventType });
+      console.error("Shopier webhook: eksik alan", { buyerEmail, productId });
       return new NextResponse("OK", { status: 200 });
     }
 
     const planSlug = PRODUCT_TO_PLAN[productId];
-    if (!planSlug) {
-      // Novelya ürünü değil, yoksay
-      return new NextResponse("OK", { status: 200 });
-    }
+    if (!planSlug) return new NextResponse("OK", { status: 200 });
 
     const plan = await prisma.plan.findUnique({ where: { slug: planSlug } });
     if (!plan) return new NextResponse("FAILED", { status: 500 });
@@ -67,43 +63,85 @@ export async function POST(req: NextRequest) {
     }
 
     if (eventType === "order.fulfilled") {
-      // Ödeme tamamlandı — aboneliği aktif et
-      const subscription = await prisma.subscription.findFirst({
-        where: {
-          brand: { ownerId: user.id },
-          planId: plan.id,
-          status: { in: ["TRIALING", "ACTIVE"] },
-        },
-        orderBy: { createdAt: "desc" },
+      // Redis'ten brandId bul
+      const redis = getUpstash();
+      let brandId: string | null = null;
+
+      if (redis) {
+        const intent = await redis.get<string>(`checkout:${user.id}:${planSlug}`);
+        if (intent) {
+          const parsed = typeof intent === "string" ? JSON.parse(intent) : intent;
+          brandId = parsed.brandId ?? null;
+          // Intent'i temizle
+          await redis.del(`checkout:${user.id}:${planSlug}`);
+        }
+      }
+
+      // Redis yoksa kullanıcının ilk markasını bul (fallback)
+      if (!brandId) {
+        const brand = await prisma.brand.findFirst({
+          where: { ownerId: user.id },
+          orderBy: { createdAt: "asc" },
+        });
+        brandId = brand?.id ?? null;
+      }
+
+      if (!brandId) {
+        console.error("Shopier webhook: brandId bulunamadı", { userId: user.id });
+        return new NextResponse("OK", { status: 200 });
+      }
+
+      // Mevcut aktif/trialing abonelikleri iptal et
+      await prisma.subscription.updateMany({
+        where: { brandId, status: { in: ["TRIALING", "ACTIVE"] } },
+        data: { status: "CANCELED" },
       });
 
-      if (subscription) {
-        const endsAt = new Date();
-        endsAt.setMonth(endsAt.getMonth() + (plan.interval === "year" ? 12 : 1));
+      const endsAt = new Date();
+      endsAt.setMonth(endsAt.getMonth() + (plan.interval === "year" ? 12 : 1));
 
-        await prisma.subscription.update({
-          where: { id: subscription.id },
-          data: { status: "ACTIVE", startedAt: new Date(), endsAt },
-        });
+      // Yeni ACTIVE abonelik oluştur
+      const subscription = await prisma.subscription.create({
+        data: {
+          brandId,
+          planId: plan.id,
+          status: "ACTIVE",
+          startedAt: new Date(),
+          endsAt,
+          provider: "SHOPIER",
+          providerSubId: orderId || null,
+        },
+      });
 
-        await prisma.invoice.updateMany({
-          where: { subscriptionId: subscription.id, status: "PENDING" },
-          data: {
-            status: "PAID",
-            paidAt: new Date(),
-            amountCents: Math.round(totalValue * 100),
-            providerRef: orderId,
-          },
-        });
+      // Fatura oluştur (PAID)
+      await prisma.invoice.create({
+        data: {
+          subscriptionId: subscription.id,
+          amountCents: Math.round(totalValue * 100) || plan.priceCents,
+          currency: plan.currency,
+          status: "PAID",
+          paidAt: new Date(),
+          provider: "SHOPIER",
+          providerRef: orderId || null,
+        },
+      });
 
-        sendSubscriptionConfirmEmail(user.email!, {
-          name: user.name ?? "Kullanıcı",
-          planName: plan.name,
-          trialDays: 0,
-        }).catch(() => null);
-      }
+      // Bildirim + mail
+      await sendNotification({
+        userId: user.id,
+        brandId,
+        type: "subscription_started",
+        title: `${plan.name} planı aktive edildi`,
+        body: `Ödemeniz alındı. ${plan.name} planınız aktif!`,
+        data: { planId: plan.id, planName: plan.name, subscriptionId: subscription.id },
+      });
+
+      sendSubscriptionConfirmEmail(user.email!, {
+        name: user.name ?? "Kullanıcı",
+        planName: plan.name,
+        trialDays: 0,
+      }).catch(() => null);
     } else if (eventType === "order.created") {
-      // Sipariş oluşturuldu ama henüz ödenmedi — şimdilik logluyoruz
       console.log("Shopier order.created:", { buyerEmail, planSlug, orderId });
     }
 
