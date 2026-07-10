@@ -6,6 +6,9 @@ import { sendVerificationEmail, sendWelcomeEmail } from "@/lib/email";
 import { randomBytes } from "crypto";
 import { auditFromRequest } from "@/server/audit/log";
 import { rateLimit, getRateLimitKey, LIMITS } from "@/server/security/rate-limit";
+import { renderToBuffer } from "@react-pdf/renderer";
+import React from "react";
+import { UserAgreementPDF } from "@/lib/pdf/contracts";
 
 const schema = z.object({
   name: z.string().min(2, "Ad en az 2 karakter olmalı"),
@@ -47,10 +50,16 @@ export async function POST(req: NextRequest) {
 
   try {
     await sendVerificationEmail(email, token);
-    // Doğrulama sonrası hoş geldin maili için token'ı kaydettik,
-    // welcome mail doğrulamadan sonra /mail-dogrulama route'unda gönderilebilir.
-    // Ancak UX iyileştirmesi: hemen de gönderebiliriz.
-    sendWelcomeEmail(email, name).catch(() => null);
+    // Kullanıcı sözleşmesi PDF'i arka planda oluştur ve hoş geldin mailine ekle
+    (async () => {
+      try {
+        const element = UserAgreementPDF({ data: { name, email, registeredAt: new Date() } });
+        const pdfBuffer = await renderToBuffer(element as Parameters<typeof renderToBuffer>[0]);
+        await sendWelcomeEmail(email, name, pdfBuffer as Buffer);
+      } catch {
+        sendWelcomeEmail(email, name).catch(() => null);
+      }
+    })();
   } catch {
     // Mail gönderilemese de kayıt tamamlanır
   }

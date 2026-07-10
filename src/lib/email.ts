@@ -3,9 +3,28 @@ import { Resend } from "resend";
 const FROM = `Novelya <novelya@novelya.com.tr>`;
 const BASE_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 
-async function sendMail(to: string | string[], subject: string, html: string) {
+interface Attachment {
+  filename: string;
+  content: Buffer;
+}
+
+async function sendMail(
+  to: string | string[],
+  subject: string,
+  html: string,
+  attachments?: Attachment[],
+) {
   const resend = new Resend(process.env.RESEND_API_KEY ?? "placeholder");
-  await resend.emails.send({ from: FROM, to, subject, html });
+  await resend.emails.send({
+    from: FROM,
+    to,
+    subject,
+    html,
+    attachments: attachments?.map((a) => ({
+      filename: a.filename,
+      content: a.content,
+    })),
+  });
 }
 
 function layout(opts: { preheader?: string; body: string; footerNote?: string }) {
@@ -81,7 +100,14 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   }));
 }
 
-export async function sendWelcomeEmail(email: string, name: string) {
+export async function sendWelcomeEmail(
+  email: string,
+  name: string,
+  pdfBuffer?: Buffer,
+) {
+  const attachments: Attachment[] = pdfBuffer
+    ? [{ filename: "Novelya-Kullanici-Sozlesmesi.pdf", content: pdfBuffer }]
+    : [];
   await sendMail(email, "Novelya'ya hoş geldiniz!", layout({
     preheader: "Novelya'ya hoş geldiniz!",
     body: `
@@ -98,7 +124,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
       `)}
       ${cta("Dashboard'a Git", `${BASE_URL}/dashboard`)}
     `,
-  }));
+  }), attachments.length ? attachments : undefined);
 }
 
 export async function sendTeamInviteEmail(email: string, opts: {
@@ -117,15 +143,19 @@ export async function sendTeamInviteEmail(email: string, opts: {
 }
 
 export async function sendSubscriptionConfirmEmail(email: string, opts: {
-  name: string; planName: string; trialDays: number; endsAt?: string;
+  name: string; planName: string; trialDays: number; endsAt?: string; pdfBuffer?: Buffer;
 }) {
+  const attachments: Attachment[] = opts.pdfBuffer
+    ? [{ filename: "Novelya-Abonelik-Sozlesmesi.pdf", content: opts.pdfBuffer }]
+    : [];
   await sendMail(email, `${opts.planName} planınız başladı — Novelya`, layout({
     body: `
       ${h("Aboneliğiniz başladı 🚀")}
       ${p(`Merhaba <strong style="color:#f0f0ff;">${opts.name}</strong>, ${badge(opts.planName, "#22c55e")} planınız aktif!`)}
+      ${p("Abonelik sözleşmeniz bu e-postaya eklenmiştir. Lütfen saklayınız.")}
       ${cta("Dashboard'a Git", `${BASE_URL}/dashboard/abonelik`)}
     `,
-  }));
+  }), attachments.length ? attachments : undefined);
 }
 
 export async function sendSubscriptionCancelEmail(email: string, opts: {

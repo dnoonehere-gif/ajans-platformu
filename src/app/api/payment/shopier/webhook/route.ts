@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { Redis } from "@upstash/redis";
 import { sendSubscriptionConfirmEmail } from "@/lib/email";
 import { sendNotification } from "@/server/notifications/send";
+import { renderToBuffer } from "@react-pdf/renderer";
+import React from "react";
+import { SubscriptionAgreementPDF } from "@/lib/pdf/contracts";
 
 // Shopier ürün ID → plan slug
 const PRODUCT_TO_PLAN: Record<string, string> = {
@@ -108,7 +111,7 @@ export async function POST(req: NextRequest) {
           status: "ACTIVE",
           startedAt: new Date(),
           endsAt,
-          provider: "PAYTR",
+          provider: "SHOPIER",
           providerSubId: orderId || null,
         },
       });
@@ -121,7 +124,7 @@ export async function POST(req: NextRequest) {
           currency: plan.currency,
           status: "PAID",
           paidAt: new Date(),
-          provider: "PAYTR",
+          provider: "SHOPIER",
           providerRef: orderId || null,
         },
       });
@@ -136,11 +139,39 @@ export async function POST(req: NextRequest) {
         data: { planId: plan.id, planName: plan.name, subscriptionId: subscription.id },
       });
 
-      sendSubscriptionConfirmEmail(user.email!, {
-        name: user.name ?? "Kullanıcı",
-        planName: plan.name,
-        trialDays: 0,
-      }).catch(() => null);
+      // Abonelik sözleşmesi PDF'i oluştur ve onay mailine ekle
+      (async () => {
+        try {
+          const brand = await prisma.brand.findUnique({ where: { id: brandId! }, select: { name: true } });
+          const element = SubscriptionAgreementPDF({
+            data: {
+              name: user.name ?? "Kullanıcı",
+              email: user.email!,
+              planName: plan.name,
+              planPrice: plan.priceCents,
+              planCurrency: plan.currency,
+              planInterval: plan.interval,
+              startedAt: new Date(),
+              endsAt,
+              orderId: orderId || undefined,
+              brandName: brand?.name,
+            },
+          });
+          const pdfBuffer = await renderToBuffer(element as Parameters<typeof renderToBuffer>[0]);
+          await sendSubscriptionConfirmEmail(user.email!, {
+            name: user.name ?? "Kullanıcı",
+            planName: plan.name,
+            trialDays: 0,
+            pdfBuffer: pdfBuffer as Buffer,
+          });
+        } catch {
+          sendSubscriptionConfirmEmail(user.email!, {
+            name: user.name ?? "Kullanıcı",
+            planName: plan.name,
+            trialDays: 0,
+          }).catch(() => null);
+        }
+      })();
     } else if (eventType === "order.created") {
       console.log("Shopier order.created:", { buyerEmail, planSlug, orderId });
     }
