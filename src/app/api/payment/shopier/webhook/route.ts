@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHmac } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendSubscriptionConfirmEmail } from "@/lib/email";
 
@@ -10,76 +9,52 @@ const PRODUCT_TO_PLAN: Record<string, string> = {
   "48849675": "isletme",
 };
 
-function verifySignature(params: URLSearchParams, apiKey: string): boolean {
-  const signature = params.get("signature");
-  if (!signature) return false;
-
-  // Shopier imza: SHA256(buyer_name + buyer_email + buyer_phone + product_id + order_id + product_count + total_order_value + status + api_key)
-  const raw = [
-    params.get("buyer_name") ?? "",
-    params.get("buyer_email") ?? "",
-    params.get("buyer_phone") ?? "",
-    params.get("product_id") ?? "",
-    params.get("order_id") ?? "",
-    params.get("product_count") ?? "",
-    params.get("total_order_value") ?? "",
-    params.get("status") ?? "",
-    apiKey,
-  ].join("");
-
-  const expected = createHmac("sha256", apiKey).update(raw).digest("base64");
-  return expected === signature;
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.text();
-    const params = new URLSearchParams(body);
+    const event = await req.json();
 
-    const apiKey = process.env.SHOPIER_API_KEY;
-    if (!apiKey) {
-      console.error("SHOPIER_API_KEY eksik");
-      return new NextResponse("FAILED", { status: 500 });
+    const eventType: string = event.event ?? "";
+    const data = event.data ?? {};
+
+    // Sadece sipariş tamamlandığında işlem yap
+    if (eventType !== "order.fulfilled" && eventType !== "order.created") {
+      return new NextResponse("OK", { status: 200 });
     }
 
-    // İmza doğrulama
-    if (!verifySignature(params, apiKey)) {
-      console.error("Shopier webhook imza doğrulaması başarısız");
-      return new NextResponse("FAILED", { status: 403 });
-    }
+    const buyerEmail: string | undefined =
+      data.buyer?.email ?? data.customer?.email ?? data.email;
 
-    const status = params.get("status");       // "1" = başarılı, "0" = başarısız
-    const buyerEmail = params.get("buyer_email");
-    const productId = params.get("product_id");
-    const orderId = params.get("order_id");
-    const totalValue = params.get("total_order_value"); // TL cinsinden
+    const productId: string | undefined =
+      String(data.product?.id ?? data.product_id ?? data.items?.[0]?.product_id ?? "");
 
-    if (!buyerEmail || !productId || !orderId) {
-      return new NextResponse("FAILED", { status: 400 });
+    const orderId: string | undefined =
+      String(data.id ?? data.order_id ?? "");
+
+    const totalValue: number =
+      data.total ?? data.total_price ?? data.amount ?? 0;
+
+    if (!buyerEmail || !productId) {
+      console.error("Shopier webhook: eksik alan", { buyerEmail, productId, eventType });
+      return new NextResponse("OK", { status: 200 });
     }
 
     const planSlug = PRODUCT_TO_PLAN[productId];
     if (!planSlug) {
-      console.error("Bilinmeyen Shopier ürün ID:", productId);
-      return new NextResponse("OK", { status: 200 }); // Novelya ürünü değil, yoksay
-    }
-
-    // Kullanıcıyı bul
-    const user = await prisma.user.findUnique({
-      where: { email: buyerEmail },
-      include: { brands: { take: 1, orderBy: { createdAt: "asc" } } },
-    });
-
-    if (!user) {
-      console.error("Shopier webhook: kullanıcı bulunamadı:", buyerEmail);
+      // Novelya ürünü değil, yoksay
       return new NextResponse("OK", { status: 200 });
     }
 
     const plan = await prisma.plan.findUnique({ where: { slug: planSlug } });
     if (!plan) return new NextResponse("FAILED", { status: 500 });
 
-    if (status === "1") {
-      // Başarılı ödeme — kullanıcının bu planla TRIALING/PENDING aboneliğini bul
+    const user = await prisma.user.findUnique({ where: { email: buyerEmail } });
+    if (!user) {
+      console.error("Shopier webhook: kullanıcı bulunamadı:", buyerEmail);
+      return new NextResponse("OK", { status: 200 });
+    }
+
+    if (eventType === "order.fulfilled") {
+      // Ödeme tamamlandı — aboneliği aktif et
       const subscription = await prisma.subscription.findFirst({
         where: {
           brand: { ownerId: user.id },
@@ -103,28 +78,20 @@ export async function POST(req: NextRequest) {
           data: {
             status: "PAID",
             paidAt: new Date(),
-            amountCents: totalValue ? Math.round(parseFloat(totalValue) * 100) : plan.priceCents,
+            amountCents: Math.round(totalValue * 100),
             providerRef: orderId,
           },
         });
 
-        // Onay maili
         sendSubscriptionConfirmEmail(user.email!, {
           name: user.name ?? "Kullanıcı",
           planName: plan.name,
           trialDays: 0,
         }).catch(() => null);
       }
-    } else if (status === "0") {
-      // Başarısız ödeme
-      await prisma.subscription.updateMany({
-        where: {
-          brand: { ownerId: user.id },
-          planId: plan.id,
-          status: { in: ["TRIALING", "PENDING"] },
-        },
-        data: { status: "PAST_DUE" },
-      });
+    } else if (eventType === "order.created") {
+      // Sipariş oluşturuldu ama henüz ödenmedi — şimdilik logluyoruz
+      console.log("Shopier order.created:", { buyerEmail, planSlug, orderId });
     }
 
     return new NextResponse("OK", { status: 200 });
