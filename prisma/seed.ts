@@ -48,6 +48,32 @@ async function main() {
     },
   });
 
+  // Yıllık planlar
+  await prisma.plan.upsert({
+    where: { slug: "baslangic-yillik" },
+    update: { priceCents: 799000 },
+    create: {
+      name: "Başlangıç Yıllık", slug: "baslangic-yillik", priceCents: 799000, interval: "year", trialDays: 0,
+      features: { brands: 1, teamMembers: 2, aiContent: 50, chatbot: false, reviews: false, qrCodes: 2, website: true, googleBusiness: false, seoContent: false, support: "email" },
+    },
+  });
+  await prisma.plan.upsert({
+    where: { slug: "profesyonel-yillik" },
+    update: { priceCents: 1499000 },
+    create: {
+      name: "Profesyonel Yıllık", slug: "profesyonel-yillik", priceCents: 1499000, interval: "year", trialDays: 0,
+      features: { brands: 5, teamMembers: 10, aiContent: 300, chatbot: true, reviews: true, qrCodes: 10, website: true, googleBusiness: true, seoContent: true, support: "priority" },
+    },
+  });
+  await prisma.plan.upsert({
+    where: { slug: "isletme-yillik" },
+    update: { priceCents: 2999000 },
+    create: {
+      name: "İşletme Yıllık", slug: "isletme-yillik", priceCents: 2999000, interval: "year", trialDays: 0,
+      features: { brands: -1, teamMembers: -1, aiContent: -1, chatbot: true, reviews: true, qrCodes: -1, website: true, googleBusiness: true, seoContent: true, support: "dedicated" },
+    },
+  });
+
   console.log("✅ Tohumlama tamamlandı. Giriş: admin@ajans.com / admin123");
   console.log("   (Üretimde bu şifreyi mutlaka değiştirin!)", superAdmin.id);
 }

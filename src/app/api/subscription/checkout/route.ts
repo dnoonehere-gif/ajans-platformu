@@ -16,9 +16,12 @@ const schema = z.object({
 
 // Shopier ürün linkleri — plan slug → URL
 const SHOPIER_LINKS: Record<string, string> = {
-  baslangic:   "https://www.shopier.com/NovelyaDijitalAjans/48849668",
-  profesyonel: "https://www.shopier.com/NovelyaDijitalAjans/48849672",
-  isletme:     "https://www.shopier.com/NovelyaDijitalAjans/48849675",
+  baslangic:          "https://www.shopier.com/NovelyaDijitalAjans/48849668",
+  profesyonel:        "https://www.shopier.com/NovelyaDijitalAjans/48849672",
+  isletme:            "https://www.shopier.com/NovelyaDijitalAjans/48849675",
+  "baslangic-yillik":   "https://www.shopier.com/NovelyaDijitalAjans/48859443",
+  "profesyonel-yillik": "https://www.shopier.com/NovelyaDijitalAjans/48859459",
+  "isletme-yillik":     "https://www.shopier.com/NovelyaDijitalAjans/48859474",
 };
 
 export async function POST(req: NextRequest) {
