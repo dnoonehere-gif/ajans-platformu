@@ -72,8 +72,8 @@ const nextConfig = {
 };
 
 export default withSentryConfig(nextConfig, {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
+  org: "novelya-gy",
+  project: "javascript-nextjs",
   silent: true,
   widenClientFileUpload: true,
   hideSourceMaps: true,
