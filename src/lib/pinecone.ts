@@ -11,22 +11,22 @@ export function getPinecone(): Pinecone | null {
 export const PINECONE_INDEX = process.env.PINECONE_INDEX ?? "novelya-kb";
 
 /**
- * Chatbot bilgi tabanı için belge göm.
- * Her kayıt: { id, values (embedding), metadata: { brandId, text, source } }
+ * Chatbot bilgi tabanına metin kaydet (Pinecone integrated embedding kullanır).
  */
 export async function upsertKnowledge(
   brandId: string,
-  records: Array<{ id: string; values: number[]; text: string; source?: string }>
+  records: Array<{ id: string; text: string; source?: string }>
 ) {
   const pc = getPinecone();
   if (!pc) return;
 
   const index = pc.index(PINECONE_INDEX);
-  await index.namespace(brandId).upsert(
+  await index.namespace(brandId).upsertRecords(
     records.map((r) => ({
-      id: r.id,
-      values: r.values,
-      metadata: { brandId, text: r.text, source: r.source ?? "manual" },
+      _id: r.id,
+      text: r.text,
+      brandId,
+      source: r.source ?? "manual",
     }))
   );
 }
@@ -36,22 +36,21 @@ export async function upsertKnowledge(
  */
 export async function queryKnowledge(
   brandId: string,
-  queryEmbedding: number[],
+  queryText: string,
   topK = 5
 ): Promise<Array<{ text: string; score: number }>> {
   const pc = getPinecone();
   if (!pc) return [];
 
   const index = pc.index(PINECONE_INDEX);
-  const result = await index.namespace(brandId).query({
-    vector: queryEmbedding,
-    topK,
-    includeMetadata: true,
+  const result = await index.namespace(brandId).searchRecords({
+    query: { inputs: { text: queryText }, topK },
+    fields: ["text", "source"],
   });
 
-  return (result.matches ?? []).map((m) => ({
-    text: String(m.metadata?.text ?? ""),
-    score: m.score ?? 0,
+  return (result.result?.hits ?? []).map((h) => ({
+    text: String(h.fields?.text ?? ""),
+    score: h._score ?? 0,
   }));
 }
 
