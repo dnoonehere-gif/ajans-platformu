@@ -45,7 +45,9 @@ export function MobileSidebarToggle({ children }: { children: React.ReactNode })
             <X className="h-4 w-4" />
           </button>
         </div>
-        {children}
+        <div className="flex-1 overflow-y-auto">
+          {children}
+        </div>
       </aside>
     </>
   );
