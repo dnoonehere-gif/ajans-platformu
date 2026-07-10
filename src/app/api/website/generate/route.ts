@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/server/auth/auth";
+import { getAuthUser } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { generateWebsiteBlocks } from "@/server/ai/website-generator";
 import { z } from "zod";
@@ -13,8 +13,8 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  const user = await getAuthUser(req);
+  if (!user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
 
   const body = await req.json();
   const parsed = schema.safeParse(body);
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   const { brandId, sector, description, primaryColor, phone } = parsed.data;
 
   const brand = await prisma.brand.findFirst({
-    where: { id: brandId, ownerId: (session.user as { id: string }).id },
+    where: { id: brandId, ownerId: user.id },
   });
   if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
 

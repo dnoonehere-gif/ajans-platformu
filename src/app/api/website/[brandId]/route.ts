@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/server/auth/auth";
+import { getAuthUser } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ brandId: string }> }) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+export async function GET(req: NextRequest, { params }: { params: Promise<{ brandId: string }> }) {
+  const user = await getAuthUser(req);
+  if (!user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
 
   const { brandId } = await params;
 
@@ -12,8 +12,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ bra
   const website = await prisma.website.findFirst({
     where: {
       OR: [
-        { brandId, brand: { ownerId: (session.user as { id: string }).id } },
-        { id: brandId, brand: { ownerId: (session.user as { id: string }).id } },
+        { brandId, brand: { ownerId: user.id } },
+        { id: brandId, brand: { ownerId: user.id } },
       ],
     },
     include: { pages: { orderBy: { order: "asc" } } },
@@ -24,14 +24,14 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ bra
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ brandId: string }> }) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  const user = await getAuthUser(req);
+  if (!user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
 
   const { brandId } = await params;
   const body = await req.json();
 
   const website = await prisma.website.findFirst({
-    where: { brandId, brand: { ownerId: (session.user as { id: string }).id } },
+    where: { brandId, brand: { ownerId: user.id } },
     include: { pages: true },
   });
   if (!website) return NextResponse.json({ error: "Site bulunamadı" }, { status: 404 });
