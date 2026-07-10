@@ -27,7 +27,7 @@ interface Invoice {
 
 const PLAN_ICONS = [Zap, Rocket, Building2];
 const PLAN_COLORS = ["from-blue-500 to-indigo-600", "from-violet-500 to-purple-600", "from-orange-500 to-rose-500"];
-const POPULAR_SLUG = "profesyonel";
+const POPULAR_SLUGS = ["profesyonel", "profesyonel-yillik"];
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ComponentType<{ className?: string }> }> = {
   TRIALING: { label: "Deneme Süresi", color: "text-blue-400", bg: "bg-blue-500/10", icon: Clock },
@@ -63,7 +63,9 @@ export default function AbonelikPage() {
   const { activeBrand } = useBrand();
   const brandId = activeBrand?.id ?? "";
 
-  const [plans, setPlans] = useState<Plan[]>([]);
+  const [allPlans, setAllPlans] = useState<Plan[]>([]);
+  const [billingInterval, setBillingInterval] = useState<"month" | "year">("month");
+  const plans = allPlans.filter((p) => p.interval === billingInterval);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,7 +84,7 @@ export default function AbonelikPage() {
       fetch(`/api/subscription?brandId=${brandId}`),
     ]);
     const [plansData, subData] = await Promise.all([plansRes.json(), subRes.json()]);
-    setPlans(plansData.plans ?? []);
+    setAllPlans(plansData.plans ?? []);
     setSubscription(subData.subscription ?? null);
     setInvoices(subData.invoices ?? []);
     setLoading(false);
@@ -244,12 +246,29 @@ export default function AbonelikPage() {
 
           {/* Plan kartları */}
           <div>
-            <p className="mb-4 text-sm font-semibold">{subscription ? "Plan Değiştir" : "Plan Seç"}</p>
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-sm font-semibold">{subscription ? "Plan Değiştir" : "Plan Seç"}</p>
+              <div className="inline-flex items-center rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.4)] p-0.5 text-xs">
+                <button
+                  onClick={() => setBillingInterval("month")}
+                  className={`rounded-md px-3 py-1.5 font-medium transition ${billingInterval === "month" ? "bg-[hsl(var(--background))] shadow-sm" : "text-[hsl(var(--muted-foreground))]"}`}
+                >
+                  Aylık
+                </button>
+                <button
+                  onClick={() => setBillingInterval("year")}
+                  className={`relative rounded-md px-3 py-1.5 font-medium transition ${billingInterval === "year" ? "bg-[hsl(var(--background))] shadow-sm" : "text-[hsl(var(--muted-foreground))]"}`}
+                >
+                  Yıllık
+                  <span className="absolute -top-2 -right-2 rounded-full bg-green-500 px-1 py-px text-[8px] font-bold text-white leading-none">-17%</span>
+                </button>
+              </div>
+            </div>
             <div className="grid gap-4 md:grid-cols-3">
               {plans.map((plan, i) => {
                 const Icon = PLAN_ICONS[i] ?? Zap;
                 const gradient = PLAN_COLORS[i] ?? PLAN_COLORS[0];
-                const isPopular = plan.slug === POPULAR_SLUG;
+                const isPopular = POPULAR_SLUGS.includes(plan.slug);
                 const isCurrent = subscription?.plan.id === plan.id;
                 const f = plan.features as PlanFeatures;
 

@@ -30,7 +30,7 @@ interface Plan {
 
 const PLAN_ICONS = [Zap, Rocket, Building2];
 const PLAN_COLORS = ["from-blue-500 to-indigo-600", "from-violet-500 to-purple-600", "from-orange-500 to-rose-500"];
-const POPULAR_SLUG = "profesyonel";
+const POPULAR_SLUGS = ["profesyonel", "profesyonel-yillik"];
 
 const SUPPORT_LABELS: Record<string, string> = {
   email: "E-posta destek",
@@ -54,20 +54,19 @@ function featLine(label: string, value: number | boolean | string, color: string
 }
 
 export default function PricingPage() {
-  const [plans, setPlans] = useState<Plan[]>([]);
+  const [allPlans, setAllPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [interval, setInterval] = useState<"month" | "year">("month");
 
   useEffect(() => {
     fetch("/api/plans")
       .then((r) => r.json())
-      .then((d) => { setPlans(d.plans ?? []); setLoading(false); });
+      .then((d) => { setAllPlans(d.plans ?? []); setLoading(false); });
   }, []);
 
-  const displayPrice = (p: Plan) => {
-    if (interval === "year") return fmt(p.priceCents * 10); // 2 ay bedava
-    return fmt(p.priceCents);
-  };
+  const plans = allPlans.filter((p) => p.interval === interval);
+
+  const displayPrice = (p: Plan) => fmt(p.priceCents);
 
   return (
     <div className="min-h-screen bg-[hsl(var(--background))]">
@@ -136,7 +135,7 @@ export default function PricingPage() {
             {plans.map((plan, i) => {
               const Icon = PLAN_ICONS[i] ?? Zap;
               const gradient = PLAN_COLORS[i] ?? PLAN_COLORS[0];
-              const isPopular = plan.slug === POPULAR_SLUG;
+              const isPopular = POPULAR_SLUGS.includes(plan.slug);
               const f = plan.features as PlanFeatures;
 
               return (
@@ -168,7 +167,7 @@ export default function PricingPage() {
                     </div>
                     {interval === "year" && (
                       <p className="mt-1 text-xs text-green-500">
-                        ≈ {fmt(Math.round(plan.priceCents * 10 / 12))}/ay · 2 ay bedava
+                        ≈ {fmt(Math.round(plan.priceCents / 12))}/ay · 2 ay bedava
                       </p>
                     )}
 
