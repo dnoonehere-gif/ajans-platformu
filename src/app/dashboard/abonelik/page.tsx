@@ -93,9 +93,6 @@ export default function AbonelikPage() {
     if (!brandId) return;
     setUpgrading(plan.id);
 
-    // Popup blocker'ı aşmak için önce pencereyi aç, sonra URL'yi set et
-    const popup = window.open("", "_blank");
-
     const res = await fetch("/api/subscription/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -105,14 +102,11 @@ export default function AbonelikPage() {
     if (data.subscription) {
       setSubscription(data.subscription);
       if (data.checkoutUrl) {
-        if (popup) popup.location.href = data.checkoutUrl;
-        else window.open(data.checkoutUrl, "_blank");
+        window.location.href = data.checkoutUrl;
+        return;
       } else {
-        popup?.close();
         setCheckoutModal(plan);
       }
-    } else {
-      popup?.close();
     }
     setUpgrading(null);
   }
