@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { MotionProvider } from "@/components/motion-provider";
+import { PostHogProvider } from "@/components/posthog-provider";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "Novelya — Yapay Zekâ Destekli Dijital Ajans",
@@ -13,7 +15,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="tr" suppressHydrationWarning>
       <body>
         <ThemeProvider>
-          <MotionProvider>{children}</MotionProvider>
+          <SessionProvider>
+            <PostHogProvider>
+              <MotionProvider>{children}</MotionProvider>
+            </PostHogProvider>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

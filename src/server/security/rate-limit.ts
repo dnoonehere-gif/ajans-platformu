@@ -1,29 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Redis } from "ioredis";
+import { Redis } from "@upstash/redis";
 
-let redis: Redis | null = null;
-function getRedis() {
-  if (!redis) redis = new Redis(process.env.REDIS_URL ?? "redis://localhost:6379", { lazyConnect: true, maxRetriesPerRequest: 1 });
-  return redis;
+let _redis: Redis | null = null;
+
+function getRedis(): Redis | null {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) return null;
+  if (!_redis) {
+    _redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+  }
+  return _redis;
 }
 
 interface RateLimitConfig {
-  windowMs: number;   // pencere süresi (ms)
-  max: number;        // pencerede izin verilen istek sayısı
+  windowMs: number;
+  max: number;
   keyPrefix?: string;
 }
 
 export interface RateLimitResult {
   allowed: boolean;
   remaining: number;
-  resetAt: number; // unix ms
+  resetAt: number;
 }
 
-// Sliding window counter — Redis INCR + EXPIRE
 export async function rateLimit(key: string, config: RateLimitConfig): Promise<RateLimitResult> {
   const r = getRedis();
   const windowSec = Math.ceil(config.windowMs / 1000);
   const redisKey = `rl:${config.keyPrefix ?? "default"}:${key}`;
+
+  if (!r) {
+    // Upstash yapılandırılmamışsa fail-open
+    return { allowed: true, remaining: config.max, resetAt: Date.now() + config.windowMs };
+  }
 
   try {
     const count = await r.incr(redisKey);
@@ -36,12 +47,10 @@ export async function rateLimit(key: string, config: RateLimitConfig): Promise<R
       resetAt: Date.now() + ttl * 1000,
     };
   } catch {
-    // Redis down → fail open (güvenlik kritik değilse geçir)
     return { allowed: true, remaining: config.max, resetAt: Date.now() + config.windowMs };
   }
 }
 
-// IP + yol bazlı key
 export function getRateLimitKey(req: NextRequest, extra?: string): string {
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
@@ -50,17 +59,15 @@ export function getRateLimitKey(req: NextRequest, extra?: string): string {
   return extra ? `${ip}:${extra}` : ip;
 }
 
-// Hazır limitler
 export const LIMITS = {
-  AUTH:         { windowMs: 15 * 60 * 1000, max: 10,  keyPrefix: "auth"    }, // 15dk/10 istek
-  API_GENERAL:  { windowMs:  1 * 60 * 1000, max: 60,  keyPrefix: "api"     }, // 1dk/60 istek
-  AI_GENERATE:  { windowMs:  1 * 60 * 1000, max: 5,   keyPrefix: "ai"      }, // 1dk/5 AI isteği
-  CHATBOT_MSG:  { windowMs:  1 * 60 * 1000, max: 20,  keyPrefix: "chat"    }, // 1dk/20 chatbot mesaj
-  PASSWORD_RST: { windowMs: 60 * 60 * 1000, max: 3,   keyPrefix: "pwreset" }, // 1sa/3 şifre sıfırla
-  WEBHOOK:      { windowMs:  1 * 60 * 1000, max: 100, keyPrefix: "webhook" }, // 1dk/100 webhook
+  AUTH:         { windowMs: 15 * 60 * 1000, max: 10,  keyPrefix: "auth"    },
+  API_GENERAL:  { windowMs:  1 * 60 * 1000, max: 60,  keyPrefix: "api"     },
+  AI_GENERATE:  { windowMs:  1 * 60 * 1000, max: 5,   keyPrefix: "ai"      },
+  CHATBOT_MSG:  { windowMs:  1 * 60 * 1000, max: 20,  keyPrefix: "chat"    },
+  PASSWORD_RST: { windowMs: 60 * 60 * 1000, max: 3,   keyPrefix: "pwreset" },
+  WEBHOOK:      { windowMs:  1 * 60 * 1000, max: 100, keyPrefix: "webhook" },
 } as const;
 
-// Route handler wrapper — 429 döner
 export function withRateLimit(config: RateLimitConfig) {
   return async (req: NextRequest, handler: () => Promise<NextResponse>): Promise<NextResponse> => {
     const key = getRateLimitKey(req);
