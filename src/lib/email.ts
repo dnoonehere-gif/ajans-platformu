@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const FROM = `Novelya <onboarding@resend.dev>`;
+const FROM = `Novelya <novelya@novelya.com.tr>`;
 const BASE_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 
 async function sendMail(to: string | string[], subject: string, html: string) {
@@ -83,7 +83,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
 
 export async function sendWelcomeEmail(email: string, name: string) {
   await sendMail(email, "Novelya'ya hoş geldiniz!", layout({
-    preheader: "14 günlük ücretsiz denemeniz başladı.",
+    preheader: "Novelya'ya hoş geldiniz!",
     body: `
       ${h(`Merhaba ${name}! 👋`)}
       ${p("Novelya'ya hoş geldiniz.")}
