@@ -34,7 +34,8 @@ export default async function PublicSitePage({
   if (!brand || !brand.website?.isPublished) notFound();
 
   const website = brand.website;
-  const blocks = (website.pages[0]?.blocks ?? []) as unknown as Block[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const blocks = (website.pages[0]?.blocks ?? []) as any as Block[];
 
   return (
     <div className="min-h-screen">
