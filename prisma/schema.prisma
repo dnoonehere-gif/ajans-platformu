@@ -288,6 +288,7 @@ model Website {
   id           String   @id @default(cuid())
   brandId      String   @unique
   title        String
+  subdomain    String?  @unique
   domain       String?
   theme        Json?    // Tema/renk/font ayarları
   isPublished  Boolean  @default(false)

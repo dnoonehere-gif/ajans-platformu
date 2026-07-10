@@ -25,6 +25,16 @@ function addSecurityHeaders(res: NextResponse): NextResponse {
 }
 
 export async function middleware(req: NextRequest) {
+  const hostname = req.headers.get("host") ?? "";
+  const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN ?? "novelya.com.tr";
+  const subdomainMatch = hostname.match(new RegExp(`^([a-z0-9-]+)\\.${baseDomain.replace(".", "\\.")}$`));
+  if (subdomainMatch && subdomainMatch[1] !== "www") {
+    const sub = subdomainMatch[1];
+    const url = req.nextUrl.clone();
+    url.pathname = `/site/${sub}${req.nextUrl.pathname === "/" ? "" : req.nextUrl.pathname}`;
+    return NextResponse.rewrite(url);
+  }
+
   const { pathname } = req.nextUrl;
 
   const rule = PROTECTED.find((r) => r.pattern.test(pathname));
@@ -53,17 +63,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/dashboard/:path*",
-    "/admin/:path*",
-    "/api/brand/:path*",
-    "/api/content/:path*",
-    "/api/chatbot/setup",
-    "/api/dashboard/:path*",
-    "/api/review/:path*",
-    "/api/website/:path*",
-    "/api/qr/:path*",
-    "/api/admin/:path*",
-    "/api/security/2fa/:path*",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

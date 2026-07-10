@@ -3,6 +3,7 @@ import { useEffect, useState, use, useRef } from "react";
 import {
   Eye, EyeOff, Save, Loader2, Globe, ChevronLeft,
   Sparkles, Send, RotateCcw, Check, Pencil, Bot, ExternalLink,
+  Download, HelpCircle, ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
 import { BlockRenderer } from "@/components/website/block-renderer";
@@ -20,6 +21,7 @@ interface Website {
   brandId: string;
   title: string;
   isPublished: boolean;
+  subdomain?: string;
   pages: WebsitePage[];
   brand?: { slug: string };
 }
@@ -53,6 +55,7 @@ export default function WebsiteEditorPage({
   const [saved, setSaved] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [view, setView] = useState<"split" | "preview">("split");
+  const [domainHelpOpen, setDomainHelpOpen] = useState(false);
 
   // AI Chat
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -203,6 +206,27 @@ export default function WebsiteEditorPage({
             </a>
           )}
 
+          {/* Dışa Aktar */}
+          <a
+            href={`/api/website/${website.brandId}/export`}
+            download
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
+            title="HTML olarak indir"
+          >
+            <Download className="h-4 w-4" />
+            Dışa Aktar
+          </a>
+
+          {/* Domain Yardım */}
+          <button
+            onClick={() => setDomainHelpOpen((v) => !v)}
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
+          >
+            <HelpCircle className="h-4 w-4" />
+            Domain
+            <ChevronDown className={`h-3 w-3 transition ${domainHelpOpen ? "rotate-180" : ""}`} />
+          </button>
+
           {/* Geri al */}
           <button
             onClick={undo}
@@ -262,6 +286,56 @@ export default function WebsiteEditorPage({
           </button>
         </div>
       </header>
+
+      {/* ── Domain Yardım Paneli ── */}
+      {domainHelpOpen && (
+        <div className="shrink-0 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.4)] px-6 py-4">
+          {(() => {
+            const sub = website.subdomain ?? website.brand?.slug ?? website.brandId;
+            const subUrl = `https://${sub}.novelya.com.tr`;
+            const siteUrl = `https://novelya.com.tr/site/${sub}`;
+            return (
+              <div className="mx-auto max-w-4xl space-y-4">
+                <div className="flex flex-wrap items-start gap-6">
+                  {/* Novelya Subdomain */}
+                  <div className="flex-1 min-w-56">
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                      Novelya Adresi
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <code className="rounded-lg bg-[hsl(var(--card))] border border-[hsl(var(--border))] px-3 py-1.5 text-sm font-mono text-[hsl(var(--primary))]">
+                        {siteUrl}
+                      </code>
+                      <a href={siteUrl} target="_blank" rel="noopener noreferrer" className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </div>
+                    <p className="mt-1 text-[11px] text-[hsl(var(--muted-foreground))]">Site yayında olunca bu adres hemen çalışır.</p>
+                  </div>
+
+                  {/* Kendi Domain */}
+                  <div className="flex-1 min-w-72">
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
+                      Kendi Domainin ile Bağla
+                    </p>
+                    <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 space-y-2 text-sm">
+                      <p className="font-medium">DNS ayarlarına şu kaydı ekle:</p>
+                      <div className="rounded-lg bg-[hsl(var(--muted))] px-3 py-2 font-mono text-xs">
+                        <span className="text-blue-400">CNAME</span>{" "}
+                        <span className="text-yellow-400">www</span>{" "}
+                        <span className="text-green-400">→ {subUrl}</span>
+                      </div>
+                      <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
+                        Cloudflare, GoDaddy veya domainin kayıtlı olduğu panelde DNS &gt; Add Record &gt; Type: CNAME, Name: www, Target: {subUrl}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
 
       {/* ── Ana İçerik ── */}
       <div className="flex flex-1 overflow-hidden">

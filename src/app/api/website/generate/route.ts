@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
     create: {
       brandId,
       title: brand.name,
+      subdomain: brand.slug,
       isPublished: false,
       pages: {
         create: {
