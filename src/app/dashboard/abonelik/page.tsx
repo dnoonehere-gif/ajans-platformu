@@ -100,7 +100,11 @@ export default function AbonelikPage() {
     const data = await res.json();
     if (data.subscription) {
       setSubscription(data.subscription);
-      setCheckoutModal(plan);
+      if (data.checkoutUrl) {
+        window.open(data.checkoutUrl, "_blank");
+      } else {
+        setCheckoutModal(plan);
+      }
     }
     setUpgrading(null);
   }

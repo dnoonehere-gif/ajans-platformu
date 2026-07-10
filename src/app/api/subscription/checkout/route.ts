@@ -9,8 +9,15 @@ import { auditFromRequest } from "@/server/audit/log";
 const schema = z.object({
   brandId: z.string(),
   planId: z.string(),
-  provider: z.enum(["PAYTR", "SHOPIER"]).optional().default("PAYTR"),
+  provider: z.enum(["PAYTR", "SHOPIER"]).optional().default("SHOPIER"),
 });
+
+// Shopier ürün linkleri — plan slug → URL
+const SHOPIER_LINKS: Record<string, string> = {
+  baslangic:   "https://www.shopier.com/NovelyaDijitalAjans/48849668",
+  profesyonel: "https://www.shopier.com/NovelyaDijitalAjans/48849672",
+  isletme:     "https://www.shopier.com/NovelyaDijitalAjans/48849675",
+};
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -90,8 +97,8 @@ export async function POST(req: NextRequest) {
     metadata: { brandId, planId: plan.id, planName: plan.name },
   }).catch(() => null);
 
-  // TODO: PayTR / Shopier ödeme bağlantısı oluştur
-  const checkoutUrl = null;
+  // Shopier ödeme linki
+  const checkoutUrl = SHOPIER_LINKS[plan.slug] ?? null;
 
   return NextResponse.json({ subscription, checkoutUrl });
 }
