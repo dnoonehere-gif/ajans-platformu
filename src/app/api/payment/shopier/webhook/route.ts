@@ -11,6 +11,19 @@ const PRODUCT_TO_PLAN: Record<string, string> = {
 
 export async function POST(req: NextRequest) {
   try {
+    // Shopier webhook token doğrulaması
+    const webhookToken = process.env.SHOPIER_WEBHOOK_TOKEN;
+    if (webhookToken) {
+      const incoming =
+        req.headers.get("x-shopier-webhook-token") ??
+        req.headers.get("authorization")?.replace("Bearer ", "") ??
+        "";
+      if (incoming !== webhookToken) {
+        console.error("Shopier webhook token doğrulaması başarısız");
+        return new NextResponse("FAILED", { status: 403 });
+      }
+    }
+
     const event = await req.json();
 
     const eventType: string = event.event ?? "";
