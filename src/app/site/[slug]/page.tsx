@@ -34,7 +34,7 @@ export default async function PublicSitePage({
   if (!brand || !brand.website?.isPublished) notFound();
 
   const website = brand.website;
-  const blocks = (website.pages[0]?.blocks ?? []) as Block[];
+  const blocks = (website.pages[0]?.blocks ?? []) as unknown as Block[];
 
   return (
     <div className="min-h-screen">
