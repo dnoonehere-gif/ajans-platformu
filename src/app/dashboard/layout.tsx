@@ -66,7 +66,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 <p className="truncate text-xs font-semibold">{user.name ?? "Kullanıcı"}</p>
                 <p className="truncate text-[10px] text-[hsl(var(--muted-foreground))]">{user.email}</p>
               </div>
-              <form action={async () => { "use server"; await signOut({ redirectTo: "/giris" }); }}>
+              <form action={async () => { "use server"; await signOut({ redirectTo: `${process.env.NEXTAUTH_URL ?? ""}/giris` }); }}>
                 <button type="submit" title="Çıkış Yap" className="text-[hsl(var(--muted-foreground))] transition hover:text-red-400">
                   <LogOut className="h-3.5 w-3.5" />
                 </button>
