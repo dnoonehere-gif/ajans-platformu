@@ -44,7 +44,7 @@ export function MobileSidebarToggle({ children }: { children: React.ReactNode })
 
           {/* Slide-in sidebar */}
           <aside
-            className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-[hsl(var(--border))] bg-[hsl(var(--card))] transition-transform duration-300 ease-in-out lg:hidden ${
+            className={`fixed left-0 top-0 z-50 flex h-[100dvh] w-72 flex-col border-r border-[hsl(var(--border))] bg-[hsl(var(--card))] transition-transform duration-300 ease-in-out lg:hidden ${
               open ? "translate-x-0" : "-translate-x-full"
             }`}
           >
@@ -59,7 +59,8 @@ export function MobileSidebarToggle({ children }: { children: React.ReactNode })
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="flex flex-1 flex-col overflow-y-auto">
+            {/* Blok akış: NavClient'ın flex-1'i geçersiz kalır, tek kaydırma alanı */}
+            <div className="flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom,16px)]">
               {children}
             </div>
           </aside>
