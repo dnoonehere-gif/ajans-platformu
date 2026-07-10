@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
           status: "ACTIVE",
           startedAt: new Date(),
           endsAt,
-          provider: "SHOPIER",
+          provider: "PAYTR",
           providerSubId: orderId || null,
         },
       });
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
           currency: plan.currency,
           status: "PAID",
           paidAt: new Date(),
-          provider: "SHOPIER",
+          provider: "PAYTR",
           providerRef: orderId || null,
         },
       });
