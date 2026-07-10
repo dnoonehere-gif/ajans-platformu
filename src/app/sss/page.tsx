@@ -12,7 +12,7 @@ const FAQS: Faq[] = [
   { cat: "Genel", q: "Teknik bilgim yok, yine de kullanabilir miyim?", a: "Evet. Platform, teknik bilgi gerektirmeden kullanılacak şekilde tasarlandı. Bilgileri girmeniz yeterli; website, menü ve içerikler otomatik olarak oluşturulur." },
   { cat: "Genel", q: "Hangi işletmeler için uygun?", a: "Kafeler, restoranlar, mağazalar, güzellik salonları, oteller ve hizmet veren tüm küçük-orta ölçekli işletmeler için uygundur." },
   // Fiyatlandırma
-  { cat: "Fiyatlandırma", q: "Ücretsiz deneme var mı?", a: "Evet, tüm ücretli planlar 14 gün ücretsiz deneme ile başlar. Deneme için kredi kartı bilgisi gerekmez." },
+  { cat: "Fiyatlandırma", q: "Planı nasıl seçerim?", a: "Abonelik sayfasından size uygun planı seçip ödeme yapabilirsiniz. İstediğiniz zaman plan değiştirebilir veya iptal edebilirsiniz." },
   { cat: "Fiyatlandırma", q: "İstediğim zaman iptal edebilir miyim?", a: "Evet. Aboneliğinizi hesabınızdaki Abonelik sayfasından dilediğiniz zaman iptal edebilirsiniz. İptal, dönem sonunda geçerli olur ve yeni ücret alınmaz." },
   { cat: "Fiyatlandırma", q: "Plan yükseltme/düşürme yapabilir miyim?", a: "Evet. Planınızı istediğiniz zaman değiştirebilirsiniz. Değişiklik bir sonraki fatura döneminde geçerli olur." },
   { cat: "Fiyatlandırma", q: "İade alabilir miyim?", a: "İade koşulları planınıza göre değişir. Ayrıntılar için İade & İptal Politikası sayfamızı inceleyebilirsiniz." },

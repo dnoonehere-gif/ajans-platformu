@@ -86,7 +86,7 @@ export default function GizlilikPage() {
 
         <h2>9. İletişim</h2>
         <p>
-          Gizlilikle ilgili sorularınız için <a href="mailto:destek@novelya.com.tr">destek@novelya.com.tr</a>
+          Gizlilikle ilgili sorularınız için <a href="mailto:novelya@novelya.com.tr">novelya@novelya.com.tr</a>
           adresinden bize ulaşabilirsiniz.
         </p>
       </LegalArticle>

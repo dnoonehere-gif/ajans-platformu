@@ -93,7 +93,7 @@ export default function PricingPage() {
         {/* Hero */}
         <div className="mb-12 text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-1.5 text-xs font-semibold">
-            🎉 14 gün ücretsiz deneme — kredi kartı gerekmez
+            🚀 Türkiye'nin dijital ajans platformu
           </div>
           <h1 className="mb-4 text-4xl font-black tracking-tight lg:text-5xl">
             Markanızı büyütün.<br />
@@ -171,9 +171,6 @@ export default function PricingPage() {
                         ≈ {fmt(Math.round(plan.priceCents * 10 / 12))}/ay · 2 ay bedava
                       </p>
                     )}
-                    {plan.trialDays > 0 && (
-                      <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">{plan.trialDays} gün ücretsiz deneme</p>
-                    )}
 
                     <Link
                       href="/kayit"
@@ -213,7 +210,7 @@ export default function PricingPage() {
           <h2 className="mb-8 text-center text-2xl font-bold">Sıkça Sorulan Sorular</h2>
           <div className="mx-auto grid max-w-3xl gap-4 md:grid-cols-2">
             {[
-              { q: "Deneme süresi nasıl çalışır?", a: "14 gün boyunca tüm özelliklere ücretsiz erişirsiniz. Kredi kartı gerekmez. Deneme sonunda ödeme yapmazsanız hesabınız askıya alınır." },
+              { q: "Abonelik nasıl çalışır?", a: "Plan seçtikten sonra aylık veya yıllık olarak ödeme yaparsınız. İstediğiniz zaman plan değiştirebilirsiniz." },
               { q: "İstediğim zaman iptal edebilir miyim?", a: "Evet, istediğiniz zaman tek tıkla iptal edebilirsiniz. İptal sonrası dönem sonuna kadar kullanmaya devam edersiniz." },
               { q: "Plan yükseltmek/düşürmek nasıl çalışır?", a: "Dashboard'dan istediğiniz zaman plan değişikliği yapabilirsiniz. Kalan süre ücretine orantılı olarak hesaplanır." },
               { q: "Ödeme güvenli mi?", a: "Tüm ödemeler PayTR altyapısı üzerinden SSL ile şifreli olarak işlenir. Kart bilgileriniz sistemimizde saklanmaz." },
@@ -231,7 +228,7 @@ export default function PricingPage() {
         {/* CTA */}
         <div className="mt-16 rounded-3xl bg-gradient-to-br from-violet-500/10 to-indigo-500/10 border border-violet-500/20 p-12 text-center">
           <h2 className="mb-3 text-2xl font-bold">Hemen başlayın</h2>
-          <p className="mb-6 text-[hsl(var(--muted-foreground))]">14 gün boyunca tüm özellikleri ücretsiz deneyin.</p>
+          <p className="mb-6 text-[hsl(var(--muted-foreground))]">Markanızı büyütmek için doğru plan sizin için burada.</p>
           <Link href="/kayit"
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-600 px-8 py-3 font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:opacity-90">
             Ücretsiz Hesap Oluştur

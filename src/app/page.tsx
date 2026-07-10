@@ -109,7 +109,7 @@ const FEATURES = [
 ];
 
 const STEPS = [
-  { num: "01", title: "Kaydolun", desc: "Ücretsiz hesap açın, 14 gün tüm özellikleri deneyin." },
+  { num: "01", title: "Kaydolun", desc: "Ücretsiz hesap açın, tüm özellikleri keşfedin." },
   { num: "02", title: "Markanızı Ekleyin", desc: "İşletme bilgilerinizi girin, logo yükleyin." },
   { num: "03", title: "AI'ı Çalıştırın", desc: "Website, chatbot, içerik — hepsi otomatik hazırlanır." },
   { num: "04", title: "Büyüyün", desc: "Analizleri takip edin, müşterilerinizle bağlantıda kalın." },
@@ -195,9 +195,9 @@ export default function AnaSayfa() {
           <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
             {[
               "Kredi kartı gerekmez",
-              "14 gün ücretsiz",
               "Türkçe destek",
-              "İptal istediğinde",
+              "İstediğin zaman iptal",
+              "7/24 destek",
             ].map((t) => (
               <div key={t} className="flex items-center gap-2 text-sm text-gray-500">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500" />
@@ -384,7 +384,7 @@ export default function AnaSayfa() {
                 Hemen başlayın
               </h2>
               <p className="mx-auto mt-4 max-w-md text-violet-200">
-                14 gün ücretsiz deneyin. Kredi kartı gerekmez. İstediğiniz zaman iptal edin.
+                Hemen başlayın. İstediğiniz zaman iptal edin.
               </p>
               <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
                 <Link

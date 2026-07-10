@@ -8,6 +8,8 @@ import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { ThemeSwitcher } from "@/components/dashboard/theme-switcher";
 import { NavClient } from "@/components/dashboard/nav-client";
 import { SubscriptionBanner } from "@/components/dashboard/subscription-banner";
+import { MobileSidebarToggle } from "@/components/dashboard/mobile-sidebar";
+import { DashboardColorTheme } from "@/components/theme-provider";
 import { signOut } from "@/server/auth/auth";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -20,9 +22,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <BrandProvider>
+      <DashboardColorTheme />
       <div className="flex min-h-screen bg-[hsl(var(--background))]">
-        {/* Sidebar */}
-        <aside className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+        {/* Sidebar — masaüstü */}
+        <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-[hsl(var(--border))] bg-[hsl(var(--card))] lg:flex">
 
           {/* Logo */}
           <div className="flex h-16 items-center gap-3 border-b border-[hsl(var(--border))] px-5">
@@ -73,10 +76,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </aside>
 
         {/* İçerik */}
-        <main className="ml-64 flex-1 min-h-screen overflow-auto">
+        <main className="flex-1 min-h-screen overflow-auto lg:ml-64">
           {/* Topbar */}
-          <div className="sticky top-0 z-30 flex h-14 items-center justify-end border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] px-6 backdrop-blur">
-            <NotificationBell />
+          <div className="sticky top-0 z-30 flex h-14 items-center border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] px-4 backdrop-blur gap-2">
+            {/* Mobil hamburger + slide-in sidebar */}
+            <MobileSidebarToggle>
+              <div className="border-b border-[hsl(var(--border))] p-3">
+                <BrandSwitcher />
+              </div>
+              <NavClient isAdmin={isAdmin} />
+            </MobileSidebarToggle>
+            <div className="ml-auto">
+              <NotificationBell />
+            </div>
           </div>
           <SubscriptionBanner />
           {children}

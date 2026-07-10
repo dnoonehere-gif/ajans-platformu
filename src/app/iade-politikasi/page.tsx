@@ -16,11 +16,10 @@ export default function IadePolitikasiPage() {
           sayılırsınız.
         </p>
 
-        <h2>1. Ücretsiz Deneme</h2>
+        <h2>1. Abonelik Başlatma</h2>
         <p>
-          Ücretli planlarımız 14 günlük ücretsiz deneme ile başlar. Deneme süresi boyunca
-          herhangi bir ücret alınmaz ve dilediğiniz zaman iptal edebilirsiniz. Deneme süresi
-          bitmeden iptal ederseniz ücretlendirilmezsiniz.
+          Planınızı seçtikten sonra ödeme yaparak aboneliğinizi başlatabilirsiniz.
+          Aboneliğinizi dilediğiniz zaman iptal edebilirsiniz.
         </p>
 
         <h2>2. Abonelik İptali</h2>
@@ -33,7 +32,7 @@ export default function IadePolitikasiPage() {
         <h2>3. İade Koşulları</h2>
         <ul>
           <li>Aylık aboneliklerde, dönem başladıktan sonra yapılan iptallerde kullanılan dönem için iade yapılmaz.</li>
-          <li>Yıllık aboneliklerde, satın alma tarihinden itibaren <strong>14 gün</strong> içinde ve hizmet esaslı biçimde kullanılmamışsa iade talep edebilirsiniz.</li>
+          <li>Yıllık aboneliklerde, satın alma tarihinden itibaren <strong>7 gün</strong> içinde ve hizmet esaslı biçimde kullanılmamışsa iade talep edebilirsiniz.</li>
           <li>Teknik bir arıza nedeniyle hizmetten yararlanamadığınız durumlarda, inceleme sonrası orantılı iade değerlendirilir.</li>
         </ul>
 

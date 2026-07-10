@@ -92,21 +92,29 @@ export default function AbonelikPage() {
   async function handleUpgrade(plan: Plan) {
     if (!brandId) return;
     setUpgrading(plan.id);
-
-    const res = await fetch("/api/subscription/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ brandId, planId: plan.id }),
-    });
-    const data = await res.json();
-    if (data.subscription) {
-      setSubscription(data.subscription);
+    try {
+      const res = await fetch("/api/subscription/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brandId, planId: plan.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.error("Checkout hatası:", data);
+        setUpgrading(null);
+        return;
+      }
+      if (data.subscription) {
+        setSubscription(data.subscription);
+      }
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
         return;
       } else {
         setCheckoutModal(plan);
       }
+    } catch (err) {
+      console.error("Checkout fetch hatası:", err);
     }
     setUpgrading(null);
   }
@@ -229,7 +237,7 @@ export default function AbonelikPage() {
             <div className="glass rounded-2xl border border-dashed border-[hsl(var(--border))] p-8 text-center">
               <Crown className="mx-auto mb-3 h-10 w-10 text-[hsl(var(--muted-foreground)/0.3)]" />
               <p className="font-semibold">Aktif abonelik yok</p>
-              <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Aşağıdan bir plan seçerek 14 gün ücretsiz başlayın.</p>
+              <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Aşağıdan bir plan seçerek başlayın.</p>
             </div>
           )}
 
@@ -363,16 +371,14 @@ export default function AbonelikPage() {
                 <Clock className="h-4 w-4" /> Ödeme Sistemi Yakında
               </p>
               <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">
-                Ödeme altyapısı entegrasyonu tamamlanıyor. Aboneliğiniz oluşturuldu ve{" "}
-                <strong>{checkoutModal.trialDays} gün ücretsiz deneme</strong> başlatıldı.
-                Ödeme sistemi aktif olduğunda bildirim alacaksınız.
+                Aboneliğiniz oluşturuldu. Ödeme sayfasına yönlendiriliyorsunuz.
               </p>
             </div>
 
             <div className="space-y-2 text-sm">
               {[
-                `${checkoutModal.trialDays} gün ücretsiz deneme başladı`,
-                "Deneme sonunda otomatik ücretlendirme",
+                "Aboneliğiniz başarıyla oluşturuldu",
+                "Ödeme sonrası planınız hemen aktive olur",
                 "İstediğiniz zaman iptal edebilirsiniz",
               ].map((t) => (
                 <div key={t} className="flex items-center gap-2">

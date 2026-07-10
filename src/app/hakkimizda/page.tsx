@@ -18,7 +18,7 @@ const VALUES = [
 const STATS = [
   { value: "7/24", label: "Kesintisiz hizmet" },
   { value: "10+", label: "Entegre araç" },
-  { value: "14 gün", label: "Ücretsiz deneme" },
+  { value: "3+", label: "Yıldır geliştiriliyor" },
   { value: "%100", label: "Yerli ve KVKK uyumlu" },
 ];
 
@@ -108,7 +108,7 @@ export default function HakkimizdaPage() {
           <Users className="mx-auto h-10 w-10 text-violet-300" />
           <h2 className="mt-4 text-3xl font-black text-white">İşletmenizi dijitale taşıyalım</h2>
           <p className="mx-auto mt-3 max-w-md text-violet-200">
-            14 gün ücretsiz deneyin. Kredi kartı gerekmez.
+            Hemen başlayın. İstediğiniz zaman iptal edin.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/kayit" className="group flex items-center gap-2 rounded-2xl bg-white px-8 py-4 font-bold text-violet-700 shadow-lg transition hover:-translate-y-0.5">
