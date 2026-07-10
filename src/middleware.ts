@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/server/auth/auth";
 
 const PROTECTED: { pattern: RegExp; roles: string[] }[] = [
   { pattern: /^\/admin/, roles: ["SUPER_ADMIN", "ADMIN"] },
@@ -30,9 +30,9 @@ export async function middleware(req: NextRequest) {
   const rule = PROTECTED.find((r) => r.pattern.test(pathname));
   if (!rule) return addSecurityHeaders(NextResponse.next());
 
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+  const session = await auth();
 
-  if (!token) {
+  if (!session?.user) {
     if (pathname.startsWith("/api/")) {
       return addSecurityHeaders(NextResponse.json({ error: "Yetkisiz" }, { status: 401 }));
     }
@@ -41,7 +41,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  const role = (token.role as string) ?? "CUSTOMER";
+  const role = (session.user as { role?: string }).role ?? "CUSTOMER";
   if (!rule.roles.includes(role)) {
     if (pathname.startsWith("/api/")) {
       return addSecurityHeaders(NextResponse.json({ error: "Bu işlem için yetkiniz yok" }, { status: 403 }));
