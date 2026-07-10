@@ -33,6 +33,7 @@ const TYPE_ICONS: Record<NotificationType, string> = {
 };
 
 export async function sendNotification(opts: SendNotificationOptions) {
+  if (!opts.userId) return null;
   return prisma.notification.create({
     data: {
       userId: opts.userId,

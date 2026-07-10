@@ -28,7 +28,8 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
 
   const { brandId, planId } = parsed.data;
-  const userId = (session.user as { id: string }).id;
+  const userId = (session.user as { id?: string }).id;
+  if (!userId) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
 
   const brand = await prisma.brand.findFirst({
     where: { id: brandId, ownerId: userId },
