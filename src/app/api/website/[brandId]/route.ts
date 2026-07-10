@@ -16,7 +16,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ bran
         { id: brandId, brand: { ownerId: user.id } },
       ],
     },
-    include: { pages: { orderBy: { order: "asc" } } },
+    include: { pages: { orderBy: { order: "asc" } }, brand: { select: { slug: true } } },
   });
 
   if (!website) return NextResponse.json({ error: "Site bulunamadı" }, { status: 404 });

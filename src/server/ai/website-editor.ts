@@ -1,15 +1,25 @@
 import { generateText } from "./anthropic";
 import type { Block } from "./website-generator";
 
+export interface ConversationMessage {
+  role: "user" | "ai";
+  content: string;
+}
+
 export async function editWebsiteWithAI(
   blocks: Block[],
   instruction: string,
-  brandName: string
+  brandName: string,
+  conversationHistory: ConversationMessage[] = []
 ): Promise<Block[]> {
+  const historyText = conversationHistory.length > 0
+    ? `\nÖnceki konuşma:\n${conversationHistory.map((m) => `${m.role === "user" ? "Kullanıcı" : "Asistan"}: ${m.content}`).join("\n")}\n`
+    : "";
+
   const prompt = `Sen bir web sitesi düzenleme asistanısın. Kullanıcının doğal dil komutuna göre JSON bloklarını düzenliyorsun.
 
-Marka: ${brandName}
-Kullanıcı Komutu: "${instruction}"
+Marka: ${brandName}${historyText}
+Şu anki Kullanıcı Komutu: "${instruction}"
 
 Mevcut Bloklar (JSON):
 ${JSON.stringify(blocks, null, 2)}
@@ -21,6 +31,7 @@ Kullanıcının komutunu uygula ve YALNIZCA güncellenmiş JSON array'ini dönd�
 - "bgColor" hero bloğunun arka plan rengini değiştirir
 - Buton rengi hero'da "bgColor", CTA blokta butonun arka plan rengini temsil eder — CTA bloku için "buttonColor" alanı ekle
 - İçerik değişikliklerinde mevcut yapıyı koru
+- Önceki konuşmayı dikkate al (örn: "onu geri al", "bir önceki rengi değiştir" gibi referansları anlayarak uygula)
 - Sadece JSON döndür, başka hiçbir şey yazma
 
 Güncellenmiş JSON:`;

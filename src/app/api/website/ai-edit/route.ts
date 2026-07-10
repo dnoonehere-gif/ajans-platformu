@@ -8,6 +8,7 @@ const schema = z.object({
   websiteId: z.string(),
   instruction: z.string().min(1),
   blocks: z.array(z.any()),
+  history: z.array(z.object({ role: z.enum(["user", "ai"]), content: z.string() })).optional().default([]),
 });
 
 export async function POST(req: NextRequest) {
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
 
-  const { websiteId, instruction, blocks } = parsed.data;
+  const { websiteId, instruction, blocks, history } = parsed.data;
 
   const website = await prisma.website.findFirst({
     where: { id: websiteId },
@@ -29,6 +30,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
   }
 
-  const updatedBlocks = await editWebsiteWithAI(blocks, instruction, website.brand.name);
+  const updatedBlocks = await editWebsiteWithAI(blocks, instruction, website.brand.name, history);
   return NextResponse.json({ blocks: updatedBlocks });
 }

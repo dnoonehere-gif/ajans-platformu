@@ -2,7 +2,7 @@
 import { useEffect, useState, use, useRef } from "react";
 import {
   Eye, EyeOff, Save, Loader2, Globe, ChevronLeft,
-  Sparkles, Send, RotateCcw, Check, Pencil, Bot,
+  Sparkles, Send, RotateCcw, Check, Pencil, Bot, ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import { BlockRenderer } from "@/components/website/block-renderer";
@@ -21,6 +21,7 @@ interface Website {
   title: string;
   isPublished: boolean;
   pages: WebsitePage[];
+  brand?: { slug: string };
 }
 
 interface ChatMessage {
@@ -117,10 +118,14 @@ export default function WebsiteEditorPage({
     setAiLoading(true);
 
     try {
+      const chatHistory = messages
+        .filter((m) => !m.loading && m.content)
+        .map((m) => ({ role: m.role, content: m.content }));
+
       const res = await fetch("/api/website/ai-edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ websiteId, instruction, blocks }),
+        body: JSON.stringify({ websiteId, instruction, blocks, history: chatHistory }),
       });
       const data = await res.json();
 
@@ -185,6 +190,19 @@ export default function WebsiteEditorPage({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Siteyi Görüntüle */}
+          {website.isPublished && (
+            <a
+              href={`/site/${website.brand?.slug ?? website.brandId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-green-400 transition hover:bg-green-500/10"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Siteyi Görüntüle
+            </a>
+          )}
+
           {/* Geri al */}
           <button
             onClick={undo}
