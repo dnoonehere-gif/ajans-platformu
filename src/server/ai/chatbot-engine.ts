@@ -1,4 +1,5 @@
 import { anthropic } from "./anthropic";
+import { queryKnowledge } from "@/lib/pinecone";
 import type { ChatbotKnowledge } from "@prisma/client";
 
 export interface ChatMessage {
@@ -10,14 +11,8 @@ function buildSystemPrompt(
   botName: string,
   brandName: string,
   customPrompt: string | null,
-  knowledge: ChatbotKnowledge[]
+  relevantKnowledge: string
 ): string {
-  const knowledgeText = knowledge.length
-    ? knowledge
-        .map((k) => `[${k.category.toUpperCase()}]${k.question ? ` S: ${k.question}` : ""}\n${k.content}`)
-        .join("\n\n")
-    : "";
-
   return `Sen ${brandName} markasının yapay zekâ destekli müşteri asistanısın. Adın: ${botName}.
 
 Görevin: Müşterilerin sorularını Türkçe, samimi ve profesyonel bir şekilde yanıtlamak.
@@ -28,22 +23,42 @@ Temel kurallar:
 - Bilmediğin bir konuda "Bu konuda size en iyi şekilde yardımcı olmak için sizi yetkili personelinizle bağlantı kurmanızı öneririm." de.
 - Asla başka bir marka veya rakip hakkında yorum yapma.
 ${customPrompt ? `\nÖzel Talimatlar:\n${customPrompt}` : ""}
-${knowledgeText ? `\nMarka Bilgi Tabanı:\n${knowledgeText}` : ""}`;
+${relevantKnowledge ? `\nİlgili Bilgi Tabanı:\n${relevantKnowledge}` : ""}`;
 }
 
 export async function streamChatResponse(opts: {
   botName: string;
   brandName: string;
+  brandId: string;
   systemPrompt: string | null;
-  knowledge: ChatbotKnowledge[];
+  fallbackKnowledge: ChatbotKnowledge[]; // Pinecone yoksa kullanılır
   history: ChatMessage[];
   userMessage: string;
 }): Promise<ReadableStream<Uint8Array>> {
+  // Pinecone'dan semantik arama — yoksa DB'deki knowledge'ı kullan
+  let relevantKnowledge = "";
+
+  try {
+    const hits = await queryKnowledge(opts.brandId, opts.userMessage, 5);
+    if (hits.length > 0) {
+      relevantKnowledge = hits.map((h) => h.text).join("\n\n");
+    }
+  } catch {
+    // Pinecone erişilemez → fallback
+  }
+
+  // Pinecone boşsa veya erişilemezse DB knowledge'ını kullan
+  if (!relevantKnowledge && opts.fallbackKnowledge.length > 0) {
+    relevantKnowledge = opts.fallbackKnowledge
+      .map((k) => `[${k.category.toUpperCase()}]${k.question ? ` S: ${k.question}` : ""}\n${k.content}`)
+      .join("\n\n");
+  }
+
   const system = buildSystemPrompt(
     opts.botName,
     opts.brandName,
     opts.systemPrompt,
-    opts.knowledge
+    relevantKnowledge
   );
 
   const messages = [

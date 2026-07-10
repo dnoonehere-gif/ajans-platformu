@@ -53,8 +53,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ bra
   const stream = await streamChatResponse({
     botName: chatbot.name,
     brandName: chatbot.brand.name,
+    brandId,
     systemPrompt: chatbot.systemPrompt,
-    knowledge: chatbot.knowledgeBase,
+    fallbackKnowledge: chatbot.knowledgeBase,
     history: history.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
     userMessage: message,
   });

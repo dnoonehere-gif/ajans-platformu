@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
+import { getPinecone, PINECONE_INDEX } from "@/lib/pinecone";
 
 export async function DELETE(
   _req: NextRequest,
@@ -17,5 +18,12 @@ export async function DELETE(
   if (!entry) return NextResponse.json({ error: "Kayıt bulunamadı" }, { status: 404 });
 
   await prisma.chatbotKnowledge.delete({ where: { id } });
+
+  // Pinecone'dan da sil
+  try {
+    const pc = getPinecone();
+    if (pc) await pc.index(PINECONE_INDEX).namespace(brandId).deleteOne(id);
+  } catch { /* sessizce geç */ }
+
   return NextResponse.json({ ok: true });
 }
