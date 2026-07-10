@@ -8,10 +8,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ bra
 
   const { brandId } = await params;
 
+  // brandId parametresi aslında websiteId de olabilir (editor sayfası websiteId ile çağırır)
   const website = await prisma.website.findFirst({
     where: {
-      brandId,
-      brand: { ownerId: (session.user as { id: string }).id },
+      OR: [
+        { brandId, brand: { ownerId: (session.user as { id: string }).id } },
+        { id: brandId, brand: { ownerId: (session.user as { id: string }).id } },
+      ],
     },
     include: { pages: { orderBy: { order: "asc" } } },
   });
