@@ -72,6 +72,7 @@ export default function AbonelikPage() {
   const [showCancel, setShowCancel] = useState(false);
   const [showInvoices, setShowInvoices] = useState(false);
   const [checkoutModal, setCheckoutModal] = useState<Plan | null>(null);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!brandId) return;
@@ -108,8 +109,8 @@ export default function AbonelikPage() {
         setSubscription(data.subscription);
       }
       if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-        return;
+        setCheckoutUrl(data.checkoutUrl);
+        setCheckoutModal(plan);
       } else {
         setCheckoutModal(plan);
       }
@@ -354,47 +355,61 @@ export default function AbonelikPage() {
         </div>
       )}
 
-      {/* Checkout Modal — PayTR/Shopier placeholder */}
+      {/* Ödeme Modal */}
       {checkoutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="glass w-full max-w-md rounded-3xl p-7 shadow-2xl">
-            <div className="mb-5 text-center">
-              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[hsl(var(--primary)/0.15)]">
-                <CreditCard className="h-7 w-7 text-[hsl(var(--primary))]" />
-              </div>
-              <h2 className="text-xl font-bold">{checkoutModal.name} Planı</h2>
-              <p className="mt-1 text-3xl font-black">{fmt(checkoutModal.priceCents)}<span className="text-sm font-normal text-[hsl(var(--muted-foreground))]">/ay</span></p>
-            </div>
-
-            <div className="mb-5 rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4">
-              <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-yellow-400">
-                <Clock className="h-4 w-4" /> Ödeme Sistemi Yakında
-              </p>
-              <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">
-                Aboneliğiniz oluşturuldu. Ödeme sayfasına yönlendiriliyorsunuz.
-              </p>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              {[
-                "Aboneliğiniz başarıyla oluşturuldu",
-                "Ödeme sonrası planınız hemen aktive olur",
-                "İstediğiniz zaman iptal edebilirsiniz",
-              ].map((t) => (
-                <div key={t} className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-400 shrink-0" />
-                  <span>{t}</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="relative flex w-full max-w-2xl flex-col rounded-2xl bg-[hsl(var(--card))] shadow-2xl overflow-hidden" style={{ maxHeight: "90vh" }}>
+            {/* Başlık */}
+            <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-5 py-4 shrink-0">
+              <div className="flex items-center gap-3">
+                <CreditCard className="h-5 w-5" style={{ color: primaryColor }} />
+                <div>
+                  <p className="font-semibold">{checkoutModal.name} Planı</p>
+                  <p className="text-xs text-[hsl(var(--muted-foreground))]">{fmt(checkoutModal.priceCents)}/ay · Güvenli ödeme</p>
                 </div>
-              ))}
+              </div>
+              <div className="flex items-center gap-2">
+                {checkoutUrl && (
+                  <a
+                    href={checkoutUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] px-3 py-1.5 text-xs text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))]"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Yeni sekmede aç
+                  </a>
+                )}
+                <button
+                  onClick={() => { setCheckoutModal(null); setCheckoutUrl(null); load(); }}
+                  className="rounded-lg p-1.5 text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
-            <button
-              onClick={() => setCheckoutModal(null)}
-              className="mt-6 w-full rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90"
-              style={{ background: primaryColor }}
-            >
-              Anladım, Devam Et
-            </button>
+            {/* İframe veya fallback */}
+            {checkoutUrl ? (
+              <iframe
+                src={checkoutUrl}
+                className="w-full flex-1 border-0"
+                style={{ minHeight: "580px" }}
+                title="Güvenli Ödeme"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-top-navigation allow-popups"
+              />
+            ) : (
+              <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+                <CreditCard className="h-10 w-10 text-[hsl(var(--muted-foreground)/0.4)]" />
+                <p className="font-semibold">Aboneliğiniz oluşturuldu</p>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">Ödeme sistemi yakında aktive edilecek.</p>
+              </div>
+            )}
+
+            {/* Alt bilgi */}
+            <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)] px-5 py-3 text-center text-xs text-[hsl(var(--muted-foreground))] shrink-0">
+              Ödeme tamamlandıktan sonra planınız otomatik olarak aktive olur. Bu pencereyi kapatabilirsiniz.
+            </div>
           </div>
         </div>
       )}
