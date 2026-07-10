@@ -53,6 +53,7 @@ enum InvoiceStatus {
 
 /// Ödeme sağlayıcısı
 enum PaymentProvider {
+  SHOPIER
   PAYTR
   STRIPE
 }
