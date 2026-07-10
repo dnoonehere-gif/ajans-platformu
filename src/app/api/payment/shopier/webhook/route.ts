@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
         where: {
           brand: { ownerId: user.id },
           planId: plan.id,
-          status: { in: ["TRIALING", "PENDING"] },
+          status: { in: ["TRIALING", "ACTIVE"] },
         },
         orderBy: { createdAt: "desc" },
       });
