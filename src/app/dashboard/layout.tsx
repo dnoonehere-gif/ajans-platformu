@@ -87,6 +87,36 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 <BrandSwitcher />
               </div>
               <NavClient isAdmin={isAdmin} />
+
+              {/* Tema seçici */}
+              <div className="border-t border-[hsl(var(--border))]">
+                <details className="group">
+                  <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:text-[hsl(var(--foreground))]">
+                    <Palette className="h-4 w-4 shrink-0" />
+                    <span className="flex-1">Tema</span>
+                    <ChevronRight className="h-3 w-3 transition group-open:rotate-90" />
+                  </summary>
+                  <ThemeSwitcher />
+                </details>
+              </div>
+
+              {/* Kullanıcı */}
+              <div className="border-t border-[hsl(var(--border))] p-3">
+                <div className="flex items-center gap-3 rounded-xl bg-[hsl(var(--accent)/0.5)] px-3 py-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary)/0.2)] text-xs font-bold text-[hsl(var(--primary))]">
+                    {initials}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate text-xs font-semibold">{user.name ?? "Kullanıcı"}</p>
+                    <p className="truncate text-[10px] text-[hsl(var(--muted-foreground))]">{user.email}</p>
+                  </div>
+                  <form action={async () => { "use server"; await signOut({ redirectTo: `${process.env.NEXTAUTH_URL ?? ""}/giris` }); }}>
+                    <button type="submit" title="Çıkış Yap" className="text-[hsl(var(--muted-foreground))] transition hover:text-red-400">
+                      <LogOut className="h-3.5 w-3.5" />
+                    </button>
+                  </form>
+                </div>
+              </div>
             </MobileSidebarToggle>
             <div className="ml-auto">
               <NotificationBell />
