@@ -158,18 +158,18 @@ body {
 
 /* Ambient aurora arka plan blobları */
 @keyframes nv-float-a {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%      { transform: translate(40px, -30px) scale(1.08); }
-  66%      { transform: translate(-25px, 20px) scale(0.95); }
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33%      { transform: translate3d(70px, -50px, 0) scale(1.12); }
+  66%      { transform: translate3d(-45px, 35px, 0) scale(0.92); }
 }
 @keyframes nv-float-b {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  40%      { transform: translate(-35px, 25px) scale(1.1); }
-  70%      { transform: translate(20px, -20px) scale(0.92); }
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  40%      { transform: translate3d(-60px, 45px, 0) scale(1.15); }
+  70%      { transform: translate3d(40px, -35px, 0) scale(0.9); }
 }
 @keyframes nv-float-c {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%      { transform: translate(30px, 30px) scale(1.06); }
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(55px, 50px, 0) scale(1.1); }
 }
 
 .nv-bg {
@@ -182,27 +182,26 @@ body {
 .nv-blob {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(90px);
-  opacity: 0.5;
   will-change: transform;
+  transform: translateZ(0);
 }
 .nv-blob-a {
-  width: 480px; height: 480px;
-  top: -120px; right: -100px;
-  background: radial-gradient(circle, hsl(var(--primary) / 0.16), transparent 70%);
-  animation: nv-float-a 24s ease-in-out infinite;
+  width: 560px; height: 560px;
+  top: -140px; right: -120px;
+  background: radial-gradient(circle, hsl(var(--primary) / 0.32) 0%, hsl(var(--primary) / 0.12) 40%, transparent 70%);
+  animation: nv-float-a 14s ease-in-out infinite;
 }
 .nv-blob-b {
-  width: 380px; height: 380px;
-  bottom: -80px; left: 10%;
-  background: radial-gradient(circle, hsl(var(--primary) / 0.10), transparent 70%);
-  animation: nv-float-b 30s ease-in-out infinite;
+  width: 440px; height: 440px;
+  bottom: -100px; left: 8%;
+  background: radial-gradient(circle, hsl(var(--primary) / 0.24) 0%, hsl(var(--primary) / 0.08) 45%, transparent 70%);
+  animation: nv-float-b 18s ease-in-out infinite;
 }
 .nv-blob-c {
-  width: 300px; height: 300px;
-  top: 40%; left: 45%;
-  background: radial-gradient(circle, hsl(var(--primary) / 0.07), transparent 70%);
-  animation: nv-float-c 36s ease-in-out infinite;
+  width: 360px; height: 360px;
+  top: 38%; left: 42%;
+  background: radial-gradient(circle, hsl(var(--primary) / 0.18) 0%, transparent 65%);
+  animation: nv-float-c 22s ease-in-out infinite;
 }
 
 /* İnce nokta deseni */
