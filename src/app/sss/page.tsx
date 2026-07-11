@@ -46,20 +46,20 @@ export default function SssPage() {
     <PageShell>
       <section className="px-6 py-16">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-700">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/25 bg-violet-500/10 px-3 py-1 text-xs font-bold text-violet-300">
             <HelpCircle className="h-3.5 w-3.5" /> Yardım Merkezi
           </span>
-          <h1 className="mt-5 text-4xl font-black text-gray-900 sm:text-5xl">Sık Sorulan Sorular</h1>
-          <p className="mt-4 text-lg text-gray-600">Merak ettiklerinizin cevabı burada.</p>
+          <h1 className="mt-5 text-4xl font-black text-white sm:text-5xl">Sık Sorulan Sorular</h1>
+          <p className="mt-4 text-lg text-slate-400">Merak ettiklerinizin cevabı burada.</p>
 
           {/* Arama */}
           <div className="relative mx-auto mt-8 max-w-md">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Soru ara..."
-              className="w-full rounded-2xl border border-gray-200 bg-white py-3.5 pl-11 pr-4 text-sm text-gray-800 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
+              className="w-full rounded-2xl border border-white/10 bg-white/[0.04] py-3.5 pl-11 pr-4 text-sm text-white outline-none transition focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20 placeholder:text-slate-600"
             />
           </div>
         </div>
@@ -71,7 +71,7 @@ export default function SssPage() {
               key={c}
               onClick={() => { setCat(c); setOpen(null); }}
               className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                cat === c ? "bg-violet-600 text-white shadow-sm" : "bg-white text-gray-600 hover:bg-violet-50"
+                cat === c ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30" : "border border-white/10 bg-white/[0.04] text-slate-400 hover:bg-white/[0.08] hover:text-white"
               }`}
             >
               {c}
@@ -82,33 +82,33 @@ export default function SssPage() {
         {/* Liste */}
         <div className="mx-auto mt-8 max-w-3xl space-y-3">
           {filtered.map((f, i) => (
-            <div key={f.q} className="overflow-hidden rounded-2xl border border-gray-100 bg-white/70 backdrop-blur">
+            <div key={f.q} className="overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] transition hover:border-violet-400/20">
               <button
                 onClick={() => setOpen(open === i ? null : i)}
                 className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
               >
-                <span className="font-semibold text-gray-900">{f.q}</span>
-                <ChevronDown className={`h-5 w-5 shrink-0 text-violet-500 transition ${open === i ? "rotate-180" : ""}`} />
+                <span className="font-semibold text-white">{f.q}</span>
+                <ChevronDown className={`h-5 w-5 shrink-0 text-violet-400 transition ${open === i ? "rotate-180" : ""}`} />
               </button>
               {open === i && (
-                <div className="px-5 pb-5 text-sm leading-relaxed text-gray-600">{f.a}</div>
+                <div className="px-5 pb-5 text-sm leading-relaxed text-slate-400">{f.a}</div>
               )}
             </div>
           ))}
           {filtered.length === 0 && (
             <div className="py-16 text-center">
               <div className="mb-3 text-5xl">🔍</div>
-              <p className="text-gray-500">“{search}” için sonuç bulunamadı.</p>
+              <p className="text-slate-500">“{search}” için sonuç bulunamadı.</p>
             </div>
           )}
         </div>
 
         {/* Yardımcı olmadı mı */}
-        <div className="mx-auto mt-12 max-w-3xl rounded-3xl bg-gradient-to-br from-gray-900 to-violet-900 p-8 text-center text-white">
+        <div className="mx-auto mt-12 max-w-3xl rounded-3xl border border-violet-400/20 bg-gradient-to-br from-[#12102a] to-[#0c0a1e] p-8 text-center text-white">
           <MessageSquare className="mx-auto h-8 w-8 text-violet-300" />
           <h2 className="mt-3 text-xl font-bold">Cevabını bulamadınız mı?</h2>
-          <p className="mt-2 text-sm text-violet-200">Ekibimiz size yardımcı olmaktan memnuniyet duyar.</p>
-          <Link href="/iletisim" className="mt-5 inline-block rounded-xl bg-white px-6 py-3 text-sm font-bold text-violet-700 transition hover:-translate-y-0.5">
+          <p className="mt-2 text-sm text-slate-400">Ekibimiz size yardımcı olmaktan memnuniyet duyar.</p>
+          <Link href="/iletisim" className="mt-5 inline-block rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-[0_0_30px_-8px_rgba(139,92,246,0.5)] transition hover:-translate-y-0.5">
             Bize Ulaşın
           </Link>
         </div>

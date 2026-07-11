@@ -10,7 +10,7 @@ const CONTACT = [
   { icon: MessageSquare, title: "Destek", value: "Hesabınızdan canlı destek" },
 ];
 
-const inp = "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-100 placeholder:text-gray-400";
+const inp = "w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20 placeholder:text-slate-600";
 
 export default function IletisimPage() {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
@@ -41,11 +41,11 @@ export default function IletisimPage() {
     <PageShell>
       <section className="px-6 py-16">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-700">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/25 bg-violet-500/10 px-3 py-1 text-xs font-bold text-violet-300">
             <MessageSquare className="h-3.5 w-3.5" /> İletişim
           </span>
-          <h1 className="mt-5 text-4xl font-black text-gray-900 sm:text-5xl">Bize ulaşın</h1>
-          <p className="mt-4 text-lg text-gray-600">
+          <h1 className="mt-5 text-4xl font-black text-white sm:text-5xl">Bize ulaşın</h1>
+          <p className="mt-4 text-lg text-slate-400">
             Sorularınız, önerileriniz veya iş birliği talepleriniz için formu doldurun;
             en kısa sürede size dönüş yapalım.
           </p>
@@ -55,21 +55,21 @@ export default function IletisimPage() {
           {/* İletişim bilgileri */}
           <div className="space-y-4 lg:col-span-2">
             {CONTACT.map((c) => (
-              <div key={c.title} className="flex items-start gap-4 rounded-2xl border border-gray-100 bg-white/70 p-5 backdrop-blur">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-100">
-                  <c.icon className="h-5 w-5 text-violet-600" />
+              <div key={c.title} className="flex items-start gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-5">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/10">
+                  <c.icon className="h-5 w-5 text-violet-300" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-gray-900">{c.title}</p>
+                  <p className="text-sm font-bold text-white">{c.title}</p>
                   {c.href ? (
-                    <a href={c.href} className="mt-0.5 block text-sm text-violet-700 hover:underline">{c.value}</a>
+                    <a href={c.href} className="mt-0.5 block text-sm text-violet-400 hover:underline">{c.value}</a>
                   ) : (
-                    <p className="mt-0.5 text-sm text-gray-500">{c.value}</p>
+                    <p className="mt-0.5 text-sm text-slate-400">{c.value}</p>
                   )}
                 </div>
               </div>
             ))}
-            <div className="rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 p-5 text-white">
+            <div className="rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 p-5 text-white shadow-[0_0_40px_-12px_rgba(139,92,246,0.5)]">
               <HelpCircle className="h-6 w-6" />
               <p className="mt-3 font-bold">Hızlı yanıt mı arıyorsunuz?</p>
               <p className="mt-1 text-sm text-violet-100">
@@ -84,10 +84,10 @@ export default function IletisimPage() {
           {/* Form */}
           <div className="lg:col-span-3">
             {status === "sent" ? (
-              <div className="flex h-full min-h-80 flex-col items-center justify-center rounded-3xl border border-green-100 bg-green-50/50 p-10 text-center">
-                <CheckCircle2 className="h-14 w-14 text-green-500" />
-                <h2 className="mt-4 text-xl font-bold text-gray-900">Mesajınız iletildi!</h2>
-                <p className="mt-2 max-w-sm text-sm text-gray-600">
+              <div className="flex h-full min-h-80 flex-col items-center justify-center rounded-3xl border border-emerald-400/20 bg-emerald-500/[0.06] p-10 text-center">
+                <CheckCircle2 className="h-14 w-14 text-emerald-400" />
+                <h2 className="mt-4 text-xl font-bold text-white">Mesajınız iletildi!</h2>
+                <p className="mt-2 max-w-sm text-sm text-slate-400">
                   Teşekkürler. En kısa sürede belirttiğiniz e-posta adresinden dönüş yapacağız.
                 </p>
                 <button
@@ -98,38 +98,38 @@ export default function IletisimPage() {
                 </button>
               </div>
             ) : (
-              <form onSubmit={submit} className="rounded-3xl border border-gray-100 bg-white/70 p-6 backdrop-blur sm:p-8">
+              <form onSubmit={submit} className="rounded-3xl border border-white/[0.07] bg-white/[0.03] p-6 sm:p-8">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="mb-1.5 block text-xs font-semibold text-gray-700">Ad Soyad</label>
+                    <label className="mb-1.5 block text-xs font-semibold text-slate-300">Ad Soyad</label>
                     <input required className={inp} placeholder="Adınız" value={form.name}
                       onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-semibold text-gray-700">E-posta</label>
+                    <label className="mb-1.5 block text-xs font-semibold text-slate-300">E-posta</label>
                     <input required type="email" className={inp} placeholder="ornek@mail.com" value={form.email}
                       onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
                   </div>
                 </div>
                 <div className="mt-4">
-                  <label className="mb-1.5 block text-xs font-semibold text-gray-700">Konu</label>
+                  <label className="mb-1.5 block text-xs font-semibold text-slate-300">Konu</label>
                   <input required className={inp} placeholder="Mesajınızın konusu" value={form.subject}
                     onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))} />
                 </div>
                 <div className="mt-4">
-                  <label className="mb-1.5 block text-xs font-semibold text-gray-700">Mesaj</label>
+                  <label className="mb-1.5 block text-xs font-semibold text-slate-300">Mesaj</label>
                   <textarea required rows={5} className={inp + " resize-none"} placeholder="Bize nasıl yardımcı olabiliriz?"
                     value={form.message} onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))} />
                 </div>
 
                 {status === "error" && (
-                  <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
+                  <p className="mt-4 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">{error}</p>
                 )}
 
                 <button
                   type="submit"
                   disabled={status === "sending"}
-                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3.5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60"
+                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3.5 text-sm font-bold text-white shadow-[0_0_30px_-8px_rgba(139,92,246,0.5)] transition hover:-translate-y-0.5 disabled:opacity-60"
                 >
                   {status === "sending" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   {status === "sending" ? "Gönderiliyor..." : "Mesajı Gönder"}
