@@ -149,7 +149,7 @@ export default function KayitPage() {
 
         <p className="text-center text-xs text-[hsl(var(--muted-foreground))]">
           Kayıt olarak{" "}
-          <Link href="/kullanim-kosullari" className="underline hover:text-[hsl(var(--foreground))]">
+          <Link href="/kullanim-sartlari" className="underline hover:text-[hsl(var(--foreground))]">
             Kullanım Koşulları
           </Link>
           'nı kabul etmiş olursunuz.
