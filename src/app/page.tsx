@@ -279,10 +279,10 @@ export default function AnaSayfa() {
       <section className="relative py-20 px-6">
         <div className="mx-auto max-w-4xl">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <StatCard value="500+" label="Aktif İşletme" icon={Users} />
-            <StatCard value="4.9★" label="Ortalama Puan" icon={Star} />
-            <StatCard value="50K+" label="Yönetilen Yorum" icon={MessageSquare} />
-            <StatCard value="%98" label="Müşteri Memnuniyeti" icon={TrendingUp} />
+            <StatCard value="5 dk" label="Web Siteniz Yayında" icon={Zap} />
+            <StatCard value="7/24" label="AI Chatbot Desteği" icon={Bot} />
+            <StatCard value="6 araç" label="Tek Panelde" icon={Globe} />
+            <StatCard value="%90" label="Ajans Maliyetinden Tasarruf" icon={TrendingUp} />
           </div>
         </div>
       </section>
