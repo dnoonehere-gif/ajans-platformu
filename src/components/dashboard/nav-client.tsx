@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Globe, Bot, Star, Sparkles, QrCode,
   Users, Settings, Shield, ChevronRight, Building2, MapPin, CreditCard,
-  UtensilsCrossed, Lock,
+  UtensilsCrossed, Lock, Crown, Layers, FileBarChart, Send,
 } from "lucide-react";
 import { useBrand } from "./brand-provider";
 
@@ -15,6 +15,10 @@ interface PlanFeatures {
   website: boolean;
   googleBusiness: boolean;
   seoContent: boolean;
+  whiteLabel?: boolean;
+  batchContent?: boolean;
+  clientReporting?: boolean;
+  socialMedia?: boolean;
 }
 
 interface NavItem {
@@ -35,6 +39,10 @@ const NAV: NavItem[] = [
   { href: "/dashboard/qr", label: "QR Geri Bildirim", icon: QrCode },
   { href: "/dashboard/subeler", label: "Şubeler", icon: Building2 },
   { href: "/dashboard/team", label: "Takım", icon: Users },
+  { href: "/dashboard/batch-content", label: "Toplu İçerik", icon: Layers, planKey: "batchContent" as keyof PlanFeatures },
+  { href: "/dashboard/sosyal-medya", label: "Sosyal Medya", icon: Send, planKey: "socialMedia" as keyof PlanFeatures },
+  { href: "/dashboard/raporlar", label: "Müşteri Raporları", icon: FileBarChart, planKey: "clientReporting" as keyof PlanFeatures },
+  { href: "/dashboard/white-label", label: "White-Label", icon: Crown, planKey: "whiteLabel" as keyof PlanFeatures },
   { href: "/dashboard/abonelik", label: "Abonelik", icon: CreditCard },
   { href: "/dashboard/ayarlar", label: "Ayarlar", icon: Settings },
 ];

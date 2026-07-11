@@ -225,8 +225,64 @@ model Brand {
   dashboardSummaries DashboardSummary[]
   aiUsages       AiUsage[]
   menu           Menu?
+  whiteLabel     WhiteLabel?
+  socialPosts    SocialPost[]
 
   @@index([ownerId])
+}
+
+/// White-Label ayarları — Ajans planı müşterilerinin kendi markalarıyla site sunması
+model WhiteLabel {
+  id              String   @id @default(cuid())
+  brandId         String   @unique
+  agencyName      String?
+  agencyLogoUrl   String?
+  agencyFaviconUrl String?
+  customDomain    String?  @unique
+  primaryColor    String?  @default("#6366f1")
+  accentColor     String?  @default("#8b5cf6")
+  footerText      String?
+  hideNovelya     Boolean  @default(false)
+  customCss       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+}
+
+/// Sosyal medya planlanmış paylaşımları
+model SocialPost {
+  id          String          @id @default(cuid())
+  brandId     String
+  platform    SocialPlatform
+  content     String
+  mediaUrl    String?
+  scheduledAt DateTime
+  publishedAt DateTime?
+  status      SocialPostStatus @default(SCHEDULED)
+  externalId  String?
+  error       String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@index([brandId, scheduledAt])
+  @@index([status, scheduledAt])
+}
+
+enum SocialPlatform {
+  INSTAGRAM
+  FACEBOOK
+  LINKEDIN
+  TWITTER
+}
+
+enum SocialPostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  FAILED
 }
 
 /// Kullanıcının bir markadaki üyeliği ve rolü (marka içi RBAC)
