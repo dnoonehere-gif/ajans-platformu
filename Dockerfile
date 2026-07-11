@@ -13,6 +13,7 @@ RUN npx prisma generate
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/ajans" \
+    DIRECT_URL="postgresql://placeholder:placeholder@localhost:5432/ajans" \
     AUTH_SECRET="build-time-placeholder-secret-min-32-chars-xx" \
     NEXTAUTH_URL="http://localhost:3000" \
     RESEND_API_KEY="re_placeholder" \
