@@ -27,7 +27,7 @@ async function main() {
     where: { slug: "baslangic" },
     update: { priceCents: 89900 },
     create: {
-      name: "Başlangıç", slug: "baslangic", priceCents: 89900, trialDays: 14,
+      name: "Başlangıç", slug: "baslangic", priceCents: 89900, trialDays: 0,
       features: { brands: 1, teamMembers: 2, aiContent: 50, chatbot: false, reviews: false, qrCodes: 2, website: true, googleBusiness: false, seoContent: false, support: "email" },
     },
   });
@@ -35,7 +35,7 @@ async function main() {
     where: { slug: "profesyonel" },
     update: { priceCents: 169900 },
     create: {
-      name: "Profesyonel", slug: "profesyonel", priceCents: 169900, trialDays: 14,
+      name: "Profesyonel", slug: "profesyonel", priceCents: 169900, trialDays: 0,
       features: { brands: 5, teamMembers: 10, aiContent: 300, chatbot: true, reviews: true, qrCodes: 10, website: true, googleBusiness: true, seoContent: true, support: "priority" },
     },
   });
@@ -43,7 +43,7 @@ async function main() {
     where: { slug: "isletme" },
     update: { priceCents: 299900 },
     create: {
-      name: "İşletme", slug: "isletme", priceCents: 299900, trialDays: 14,
+      name: "İşletme", slug: "isletme", priceCents: 299900, trialDays: 0,
       features: { brands: 20, teamMembers: 50, aiContent: -1, chatbot: true, reviews: true, qrCodes: -1, website: true, googleBusiness: true, seoContent: true, support: "priority" },
     },
   });

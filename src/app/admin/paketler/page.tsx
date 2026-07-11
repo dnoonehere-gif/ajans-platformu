@@ -18,7 +18,7 @@ export default function PaketlerPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ name: "", slug: "", priceCents: "", trialDays: "14", interval: "month" });
+  const [form, setForm] = useState({ name: "", slug: "", priceCents: "", trialDays: "0", interval: "month" });
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState("");
 
@@ -39,7 +39,7 @@ export default function PaketlerPage() {
     if (!res.ok) { setError(data.error ?? "Hata"); setCreating(false); return; }
     setPlans((p) => [data.plan, ...p]);
     setShowForm(false);
-    setForm({ name: "", slug: "", priceCents: "", trialDays: "14", interval: "month" });
+    setForm({ name: "", slug: "", priceCents: "", trialDays: "0", interval: "month" });
     setCreating(false);
   }
 

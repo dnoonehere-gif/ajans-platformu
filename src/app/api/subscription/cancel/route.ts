@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     where: { id: subscription.id },
     data: {
       status: "CANCELED",
-      endsAt: subscription.trialEndsAt ?? new Date(),
+      endsAt: subscription.endsAt ?? new Date(),
     },
     include: { plan: true },
   });

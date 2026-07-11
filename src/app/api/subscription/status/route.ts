@@ -21,14 +21,7 @@ export async function GET(req: NextRequest) {
 
   if (sub.status === "ACTIVE") return NextResponse.json({ state: "active" });
 
-  if (sub.status === "TRIALING") {
-    const now = new Date();
-    const trialEnd = sub.trialEndsAt ?? new Date(sub.startedAt.getTime() + 14 * 24 * 60 * 60 * 1000);
-    const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-    if (daysLeft <= 3) return NextResponse.json({ state: "trial_ending", daysLeft: Math.max(0, daysLeft) });
-    return NextResponse.json({ state: "active", daysLeft });
-  }
+  if (sub.status === "TRIALING") return NextResponse.json({ state: "active" });
 
   if (sub.status === "PAST_DUE" || sub.status === "EXPIRED" || sub.status === "CANCELED") {
     return NextResponse.json({ state: "suspended" });

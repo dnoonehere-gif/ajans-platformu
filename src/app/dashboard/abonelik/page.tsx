@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   CreditCard, Check, Loader2, Zap, Rocket, Building2,
-  Crown, AlertTriangle, Clock, X, ChevronDown, ChevronUp,
+  Crown, AlertTriangle, X, ChevronDown, ChevronUp,
   ExternalLink, RefreshCw,
 } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
@@ -30,7 +30,7 @@ const PLAN_COLORS = ["from-blue-500 to-indigo-600", "from-violet-500 to-purple-6
 const POPULAR_SLUGS = ["profesyonel", "profesyonel-yillik"];
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ComponentType<{ className?: string }> }> = {
-  TRIALING: { label: "Deneme Süresi", color: "text-blue-400", bg: "bg-blue-500/10", icon: Clock },
+  TRIALING: { label: "Aktif", color: "text-green-400", bg: "bg-green-500/10", icon: Check },
   ACTIVE: { label: "Aktif", color: "text-green-400", bg: "bg-green-500/10", icon: Check },
   PAST_DUE: { label: "Ödeme Gecikmiş", color: "text-orange-400", bg: "bg-orange-500/10", icon: AlertTriangle },
   CANCELED: { label: "İptal Edildi", color: "text-[hsl(var(--muted-foreground))]", bg: "bg-[hsl(var(--muted))]", icon: X },
@@ -192,13 +192,6 @@ export default function AbonelikPage() {
                 </div>
 
                 <div className="flex flex-col items-end gap-2">
-                  {subscription.status === "TRIALING" && subscription.trialEndsAt && (
-                    <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3 text-right">
-                      <p className="text-xs text-blue-400 font-medium">Deneme süresi</p>
-                      <p className="text-2xl font-black text-blue-400">{daysLeft(subscription.trialEndsAt)}</p>
-                      <p className="text-xs text-[hsl(var(--muted-foreground))]">gün kaldı</p>
-                    </div>
-                  )}
                   {subscription.endsAt && subscription.status !== "TRIALING" && (
                     <p className="text-xs text-[hsl(var(--muted-foreground))]">
                       {new Date(subscription.endsAt).toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" })} tarihinde yenilenir

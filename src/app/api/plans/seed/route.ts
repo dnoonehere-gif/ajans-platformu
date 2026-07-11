@@ -5,19 +5,19 @@ import { invalidateTag } from "@/server/cache/redis-cache";
 
 const ALL_PLANS = [
   {
-    name: "Başlangıç", slug: "baslangic", priceCents: 89900, currency: "TRY", interval: "month" as const, trialDays: 14,
+    name: "Başlangıç", slug: "baslangic", priceCents: 89900, currency: "TRY", interval: "month" as const, trialDays: 0,
     features: { brands: 1, teamMembers: 2, aiContent: 50, chatbot: false, reviews: false, qrCodes: 2, website: true, googleBusiness: false, seoContent: false, support: "email" },
   },
   {
-    name: "Profesyonel", slug: "profesyonel", priceCents: 169900, currency: "TRY", interval: "month" as const, trialDays: 14,
+    name: "Profesyonel", slug: "profesyonel", priceCents: 169900, currency: "TRY", interval: "month" as const, trialDays: 0,
     features: { brands: 5, teamMembers: 10, aiContent: 300, chatbot: true, reviews: true, qrCodes: 10, website: true, googleBusiness: true, seoContent: true, support: "priority" },
   },
   {
-    name: "İşletme", slug: "isletme", priceCents: 299900, currency: "TRY", interval: "month" as const, trialDays: 14,
+    name: "İşletme", slug: "isletme", priceCents: 299900, currency: "TRY", interval: "month" as const, trialDays: 0,
     features: { brands: 20, teamMembers: 50, aiContent: -1, chatbot: true, reviews: true, qrCodes: -1, website: true, googleBusiness: true, seoContent: true, support: "priority" },
   },
   {
-    name: "Ajans", slug: "ajans", priceCents: 499900, currency: "TRY", interval: "month" as const, trialDays: 7,
+    name: "Ajans", slug: "ajans", priceCents: 499900, currency: "TRY", interval: "month" as const, trialDays: 0,
     features: { brands: -1, teamMembers: -1, aiContent: -1, chatbot: true, reviews: true, qrCodes: -1, website: true, googleBusiness: true, seoContent: true, whiteLabel: true, batchContent: true, clientReporting: true, socialMedia: true, apiAccess: true, support: "priority" },
   },
   {
