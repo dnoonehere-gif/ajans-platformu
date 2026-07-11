@@ -56,6 +56,7 @@ enum PaymentProvider {
   SHOPIER
   PAYTR
   STRIPE
+  MANUAL
 }
 
 /// Yorum / geri bildirim kaynağı
