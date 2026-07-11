@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       status: "ACTIVE",
       startedAt: new Date(),
       endsAt,
-      provider: "MANUAL",
+      provider: null,
     },
   });
 
