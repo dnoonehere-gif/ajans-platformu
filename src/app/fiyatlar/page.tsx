@@ -2,7 +2,7 @@
 import { LogoMark } from "@/components/logo";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Check, Loader2, Zap, Building2, Rocket } from "lucide-react";
+import { Check, Loader2, Zap, Building2, Rocket, Crown } from "lucide-react";
 import ElectricBorder from "@/components/reactbits/electric-border";
 
 interface PlanFeatures {
@@ -15,6 +15,11 @@ interface PlanFeatures {
   website: boolean;
   googleBusiness: boolean;
   seoContent: boolean;
+  whiteLabel?: boolean;
+  batchContent?: boolean;
+  clientReporting?: boolean;
+  socialMedia?: boolean;
+  apiAccess?: boolean;
   support: string;
 }
 
@@ -29,9 +34,9 @@ interface Plan {
   features: PlanFeatures;
 }
 
-const PLAN_ICONS = [Zap, Rocket, Building2];
-// Plan başına elektrik rengi: mavi / mor (popüler) / turuncu
-const PLAN_ELECTRIC = ["#38bdf8", "#8b5cf6", "#fb923c"];
+const PLAN_ICONS = [Zap, Rocket, Building2, Crown];
+// Plan başına elektrik rengi: mavi / mor (popüler) / turuncu / altın
+const PLAN_ELECTRIC = ["#38bdf8", "#8b5cf6", "#fb923c", "#fbbf24"];
 const POPULAR_SLUGS = ["profesyonel", "profesyonel-yillik"];
 
 const SUPPORT_LABELS: Record<string, string> = {
@@ -136,7 +141,7 @@ export default function PricingPage() {
             <p className="text-xs text-slate-500">Admin panelinden planları seed edin.</p>
           </div>
         ) : (
-          <div className="relative grid gap-8 md:grid-cols-3 md:gap-6">
+          <div className="relative grid gap-8 md:grid-cols-2 lg:grid-cols-4 md:gap-5">
             {plans.map((plan, i) => {
               const Icon = PLAN_ICONS[i] ?? Zap;
               const electricColor = PLAN_ELECTRIC[i] ?? PLAN_ELECTRIC[0];
@@ -195,6 +200,11 @@ export default function PricingPage() {
                     {featLine(`${f.qrCodes === -1 ? "Sınırsız" : f.qrCodes} QR Kod`, f.qrCodes, electricColor)}
                     {f.googleBusiness && featLine("Google Business", true, electricColor)}
                     {f.seoContent && featLine("SEO İçerik Üretimi", true, electricColor)}
+                    {f.whiteLabel && featLine("White-Label", true, electricColor)}
+                    {f.batchContent && featLine("Toplu İçerik Üretimi", true, electricColor)}
+                    {f.clientReporting && featLine("Müşteri Raporlama", true, electricColor)}
+                    {f.socialMedia && featLine("Sosyal Medya Yönetimi", true, electricColor)}
+                    {f.apiAccess && featLine("API Erişimi", true, electricColor)}
                     {featLine(SUPPORT_LABELS[f.support] ?? f.support, true, electricColor)}
                   </ul>
                 </div>
