@@ -41,8 +41,7 @@ const POPULAR_SLUGS = ["profesyonel", "profesyonel-yillik"];
 
 const SUPPORT_LABELS: Record<string, string> = {
   email: "E-posta destek",
-  priority: "Öncelikli destek",
-  dedicated: "Dedike hesap yöneticisi",
+  priority: "Öncelikli e-posta destek",
 };
 
 function fmt(cents: number) {
