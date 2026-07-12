@@ -83,6 +83,27 @@ export default function EmailKampanyaPage() {
     setCampaigns(campaigns.filter((c) => c.id !== id));
   }
 
+  const [sending, setSending] = useState<string | null>(null);
+
+  async function handleSend(id: string) {
+    if (!confirm("Kampanyayı tüm kişilere göndermek istediğinize emin misiniz?")) return;
+    setSending(id);
+    setError("");
+    try {
+      const res = await fetch("/api/email-campaigns/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ campaignId: id }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? "Gönderilemedi"); }
+      else {
+        setCampaigns(campaigns.map((c) => c.id === id ? { ...c, status: "SENT", sentCount: data.sentCount } : c));
+      }
+    } catch { setError("Sunucuya bağlanılamadı"); }
+    setSending(null);
+  }
+
   useEffect(() => {
     if (!activeBrand || tab !== "contacts") return;
     fetch(`/api/email-contacts?brandId=${activeBrand.id}`)
@@ -214,9 +235,16 @@ export default function EmailKampanyaPage() {
                     </div>
                   </div>
                   {c.status === "DRAFT" && (
-                    <button onClick={() => handleDelete(c.id)} className="shrink-0 text-red-400 transition hover:text-red-500">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => handleSend(c.id)} disabled={sending === c.id}
+                        className="shrink-0 flex items-center gap-1 rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-500 transition hover:bg-emerald-500/20 disabled:opacity-60">
+                        {sending === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                        Gönder
+                      </button>
+                      <button onClick={() => handleDelete(c.id)} className="shrink-0 text-red-400 transition hover:text-red-500">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   )}
                 </div>
               );
