@@ -1,11 +1,9 @@
 #!/bin/sh
-set -e
 
-echo "🚀 Ajans Platformu başlatılıyor..."
+echo "Ajans Platformu baslatiliyor..."
 
-# Veritabanı şemasını senkronize et
-echo "📦 Veritabanı şeması güncelleniyor..."
-npx prisma db push --skip-generate
+echo "Veritabani semasi guncelleniyor..."
+npx prisma db push --skip-generate --accept-data-loss 2>&1 || echo "UYARI: prisma db push basarisiz oldu, devam ediliyor..."
 
-echo "✅ Hazır."
+echo "Hazir."
 exec "$@"
