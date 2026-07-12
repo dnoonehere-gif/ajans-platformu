@@ -36,13 +36,14 @@ export default function EmailKampanyaPage() {
     if (!activeBrand) return;
     setLoading(true);
     fetch(`/api/email-campaigns?brandId=${activeBrand.id}`)
-      .then((r) => r.json())
-      .then((d) => {
+      .then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) { setError(d.error ?? "Veriler yüklenemedi"); return; }
         setCampaigns(d.campaigns ?? []);
         setContactCount(d.contactCount ?? 0);
         setError("");
       })
-      .catch(() => setError("Veriler yüklenemedi"))
+      .catch(() => setError("Sunucuya bağlanılamadı"))
       .finally(() => setLoading(false));
   }, [activeBrand?.id]);
 

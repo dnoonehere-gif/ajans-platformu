@@ -38,9 +38,13 @@ export default function CrmPage() {
     if (!activeBrand) return;
     setLoading(true);
     fetch(`/api/crm?brandId=${activeBrand.id}`)
-      .then((r) => r.json())
-      .then((d) => { setLeads(d.leads ?? []); setError(""); })
-      .catch(() => setError("Veriler yüklenemedi"))
+      .then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) { setError(d.error ?? "Veriler yüklenemedi"); return; }
+        setLeads(d.leads ?? []);
+        setError("");
+      })
+      .catch(() => setError("Sunucuya bağlanılamadı"))
       .finally(() => setLoading(false));
   }, [activeBrand?.id]);
 

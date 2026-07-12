@@ -13,23 +13,28 @@ const addSchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
 
-  const userId = (session.user as { id: string }).id;
-  const brandId = req.nextUrl.searchParams.get("brandId");
-  if (!brandId) return NextResponse.json({ error: "brandId gerekli" }, { status: 400 });
+    const userId = (session.user as { id: string }).id;
+    const brandId = req.nextUrl.searchParams.get("brandId");
+    if (!brandId) return NextResponse.json({ error: "brandId gerekli" }, { status: 400 });
 
-  const brand = await prisma.brand.findFirst({ where: { id: brandId, ownerId: userId } });
-  if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
+    const brand = await prisma.brand.findFirst({ where: { id: brandId, ownerId: userId } });
+    if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
 
-  const contacts = await prisma.emailContact.findMany({
-    where: { brandId },
-    orderBy: { createdAt: "desc" },
-    take: 500,
-  });
+    const contacts = await prisma.emailContact.findMany({
+      where: { brandId },
+      orderBy: { createdAt: "desc" },
+      take: 500,
+    });
 
-  return NextResponse.json({ contacts });
+    return NextResponse.json({ contacts });
+  } catch (e) {
+    console.error("EmailContacts GET error:", e);
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {

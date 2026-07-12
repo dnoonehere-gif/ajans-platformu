@@ -25,40 +25,50 @@ const updateSchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
 
-  const userId = (session.user as { id: string }).id;
-  const brandId = req.nextUrl.searchParams.get("brandId");
-  if (!brandId) return NextResponse.json({ error: "brandId gerekli" }, { status: 400 });
+    const userId = (session.user as { id: string }).id;
+    const brandId = req.nextUrl.searchParams.get("brandId");
+    if (!brandId) return NextResponse.json({ error: "brandId gerekli" }, { status: 400 });
 
-  const brand = await prisma.brand.findFirst({ where: { id: brandId, ownerId: userId } });
-  if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
+    const brand = await prisma.brand.findFirst({ where: { id: brandId, ownerId: userId } });
+    if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
 
-  const leads = await prisma.crmLead.findMany({
-    where: { brandId },
-    orderBy: { updatedAt: "desc" },
-    take: 200,
-  });
+    const leads = await prisma.crmLead.findMany({
+      where: { brandId },
+      orderBy: { updatedAt: "desc" },
+      take: 200,
+    });
 
-  return NextResponse.json({ leads });
+    return NextResponse.json({ leads });
+  } catch (e) {
+    console.error("CRM GET error:", e);
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
 
-  const userId = (session.user as { id: string }).id;
-  const body = await req.json();
-  const parsed = createSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
+    const userId = (session.user as { id: string }).id;
+    const body = await req.json();
+    const parsed = createSchema.safeParse(body);
+    if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
 
-  const { brandId, ...data } = parsed.data;
-  const brand = await prisma.brand.findFirst({ where: { id: brandId, ownerId: userId } });
-  if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
+    const { brandId, ...data } = parsed.data;
+    const brand = await prisma.brand.findFirst({ where: { id: brandId, ownerId: userId } });
+    if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
 
-  const lead = await prisma.crmLead.create({ data: { brandId, ...data } });
-  return NextResponse.json({ lead }, { status: 201 });
+    const lead = await prisma.crmLead.create({ data: { brandId, ...data } });
+    return NextResponse.json({ lead }, { status: 201 });
+  } catch (e) {
+    console.error("CRM POST error:", e);
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  }
 }
 
 export async function PATCH(req: NextRequest) {
