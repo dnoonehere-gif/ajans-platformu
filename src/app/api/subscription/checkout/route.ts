@@ -19,11 +19,11 @@ const SHOPIER_LINKS: Record<string, string> = {
   baslangic:            "https://www.shopier.com/NovelyaDijitalAjans/48849668",
   profesyonel:          "https://www.shopier.com/NovelyaDijitalAjans/48849672",
   isletme:              "https://www.shopier.com/NovelyaDijitalAjans/48849675",
-  ajans:                "https://www.shopier.com/NovelyaDijitalAjans/TODO_AJANS",
+  ajans:                "https://www.shopier.com/NovelyaDijitalAjans/48897218",
   "baslangic-yillik":   "https://www.shopier.com/NovelyaDijitalAjans/48859443",
   "profesyonel-yillik": "https://www.shopier.com/NovelyaDijitalAjans/48859459",
   "isletme-yillik":     "https://www.shopier.com/NovelyaDijitalAjans/48859474",
-  "ajans-yillik":       "https://www.shopier.com/NovelyaDijitalAjans/TODO_AJANS_YILLIK",
+  "ajans-yillik":       "https://www.shopier.com/NovelyaDijitalAjans/48897230",
 };
 
 export async function POST(req: NextRequest) {
