@@ -15,6 +15,14 @@ interface Campaign {
   createdAt: string;
 }
 
+interface Contact {
+  id: string;
+  email: string;
+  name: string | null;
+  tags: string[];
+  createdAt: string;
+}
+
 export default function EmailKampanyaPage() {
   const { activeBrand } = useBrand();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -28,6 +36,7 @@ export default function EmailKampanyaPage() {
   const [tab, setTab] = useState<"campaigns" | "contacts">("campaigns");
 
   // Kişi ekleme
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [contactEmail, setContactEmail] = useState("");
   const [contactName, setContactName] = useState("");
   const [addingContact, setAddingContact] = useState(false);
@@ -74,6 +83,22 @@ export default function EmailKampanyaPage() {
     setCampaigns(campaigns.filter((c) => c.id !== id));
   }
 
+  useEffect(() => {
+    if (!activeBrand || tab !== "contacts") return;
+    fetch(`/api/email-contacts?brandId=${activeBrand.id}`)
+      .then(async (r) => {
+        const d = await r.json();
+        if (r.ok) setContacts(d.contacts ?? []);
+      })
+      .catch(() => null);
+  }, [activeBrand?.id, tab]);
+
+  async function handleDeleteContact(id: string) {
+    await fetch(`/api/email-contacts?id=${id}`, { method: "DELETE" });
+    setContacts(contacts.filter((c) => c.id !== id));
+    setContactCount((n) => Math.max(0, n - 1));
+  }
+
   async function handleAddContact() {
     if (!activeBrand || !contactEmail) return;
     setAddingContact(true);
@@ -86,10 +111,13 @@ export default function EmailKampanyaPage() {
       const data = await res.json();
       if (res.ok) {
         setContactCount((c) => c + data.added);
+        if (data.added > 0) {
+          setContacts((prev) => [{ id: Date.now().toString(), email: contactEmail, name: contactName || null, tags: [], createdAt: new Date().toISOString() }, ...prev]);
+        }
         setContactEmail("");
         setContactName("");
       }
-    } catch { /* ignore */ }
+    } catch { setError("Sunucuya bağlanılamadı"); }
     setAddingContact(false);
   }
 
@@ -198,18 +226,41 @@ export default function EmailKampanyaPage() {
       )}
 
       {tab === "contacts" && (
-        <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
-          <h2 className="mb-4 font-semibold">Kişi Ekle</h2>
-          <div className="flex gap-3">
-            <input className={inp} placeholder="E-posta" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
-            <input className={inp + " max-w-[150px]"} placeholder="İsim (opsiyonel)" value={contactName} onChange={(e) => setContactName(e.target.value)} />
-            <button onClick={handleAddContact} disabled={addingContact || !contactEmail}
-              className="shrink-0 rounded-lg bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60">
-              {addingContact ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-            </button>
-          </div>
-          <p className="mt-3 text-xs text-[hsl(var(--muted-foreground))]">Toplu ekleme için CSV import yakında eklenecek.</p>
-        </section>
+        <div className="space-y-4">
+          <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
+            <h2 className="mb-4 font-semibold">Kişi Ekle</h2>
+            <div className="flex gap-3">
+              <input className={inp} placeholder="E-posta" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
+              <input className={inp + " max-w-[150px]"} placeholder="İsim (opsiyonel)" value={contactName} onChange={(e) => setContactName(e.target.value)} />
+              <button onClick={handleAddContact} disabled={addingContact || !contactEmail}
+                className="shrink-0 rounded-lg bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60">
+                {addingContact ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+              </button>
+            </div>
+          </section>
+
+          {contacts.length === 0 ? (
+            <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 text-center">
+              <Users className="mx-auto h-8 w-8 text-[hsl(var(--muted-foreground))]" />
+              <p className="mt-3 text-sm text-[hsl(var(--muted-foreground))]">Henüz kişi eklenmemiş</p>
+            </div>
+          ) : (
+            <section className="space-y-2">
+              {contacts.map((c) => (
+                <div key={c.id} className="flex items-center gap-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-4 py-3">
+                  <Mail className="h-4 w-4 shrink-0 text-blue-500" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{c.email}</p>
+                    {c.name && <p className="text-xs text-[hsl(var(--muted-foreground))]">{c.name}</p>}
+                  </div>
+                  <button onClick={() => handleDeleteContact(c.id)} className="shrink-0 text-red-400 hover:text-red-500">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </section>
+          )}
+        </div>
       )}
     </div>
   );
