@@ -39,8 +39,9 @@ export default function WhiteLabelPage() {
     if (!activeBrand) return;
     setLoading(true);
     fetch(`/api/white-label?brandId=${activeBrand.id}`)
-      .then((r) => r.json())
-      .then((d) => {
+      .then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) { setError(d.error ?? "Veriler yüklenemedi"); setLoading(false); return; }
         if (d.whiteLabel) {
           setData({
             agencyName: d.whiteLabel.agencyName ?? "",
@@ -58,7 +59,7 @@ export default function WhiteLabelPage() {
         setLoading(false);
       })
       .catch(() => {
-        setError("Veriler yüklenemedi");
+        setError("Sunucuya bağlanılamadı");
         setLoading(false);
       });
   }, [activeBrand?.id]);
@@ -90,7 +91,7 @@ export default function WhiteLabelPage() {
         setTimeout(() => setSaved(false), 3000);
       }
     } catch {
-      setError("Bağlantı hatası");
+      setError("Sunucuya bağlanılamadı, lütfen tekrar deneyin");
     }
     setSaving(false);
   }

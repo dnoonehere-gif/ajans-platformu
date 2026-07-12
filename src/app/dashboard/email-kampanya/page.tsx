@@ -65,7 +65,7 @@ export default function EmailKampanyaPage() {
         setBody("");
         setShowForm(false);
       }
-    } catch { setError("Bağlantı hatası"); }
+    } catch { setError("Sunucuya bağlanılamadı, lütfen tekrar deneyin"); }
     setCreating(false);
   }
 
