@@ -6,6 +6,7 @@ import {
   LayoutDashboard, Globe, Bot, Star, Sparkles, QrCode,
   Users, Settings, Shield, ChevronRight, Building2, MapPin, CreditCard,
   UtensilsCrossed, Lock, Crown, Layers, FileBarChart, Send,
+  Search, Mail, UserPlus,
 } from "lucide-react";
 import { useBrand } from "./brand-provider";
 
@@ -39,6 +40,9 @@ const NAV: NavItem[] = [
   { href: "/dashboard/qr", label: "QR Geri Bildirim", icon: QrCode },
   { href: "/dashboard/subeler", label: "Şubeler", icon: Building2 },
   { href: "/dashboard/team", label: "Takım", icon: Users },
+  { href: "/dashboard/seo", label: "SEO Araçları", icon: Search, planKey: "seoContent" as keyof PlanFeatures },
+  { href: "/dashboard/email-kampanya", label: "E-posta Pazarlama", icon: Mail },
+  { href: "/dashboard/crm", label: "CRM & Pipeline", icon: UserPlus },
   { href: "/dashboard/batch-content", label: "Toplu İçerik", icon: Layers, planKey: "batchContent" as keyof PlanFeatures },
   { href: "/dashboard/sosyal-medya", label: "Sosyal Medya", icon: Send, planKey: "socialMedia" as keyof PlanFeatures },
   { href: "/dashboard/raporlar", label: "Müşteri Raporları", icon: FileBarChart, planKey: "clientReporting" as keyof PlanFeatures },

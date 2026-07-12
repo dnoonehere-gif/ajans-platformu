@@ -228,6 +228,9 @@ model Brand {
   menu           Menu?
   whiteLabel     WhiteLabel?
   socialPosts    SocialPost[]
+  emailCampaigns EmailCampaign[]
+  emailContacts  EmailContact[]
+  crmLeads       CrmLead[]
 
   @@index([ownerId])
 }
@@ -284,6 +287,78 @@ enum SocialPostStatus {
   SCHEDULED
   PUBLISHED
   FAILED
+}
+
+/// E-posta kampanya kişileri
+model EmailContact {
+  id        String   @id @default(cuid())
+  brandId   String
+  email     String
+  name      String?
+  tags      String[] @default([])
+  createdAt DateTime @default(now())
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@unique([brandId, email])
+  @@index([brandId])
+}
+
+/// E-posta kampanyası
+model EmailCampaign {
+  id          String              @id @default(cuid())
+  brandId     String
+  subject     String
+  body        String
+  status      EmailCampaignStatus @default(DRAFT)
+  recipientTag String?
+  sentCount   Int                 @default(0)
+  openCount   Int                 @default(0)
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@index([brandId, status])
+}
+
+enum EmailCampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+}
+
+/// CRM — müşteri adayı takibi
+model CrmLead {
+  id          String     @id @default(cuid())
+  brandId     String
+  name        String
+  email       String?
+  phone       String?
+  company     String?
+  source      String?
+  stage       CrmStage   @default(NEW)
+  value       Int?
+  notes       String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@index([brandId, stage])
+}
+
+enum CrmStage {
+  NEW
+  CONTACTED
+  QUALIFIED
+  PROPOSAL
+  WON
+  LOST
 }
 
 /// Kullanıcının bir markadaki üyeliği ve rolü (marka içi RBAC)
