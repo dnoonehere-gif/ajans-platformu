@@ -1,8 +1,10 @@
 import { auth } from "@/server/auth/auth";
-import { LogoMark } from "@/components/logo";
+
 import { redirect } from "next/navigation";
 import { LogOut, Palette, ChevronRight } from "lucide-react";
 import { BrandProvider } from "@/components/dashboard/brand-provider";
+import { WhiteLabelProvider } from "@/components/dashboard/white-label-provider";
+import { WhiteLabelLogo } from "@/components/dashboard/white-label-logo";
 import { BrandSwitcher } from "@/components/dashboard/brand-switcher";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { ThemeSwitcher } from "@/components/dashboard/theme-switcher";
@@ -23,6 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <BrandProvider>
+      <WhiteLabelProvider>
       <DashboardColorTheme />
       <div className="flex min-h-screen bg-[hsl(var(--background))]">
         <AmbientBackground />
@@ -30,12 +33,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-[hsl(var(--border))] bg-[hsl(var(--card))] lg:flex">
 
           {/* Logo */}
-          <div className="flex h-16 items-center gap-3 border-b border-[hsl(var(--border))] px-5">
-            <LogoMark size={32} />
-            <div>
-              <p className="text-sm font-bold leading-tight">Novelya</p>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Dashboard</p>
-            </div>
+          <div className="flex h-16 items-center border-b border-[hsl(var(--border))] px-5">
+            <WhiteLabelLogo />
           </div>
 
           {/* Marka seçici */}
@@ -126,6 +125,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           {children}
         </main>
       </div>
+    </WhiteLabelProvider>
     </BrandProvider>
   );
 }
