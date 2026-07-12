@@ -17,7 +17,7 @@ RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/ajans" \
     AUTH_SECRET="build-time-placeholder-secret-min-32-chars-xx" \
     NEXTAUTH_URL="http://localhost:3000" \
     RESEND_API_KEY="re_placeholder" \
-    npm run build
+    npx next build
 
 FROM node:22-alpine AS runner
 RUN apk add --no-cache libc6-compat openssl curl
