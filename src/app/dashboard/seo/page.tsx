@@ -1,7 +1,14 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useBrand } from "@/components/dashboard/brand-provider";
-import { Loader2, Search, Copy, Check, TrendingUp, Tag, FileText, Lightbulb } from "lucide-react";
+import { Loader2, Search, Copy, Check, TrendingUp, Tag, FileText, Lightbulb, Globe, History, Target, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
+
+interface CompetitorKeyword {
+  keyword: string;
+  difficulty: string;
+  volume: string;
+  tip: string;
+}
 
 interface SeoAnalysis {
   metaTitle: string;
@@ -11,10 +18,21 @@ interface SeoAnalysis {
   contentTips: string[];
   score: number;
   improvements: string[];
+  competitorKeywords?: CompetitorKeyword[];
+}
+
+interface HistoryItem {
+  id: string;
+  url: string | null;
+  keywords: string | null;
+  score: number;
+  result: SeoAnalysis;
+  createdAt: string;
 }
 
 export default function SeoPage() {
   const { activeBrand } = useBrand();
+  const [url, setUrl] = useState("");
   const [keywords, setKeywords] = useState("");
   const [pageTitle, setPageTitle] = useState("");
   const [pageDescription, setPageDescription] = useState("");
@@ -22,9 +40,26 @@ export default function SeoPage() {
   const [analysis, setAnalysis] = useState<SeoAnalysis | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  useEffect(() => {
+    if (!activeBrand) return;
+    setLoadingHistory(true);
+    fetch(`/api/seo?brandId=${activeBrand.id}`)
+      .then(async (r) => {
+        if (r.ok) {
+          const d = await r.json();
+          setHistory(d.history ?? []);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingHistory(false));
+  }, [activeBrand?.id]);
 
   async function handleAnalyze() {
-    if (!activeBrand) return;
+    if (!activeBrand || (!keywords && !url)) return;
     setLoading(true);
     setError("");
     setAnalysis(null);
@@ -32,15 +67,23 @@ export default function SeoPage() {
       const res = await fetch("/api/seo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brandId: activeBrand.id, keywords, pageTitle, pageDescription }),
+        body: JSON.stringify({ brandId: activeBrand.id, url: url || undefined, keywords, pageTitle, pageDescription }),
       });
       const data = await res.json();
       if (!res.ok) setError(data.error ?? "Analiz başarısız");
-      else setAnalysis(data.analysis);
+      else {
+        setAnalysis(data.analysis);
+        setHistory((prev) => [{ id: Date.now().toString(), url: url || null, keywords: keywords || null, score: data.analysis.score, result: data.analysis, createdAt: new Date().toISOString() }, ...prev]);
+      }
     } catch {
       setError("Bağlantı hatası");
     }
     setLoading(false);
+  }
+
+  function loadFromHistory(item: HistoryItem) {
+    setAnalysis(item.result);
+    setShowHistory(false);
   }
 
   function copy(key: string, text: string) {
@@ -50,28 +93,68 @@ export default function SeoPage() {
   }
 
   const inp = "w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2.5 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)]";
-
   const scoreColor = (s: number) => s >= 80 ? "text-emerald-500" : s >= 50 ? "text-amber-500" : "text-red-500";
   const scoreBg = (s: number) => s >= 80 ? "bg-emerald-500" : s >= 50 ? "bg-amber-500" : "bg-red-500";
+  const diffColor = (d: string) => d.includes("Düşük") ? "text-emerald-500 bg-emerald-500/10" : d.includes("Orta") ? "text-amber-500 bg-amber-500/10" : "text-red-500 bg-red-500/10";
+  const formatDate = (iso: string) => new Date(iso).toLocaleDateString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
-          <Search className="h-5 w-5 text-green-500" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
+            <Search className="h-5 w-5 text-green-500" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold">SEO Araçları</h1>
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">AI destekli SEO analizi, rakip anahtar kelimeler ve site tarama</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-xl font-bold">SEO Araçları</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">AI destekli SEO analizi ve meta tag önerileri</p>
-        </div>
+        {history.length > 0 && (
+          <button onClick={() => setShowHistory(!showHistory)}
+            className="flex items-center gap-1.5 rounded-xl border border-[hsl(var(--border))] px-3 py-2 text-xs font-medium transition hover:bg-[hsl(var(--accent))]">
+            <History className="h-3.5 w-3.5" />
+            Geçmiş ({history.length})
+            {showHistory ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          </button>
+        )}
       </div>
 
       {error && <div className="rounded-lg border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-500">{error}</div>}
+
+      {/* Geçmiş analizler */}
+      {showHistory && (
+        <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
+          <h3 className="mb-3 text-sm font-semibold">Geçmiş Analizler</h3>
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {history.map((item) => (
+              <button key={item.id} onClick={() => loadFromHistory(item)}
+                className="flex w-full items-center gap-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-3 text-left transition hover:border-[hsl(var(--primary)/0.5)]">
+                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-black ${scoreBg(item.score)}/10 ${scoreColor(item.score)}`}>
+                  {item.score}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{item.url ?? item.keywords ?? "Analiz"}</p>
+                  <p className="text-[11px] text-[hsl(var(--muted-foreground))]">{formatDate(item.createdAt)}</p>
+                </div>
+                <ArrowRight className="h-3.5 w-3.5 shrink-0 text-[hsl(var(--muted-foreground))]" />
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Giriş formu */}
       <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
         <h2 className="mb-4 font-semibold">Sayfa Bilgileri</h2>
         <div className="space-y-4">
+          <div>
+            <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-[hsl(var(--muted-foreground))]">
+              <Globe className="h-3.5 w-3.5" /> Site URL (opsiyonel — girilirse sayfa taranır)
+            </label>
+            <input className={inp} placeholder="https://example.com" value={url}
+              onChange={(e) => setUrl(e.target.value)} />
+          </div>
           <div>
             <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Hedef Anahtar Kelimeler</label>
             <input className={inp} placeholder="kafe istanbul, organik kahve, brunch mekanı..." value={keywords}
@@ -90,10 +173,10 @@ export default function SeoPage() {
             </div>
           </div>
         </div>
-        <button onClick={handleAnalyze} disabled={loading || !keywords}
+        <button onClick={handleAnalyze} disabled={loading || (!keywords && !url)}
           className="mt-4 flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-          {loading ? "Analiz ediliyor..." : "SEO Analizi Yap"}
+          {loading ? (url ? "Sayfa taranıyor ve analiz ediliyor..." : "Analiz ediliyor...") : "SEO Analizi Yap"}
         </button>
       </section>
 
@@ -166,10 +249,35 @@ export default function SeoPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               {analysis.keywords.map((kw) => (
-                <span key={kw} className="rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-1.5 text-xs font-medium">{kw}</span>
+                <button key={kw} onClick={() => copy(`kw-${kw}`, kw)}
+                  className="rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-1.5 text-xs font-medium transition hover:border-[hsl(var(--primary)/0.5)]">
+                  {kw} {copied === `kw-${kw}` && <Check className="ml-1 inline h-3 w-3 text-emerald-500" />}
+                </button>
               ))}
             </div>
           </section>
+
+          {/* Rakip Anahtar Kelimeler */}
+          {analysis.competitorKeywords && analysis.competitorKeywords.length > 0 && (
+            <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
+              <div className="mb-4 flex items-center gap-2">
+                <Target className="h-4 w-4 text-red-500" />
+                <h2 className="font-semibold">Rakip Anahtar Kelime Önerileri</h2>
+              </div>
+              <div className="space-y-3">
+                {analysis.competitorKeywords.map((ck, i) => (
+                  <div key={i} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-4">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-sm font-bold">{ck.keyword}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${diffColor(ck.difficulty)}`}>{ck.difficulty}</span>
+                      <span className="text-[11px] text-[hsl(var(--muted-foreground))]">~{ck.volume} arama/ay</span>
+                    </div>
+                    <p className="mt-1.5 text-xs text-[hsl(var(--muted-foreground))]">{ck.tip}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* İpuçları & İyileştirmeler */}
           <div className="grid gap-4 sm:grid-cols-2">

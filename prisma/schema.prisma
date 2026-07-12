@@ -231,6 +231,7 @@ model Brand {
   emailCampaigns EmailCampaign[]
   emailContacts  EmailContact[]
   crmLeads       CrmLead[]
+  seoAnalyses    SeoAnalysis[]
 
   @@index([ownerId])
 }
@@ -590,6 +591,24 @@ model ContentItem {
   brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
   @@index([brandId, type])
+}
+
+// -------------------------------------------------------------
+//  SEO ANALİZ GEÇMİŞİ
+// -------------------------------------------------------------
+
+model SeoAnalysis {
+  id          String   @id @default(cuid())
+  brandId     String
+  url         String?
+  keywords    String?
+  score       Int
+  result      Json
+  createdAt   DateTime @default(now())
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@index([brandId, createdAt])
 }
 
 // -------------------------------------------------------------
