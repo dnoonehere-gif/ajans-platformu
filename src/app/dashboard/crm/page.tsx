@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useBrand } from "@/components/dashboard/brand-provider";
-import { Loader2, Plus, Trash2, UserPlus, Phone, Mail, Building, DollarSign } from "lucide-react";
+import { Loader2, Plus, Trash2, UserPlus, Phone, Mail, Building, DollarSign, MessageSquare, Check, ChevronDown, ChevronUp } from "lucide-react";
 
 const STAGES = [
   { value: "NEW", label: "Yeni", color: "border-blue-500/30 bg-blue-500/5", dot: "bg-blue-500" },
@@ -11,6 +11,8 @@ const STAGES = [
   { value: "WON", label: "Kazanıldı", color: "border-emerald-500/30 bg-emerald-500/5", dot: "bg-emerald-500" },
   { value: "LOST", label: "Kaybedildi", color: "border-red-500/30 bg-red-500/5", dot: "bg-red-500" },
 ] as const;
+
+const STAGE_LABELS: Record<string, string> = Object.fromEntries(STAGES.map((s) => [s.value, s.label]));
 
 interface Lead {
   id: string;
@@ -24,6 +26,13 @@ interface Lead {
   notes: string | null;
 }
 
+interface Activity {
+  leadName: string;
+  from: string;
+  to: string;
+  time: Date;
+}
+
 export default function CrmPage() {
   const { activeBrand } = useBrand();
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -31,6 +40,11 @@ export default function CrmPage() {
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [toast, setToast] = useState("");
+  const [editingNotes, setEditingNotes] = useState<string | null>(null);
+  const [notesDraft, setNotesDraft] = useState("");
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [showActivities, setShowActivities] = useState(false);
 
   const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", source: "", value: "" });
 
@@ -47,6 +61,11 @@ export default function CrmPage() {
       .catch(() => setError("Sunucuya bağlanılamadı"))
       .finally(() => setLoading(false));
   }, [activeBrand?.id]);
+
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(""), 3000);
+  }
 
   async function handleCreate() {
     if (!activeBrand || !form.name) return;
@@ -70,25 +89,49 @@ export default function CrmPage() {
         setLeads([data.lead, ...leads]);
         setForm({ name: "", email: "", phone: "", company: "", source: "", value: "" });
         setShowForm(false);
+        showToast(`${data.lead.name} eklendi`);
       }
     } catch { /* ignore */ }
     setCreating(false);
   }
 
-  async function moveStage(id: string, stage: string) {
+  async function moveStage(id: string, newStage: string) {
+    const lead = leads.find((l) => l.id === id);
+    if (!lead || lead.stage === newStage) return;
+
+    const oldStage = lead.stage;
+    setLeads(leads.map((l) => (l.id === id ? { ...l, stage: newStage } : l)));
+
     const res = await fetch("/api/crm", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, stage }),
+      body: JSON.stringify({ id, stage: newStage }),
     });
     if (res.ok) {
-      setLeads(leads.map((l) => (l.id === id ? { ...l, stage } : l)));
+      setActivities((prev) => [{ leadName: lead.name, from: oldStage, to: newStage, time: new Date() }, ...prev.slice(0, 19)]);
+      const wonLost = newStage === "WON" ? " 🎉" : newStage === "LOST" ? " ⚠️" : "";
+      showToast(`${lead.name}: ${STAGE_LABELS[oldStage]} → ${STAGE_LABELS[newStage]}${wonLost}`);
+    } else {
+      setLeads(leads.map((l) => (l.id === id ? { ...l, stage: oldStage } : l)));
     }
   }
 
+  async function saveNotes(id: string) {
+    await fetch("/api/crm", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, notes: notesDraft || null }),
+    });
+    setLeads(leads.map((l) => (l.id === id ? { ...l, notes: notesDraft || null } : l)));
+    setEditingNotes(null);
+    showToast("Not kaydedildi");
+  }
+
   async function handleDelete(id: string) {
+    const lead = leads.find((l) => l.id === id);
     await fetch(`/api/crm?id=${id}`, { method: "DELETE" });
     setLeads(leads.filter((l) => l.id !== id));
+    if (lead) showToast(`${lead.name} silindi`);
   }
 
   const inp = "w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2.5 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)]";
@@ -100,6 +143,14 @@ export default function CrmPage() {
 
   return (
     <div className="space-y-6 p-6">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-xl bg-[hsl(var(--card))] border border-[hsl(var(--border))] px-4 py-3 text-sm font-medium shadow-lg animate-in slide-in-from-bottom-4">
+          <Check className="h-4 w-4 text-emerald-500" />
+          {toast}
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10">
@@ -112,13 +163,38 @@ export default function CrmPage() {
             </p>
           </div>
         </div>
-        <button onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1.5 rounded-xl bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
-          <Plus className="h-4 w-4" /> Yeni Aday
-        </button>
+        <div className="flex items-center gap-2">
+          {activities.length > 0 && (
+            <button onClick={() => setShowActivities(!showActivities)}
+              className="flex items-center gap-1.5 rounded-xl border border-[hsl(var(--border))] px-3 py-2 text-xs font-medium transition hover:bg-[hsl(var(--accent))]">
+              {showActivities ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              Aktivite ({activities.length})
+            </button>
+          )}
+          <button onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-1.5 rounded-xl bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
+            <Plus className="h-4 w-4" /> Yeni Aday
+          </button>
+        </div>
       </div>
 
       {error && <div className="rounded-lg border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-500">{error}</div>}
+
+      {/* Aktivite geçmişi */}
+      {showActivities && activities.length > 0 && (
+        <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
+          <h3 className="mb-3 text-sm font-semibold">Son Aktiviteler</h3>
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {activities.map((a, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
+                <span className="font-medium text-[hsl(var(--foreground))]">{a.leadName}</span>
+                <span>{STAGE_LABELS[a.from]} → {STAGE_LABELS[a.to]}</span>
+                <span className="ml-auto">{a.time.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {showForm && (
         <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
@@ -162,7 +238,25 @@ export default function CrmPage() {
                     {lead.company && <p className="mt-0.5 flex items-center gap-1 text-[11px] text-[hsl(var(--muted-foreground))]"><Building className="h-3 w-3" />{lead.company}</p>}
                     {lead.email && <p className="flex items-center gap-1 text-[11px] text-[hsl(var(--muted-foreground))]"><Mail className="h-3 w-3" />{lead.email}</p>}
                     {lead.phone && <p className="flex items-center gap-1 text-[11px] text-[hsl(var(--muted-foreground))]"><Phone className="h-3 w-3" />{lead.phone}</p>}
-                    {lead.value && <p className="flex items-center gap-1 text-[11px] font-semibold text-emerald-500"><DollarSign className="h-3 w-3" />{lead.value.toLocaleString("tr-TR")}₺</p>}
+                    {lead.value != null && lead.value > 0 && <p className="flex items-center gap-1 text-[11px] font-semibold text-emerald-500"><DollarSign className="h-3 w-3" />{lead.value.toLocaleString("tr-TR")}₺</p>}
+
+                    {/* Not */}
+                    {editingNotes === lead.id ? (
+                      <div className="mt-2">
+                        <textarea className={inp + " h-16 resize-none text-[11px]"} value={notesDraft} onChange={(e) => setNotesDraft(e.target.value)} placeholder="Not ekle..." />
+                        <div className="mt-1 flex gap-1">
+                          <button onClick={() => saveNotes(lead.id)} className="rounded bg-[hsl(var(--primary))] px-2 py-0.5 text-[10px] font-semibold text-white">Kaydet</button>
+                          <button onClick={() => setEditingNotes(null)} className="rounded bg-[hsl(var(--accent))] px-2 py-0.5 text-[10px]">İptal</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button onClick={() => { setEditingNotes(lead.id); setNotesDraft(lead.notes ?? ""); }}
+                        className="mt-2 flex items-center gap-1 text-[10px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition">
+                        <MessageSquare className="h-3 w-3" />
+                        {lead.notes ? lead.notes.slice(0, 30) + (lead.notes.length > 30 ? "..." : "") : "Not ekle"}
+                      </button>
+                    )}
+
                     <select className="mt-2 w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1 text-[11px]"
                       value={lead.stage} onChange={(e) => moveStage(lead.id, e.target.value)}>
                       {STAGES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}

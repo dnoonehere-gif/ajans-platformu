@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { sendCustomEmail } from "@/lib/email";
 
 const STAGES = ["NEW", "CONTACTED", "QUALIFIED", "PROPOSAL", "WON", "LOST"] as const;
 
@@ -85,7 +86,25 @@ export async function PATCH(req: NextRequest) {
   if (!lead || lead.brand.ownerId !== userId) return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
 
   const updated = await prisma.crmLead.update({ where: { id }, data });
-  return NextResponse.json({ lead: updated });
+
+  const STAGE_LABELS: Record<string, string> = {
+    NEW: "Yeni", CONTACTED: "İletişime Geçildi", QUALIFIED: "Nitelikli",
+    PROPOSAL: "Teklif", WON: "Kazanıldı", LOST: "Kaybedildi",
+  };
+
+  if (data.stage && data.stage !== lead.stage) {
+    const owner = await prisma.user.findUnique({ where: { id: lead.brand.ownerId }, select: { email: true } });
+    if (owner?.email && (data.stage === "WON" || data.stage === "LOST")) {
+      const emoji = data.stage === "WON" ? "🎉" : "⚠️";
+      sendCustomEmail(
+        owner.email,
+        `${emoji} CRM: ${lead.name} — ${STAGE_LABELS[data.stage]}`,
+        `${lead.name}${lead.company ? ` (${lead.company})` : ""} adlı müşteri adayı "${STAGE_LABELS[lead.stage]}" aşamasından "${STAGE_LABELS[data.stage]}" aşamasına geçti.${lead.value ? ` Tahmini değer: ${lead.value.toLocaleString("tr-TR")}₺` : ""}`,
+      ).catch(() => {});
+    }
+  }
+
+  return NextResponse.json({ lead: updated, previousStage: lead.stage });
 }
 
 export async function DELETE(req: NextRequest) {
