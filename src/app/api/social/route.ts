@@ -23,43 +23,53 @@ async function hasSocialAccess(userId: string, brandId: string): Promise<boolean
 }
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
 
-  const userId = (session.user as { id: string }).id;
-  const brandId = req.nextUrl.searchParams.get("brandId");
-  if (!brandId) return NextResponse.json({ error: "brandId gerekli" }, { status: 400 });
+    const userId = (session.user as { id: string }).id;
+    const brandId = req.nextUrl.searchParams.get("brandId");
+    if (!brandId) return NextResponse.json({ error: "brandId gerekli" }, { status: 400 });
 
-  const hasAccess = await hasSocialAccess(userId, brandId);
-  if (!hasAccess) return NextResponse.json({ error: "Bu özellik Ajans planına özeldir" }, { status: 403 });
+    const hasAccess = await hasSocialAccess(userId, brandId);
+    if (!hasAccess) return NextResponse.json({ error: "Bu özellik Ajans planına özeldir" }, { status: 403 });
 
-  const posts = await prisma.socialPost.findMany({
-    where: { brandId },
-    orderBy: { scheduledAt: "asc" },
-    take: 100,
-  });
+    const posts = await prisma.socialPost.findMany({
+      where: { brandId },
+      orderBy: { scheduledAt: "asc" },
+      take: 100,
+    });
 
-  return NextResponse.json({ posts });
+    return NextResponse.json({ posts });
+  } catch (e) {
+    console.error("Social GET error:", e);
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
 
-  const userId = (session.user as { id: string }).id;
-  const body = await req.json();
-  const parsed = createSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri", details: parsed.error.flatten() }, { status: 400 });
+    const userId = (session.user as { id: string }).id;
+    const body = await req.json();
+    const parsed = createSchema.safeParse(body);
+    if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri", details: parsed.error.flatten() }, { status: 400 });
 
-  const { brandId, ...data } = parsed.data;
-  const hasAccess = await hasSocialAccess(userId, brandId);
-  if (!hasAccess) return NextResponse.json({ error: "Bu özellik Ajans planına özeldir" }, { status: 403 });
+    const { brandId, ...data } = parsed.data;
+    const hasAccess = await hasSocialAccess(userId, brandId);
+    if (!hasAccess) return NextResponse.json({ error: "Bu özellik Ajans planına özeldir" }, { status: 403 });
 
-  const post = await prisma.socialPost.create({
-    data: { brandId, ...data, scheduledAt: new Date(data.scheduledAt) },
-  });
+    const post = await prisma.socialPost.create({
+      data: { brandId, ...data, scheduledAt: new Date(data.scheduledAt) },
+    });
 
-  return NextResponse.json({ post }, { status: 201 });
+    return NextResponse.json({ post }, { status: 201 });
+  } catch (e) {
+    console.error("Social POST error:", e);
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  }
 }
 
 export async function DELETE(req: NextRequest) {

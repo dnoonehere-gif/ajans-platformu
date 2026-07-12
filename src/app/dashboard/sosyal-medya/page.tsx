@@ -36,9 +36,13 @@ export default function SosyalMedyaPage() {
     if (!activeBrand) return;
     setLoading(true);
     fetch(`/api/social?brandId=${activeBrand.id}`)
-      .then((r) => r.json())
-      .then((d) => { setPosts(d.posts ?? []); setError(""); })
-      .catch(() => setError("Veriler yüklenemedi"))
+      .then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) { setError(d.error ?? "Veriler yüklenemedi"); return; }
+        setPosts(d.posts ?? []);
+        setError("");
+      })
+      .catch(() => setError("Sunucuya bağlanılamadı"))
       .finally(() => setLoading(false));
   }, [activeBrand?.id]);
 
@@ -66,7 +70,7 @@ export default function SosyalMedyaPage() {
         setShowForm(false);
       }
     } catch {
-      setError("Bağlantı hatası");
+      setError("Sunucuya bağlanılamadı, lütfen tekrar deneyin");
     }
     setCreating(false);
   }
