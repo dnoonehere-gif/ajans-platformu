@@ -3,9 +3,9 @@ set -e
 
 echo "🚀 Ajans Platformu başlatılıyor..."
 
-# Veritabanı migration
-echo "📦 Migration çalıştırılıyor..."
-npx prisma migrate deploy
+# Veritabanı şemasını senkronize et
+echo "📦 Veritabanı şeması güncelleniyor..."
+npx prisma db push --skip-generate
 
 echo "✅ Hazır."
 exec "$@"
