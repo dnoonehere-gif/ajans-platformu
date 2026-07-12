@@ -5,7 +5,7 @@
   "description": "Türkçe, çok kiracılı (multi-tenant) AI destekli SaaS + Dijital Ajans platformu",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && prisma db push --skip-generate && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
