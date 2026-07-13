@@ -6,8 +6,13 @@ import { Sun, Moon, Monitor, Zap } from "lucide-react";
 const COLORS = [
   { id: "purple", label: "Mor", hex: "#7c6ff7" },
   { id: "blue",   label: "Mavi", hex: "#3b82f6" },
+  { id: "indigo", label: "İndigo", hex: "#818cf8" },
+  { id: "cyan",   label: "Cyan", hex: "#06b6d4" },
+  { id: "teal",   label: "Teal", hex: "#14b8a6" },
   { id: "green",  label: "Yeşil", hex: "#22c55e" },
+  { id: "amber",  label: "Amber", hex: "#f59e0b" },
   { id: "orange", label: "Turuncu", hex: "#f97316" },
+  { id: "red",    label: "Kırmızı", hex: "#ef4444" },
   { id: "rose",   label: "Pembe", hex: "#e8477a" },
 ];
 
@@ -74,7 +79,7 @@ export function ThemeSwitcher() {
       {/* Renk teması */}
       <div>
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Renk</p>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {COLORS.map((c) => (
             <button
               key={c.id}
