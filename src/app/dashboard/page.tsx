@@ -9,6 +9,7 @@ import {
   Star, MessageSquare, Globe, Sparkles, TrendingUp, TrendingDown,
   Loader2, RefreshCw, Bot, FileText, CheckCircle, AlertCircle,
   Plus, QrCode, MapPin, ArrowUpRight, ArrowDownRight, Minus,
+  Users, CalendarCheck, Mail, Share2,
 } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import Link from "next/link";
@@ -26,10 +27,17 @@ interface RatingDist { rating: number; count: number; label: string }
 interface SourceDist { source: string; count: number }
 interface RecentReview { id: string; authorName?: string | null; rating: number; text?: string | null; sentiment?: string | null; source: string; createdAt: string }
 interface Summary { performance: { reviewScore: number; sentimentScore: number; engagementScore: number; overallScore: number }; negativeTrend: { isRising: boolean; percentage: number }; topComplaint: string | null; aiSuggestions: string[] }
+interface Extras {
+  crm: { total: number; stages: Record<string, number> };
+  reservations: { total: number; pending: number; confirmed: number };
+  email: { campaignsSent: number; totalSent: number; totalOpened: number };
+  social: { published: number; scheduled: number };
+}
 interface DashboardData {
   brand: { id: string; name: string; primaryColor: string | null };
   kpis: KPIs; trend: TrendPoint[]; ratingDist: RatingDist[]; sourceDist: SourceDist[];
   recentReviews: RecentReview[]; latestSummary: Summary | null;
+  extras?: Extras;
 }
 
 const SENTIMENT_COLORS = { positive: "#22c55e", neutral: "#f59e0b", negative: "#ef4444" };
@@ -134,6 +142,7 @@ export default function DashboardPage() {
 
   const kpis = data?.kpis;
   const perf = data?.latestSummary?.performance;
+  const extras = data?.extras;
 
   const sentimentTotal = kpis ? kpis.sentiment.positive + kpis.sentiment.neutral + kpis.sentiment.negative : 0;
   const pieData = kpis ? [
@@ -253,6 +262,106 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
+
+          {/* Module Stats */}
+          {extras && (
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {/* CRM */}
+              <Link href="/dashboard/crm" className="glass nv-card-hover rounded-2xl p-4 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">CRM Pipeline</span>
+                  <Users className="h-4 w-4 text-indigo-400" />
+                </div>
+                <p className="text-2xl font-bold">{extras.crm.total}</p>
+                <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                  {extras.crm.stages.WON ?? 0} kazanılan · {extras.crm.stages.NEW ?? 0} yeni
+                </p>
+              </Link>
+
+              {/* Reservations */}
+              <Link href="/dashboard/chatbot" className="glass nv-card-hover rounded-2xl p-4 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Rezervasyonlar</span>
+                  <CalendarCheck className="h-4 w-4 text-cyan-400" />
+                </div>
+                <p className="text-2xl font-bold">{extras.reservations.total}</p>
+                <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                  {extras.reservations.pending} bekleyen · {extras.reservations.confirmed} onaylı
+                </p>
+              </Link>
+
+              {/* Email */}
+              <Link href="/dashboard/email" className="glass nv-card-hover rounded-2xl p-4 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">E-posta</span>
+                  <Mail className="h-4 w-4 text-amber-400" />
+                </div>
+                <p className="text-2xl font-bold">{extras.email.totalSent}</p>
+                <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                  {extras.email.campaignsSent} kampanya · %{extras.email.totalSent > 0 ? Math.round((extras.email.totalOpened / extras.email.totalSent) * 100) : 0} açılma
+                </p>
+              </Link>
+
+              {/* Social */}
+              <Link href="/dashboard/social" className="glass nv-card-hover rounded-2xl p-4 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Sosyal Medya</span>
+                  <Share2 className="h-4 w-4 text-pink-400" />
+                </div>
+                <p className="text-2xl font-bold">{extras.social.published}</p>
+                <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                  yayınlanan · {extras.social.scheduled} planlanmış
+                </p>
+              </Link>
+            </div>
+          )}
+
+          {/* CRM Pipeline Mini Chart */}
+          {extras && extras.crm.total > 0 && (
+            <div className="glass nv-card-hover rounded-2xl p-5">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-sm font-semibold">CRM Pipeline Durumu</p>
+                <Link href="/dashboard/crm" className="text-xs text-[hsl(var(--primary))] hover:underline">Detay →</Link>
+              </div>
+              <div className="flex gap-1 h-6 rounded-full overflow-hidden bg-[hsl(var(--muted))]">
+                {[
+                  { key: "NEW", label: "Yeni", color: "#6366f1" },
+                  { key: "CONTACTED", label: "İletişim", color: "#0ea5e9" },
+                  { key: "QUALIFIED", label: "Nitelikli", color: "#f59e0b" },
+                  { key: "PROPOSAL", label: "Teklif", color: "#f97316" },
+                  { key: "WON", label: "Kazanılan", color: "#22c55e" },
+                  { key: "LOST", label: "Kaybedilen", color: "#ef4444" },
+                ].map((s) => {
+                  const count = extras.crm.stages[s.key] ?? 0;
+                  if (count === 0) return null;
+                  const pct = (count / extras.crm.total) * 100;
+                  return (
+                    <div key={s.key} className="relative group" style={{ width: `${pct}%`, backgroundColor: s.color }}>
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block whitespace-nowrap rounded bg-[hsl(var(--card))] px-2 py-1 text-xs shadow border border-[hsl(var(--border))]">
+                        {s.label}: {count}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                {[
+                  { key: "NEW", label: "Yeni", color: "#6366f1" },
+                  { key: "CONTACTED", label: "İletişim", color: "#0ea5e9" },
+                  { key: "QUALIFIED", label: "Nitelikli", color: "#f59e0b" },
+                  { key: "PROPOSAL", label: "Teklif", color: "#f97316" },
+                  { key: "WON", label: "Kazanılan", color: "#22c55e" },
+                  { key: "LOST", label: "Kaybedilen", color: "#ef4444" },
+                ].filter((s) => (extras.crm.stages[s.key] ?? 0) > 0).map((s) => (
+                  <div key={s.key} className="flex items-center gap-1.5 text-xs">
+                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                    <span className="text-[hsl(var(--muted-foreground))]">{s.label}</span>
+                    <span className="font-semibold">{extras.crm.stages[s.key]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* 30-Day Trend Chart */}
           <LazySection fallback={<ChartSkeleton height="h-64" />}>
@@ -451,6 +560,8 @@ export default function DashboardPage() {
                 { label: "Google Business", desc: "Bağlantı & Senkronizasyon", href: "/dashboard/google", icon: MapPin, color: "text-red-400", bg: "bg-red-500/10" },
                 { label: "QR Kod", desc: "Geri bildirim topla", href: "/dashboard/qr", icon: QrCode, color: "text-orange-400", bg: "bg-orange-500/10" },
                 { label: "İçerik", desc: `${kpis!.contentItems} içerik`, href: "/dashboard/content", icon: Sparkles, color: "text-purple-400", bg: "bg-purple-500/10" },
+                { label: "CRM", desc: `${extras?.crm.total ?? 0} müşteri adayı`, href: "/dashboard/crm", icon: Users, color: "text-indigo-400", bg: "bg-indigo-500/10" },
+                { label: "E-posta", desc: `${extras?.email.campaignsSent ?? 0} kampanya`, href: "/dashboard/email", icon: Mail, color: "text-amber-400", bg: "bg-amber-500/10" },
               ].map((m) => (
                 <Link key={m.href} href={m.href}
                   className="glass flex items-center gap-3 rounded-xl px-4 py-3 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">

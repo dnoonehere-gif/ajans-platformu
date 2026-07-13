@@ -47,6 +47,7 @@ async function computeDashboard(brand: BrandWithRelations, brandId: string) {
     reviewStats, reviewsLast30, reviewsPrev30Count, reviewsLast7Count,
     reviewsPrev7Count, chatbotConversations, contentItems, recentReviews,
     latestSummary, ratingDistRaw, sourceDistRaw, avgRating, prevAvgRating,
+    crmLeadsByStage, reservationStats, emailCampaignStats, socialPostStats,
   ] = await Promise.all([
     prisma.review.groupBy({ by: ["sentiment"], where: { brandId }, _count: true }),
     prisma.review.findMany({
@@ -75,6 +76,20 @@ async function computeDashboard(brand: BrandWithRelations, brandId: string) {
       where: { brandId, createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo } },
       _avg: { rating: true },
     }),
+    prisma.crmLead.groupBy({ by: ["stage"], where: { brandId }, _count: true }),
+    Promise.all([
+      prisma.reservation.count({ where: { brandId, status: "PENDING" } }),
+      prisma.reservation.count({ where: { brandId, status: "CONFIRMED" } }),
+      prisma.reservation.count({ where: { brandId } }),
+    ]),
+    Promise.all([
+      prisma.emailCampaign.count({ where: { brandId, status: "SENT" } }),
+      prisma.emailCampaign.aggregate({ where: { brandId, status: "SENT" }, _sum: { sentCount: true, openCount: true } }),
+    ]),
+    Promise.all([
+      prisma.socialPost.count({ where: { brandId, status: "PUBLISHED" } }),
+      prisma.socialPost.count({ where: { brandId, status: "SCHEDULED" } }),
+    ]),
   ]);
 
   const sentimentMap: Record<string, number> = { POSITIVE: 0, NEUTRAL: 0, NEGATIVE: 0 };
@@ -114,6 +129,14 @@ async function computeDashboard(brand: BrandWithRelations, brandId: string) {
   const weeklyChange = reviewsPrev7Count === 0 ? null : Math.round(((reviewsLast7Count - reviewsPrev7Count) / reviewsPrev7Count) * 100);
   const monthlyChange = reviewsPrev30Count === 0 ? null : Math.round(((last30Count - reviewsPrev30Count) / reviewsPrev30Count) * 100);
 
+  const crmStageMap: Record<string, number> = {};
+  crmLeadsByStage.forEach((r) => { crmStageMap[r.stage] = r._count; });
+  const crmTotal = Object.values(crmStageMap).reduce((a, b) => a + b, 0);
+
+  const [resPending, resConfirmed, resTotal] = reservationStats;
+  const [emailSentCount, emailAgg] = emailCampaignStats;
+  const [socialPublished, socialScheduled] = socialPostStats;
+
   return {
     brand: { id: brand.id, name: brand.name, primaryColor: brand.primaryColor },
     kpis: {
@@ -125,6 +148,16 @@ async function computeDashboard(brand: BrandWithRelations, brandId: string) {
       websitePublished: brand.website?.isPublished ?? false,
       last30Count, reviewsPrev30Count, reviewsLast7Count, reviewsPrev7Count,
       weeklyChange, monthlyChange,
+    },
+    extras: {
+      crm: { total: crmTotal, stages: crmStageMap },
+      reservations: { total: resTotal, pending: resPending, confirmed: resConfirmed },
+      email: {
+        campaignsSent: emailSentCount,
+        totalSent: emailAgg._sum.sentCount ?? 0,
+        totalOpened: emailAgg._sum.openCount ?? 0,
+      },
+      social: { published: socialPublished, scheduled: socialScheduled },
     },
     trend,
     ratingDist: [5, 4, 3, 2, 1].map((r) => ({ rating: r, count: ratingDist[r], label: `${r}★` })),
