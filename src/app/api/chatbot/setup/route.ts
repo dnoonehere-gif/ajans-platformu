@@ -9,6 +9,7 @@ const schema = z.object({
   name: z.string().min(1).max(50).optional(),
   systemPrompt: z.string().max(2000).optional(),
   isActive: z.boolean().optional(),
+  reservationEnabled: z.boolean().optional(),
 });
 
 export async function POST(req: NextRequest) {

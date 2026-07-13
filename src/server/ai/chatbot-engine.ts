@@ -11,8 +11,29 @@ function buildSystemPrompt(
   botName: string,
   brandName: string,
   customPrompt: string | null,
-  relevantKnowledge: string
+  relevantKnowledge: string,
+  reservationEnabled: boolean
 ): string {
+  const reservationInstructions = reservationEnabled ? `
+
+REZERVASYON ÖZELLİĞİ:
+Müşteri rezervasyon, randevu veya masa ayırtmak istediğinde aşağıdaki bilgileri sırayla topla:
+1. Ad Soyad (zorunlu)
+2. Tarih (zorunlu — örn: "yarın", "cuma", "15 Temmuz")
+3. Saat (zorunlu — örn: "19:00", "akşam 7")
+4. Kişi sayısı (varsayılan 1)
+5. Telefon numarası (opsiyonel ama öner)
+6. Özel not (opsiyonel)
+
+Tüm bilgileri topladıktan sonra, yanıtının SONUNA şu JSON bloğunu ekle (kullanıcıya gösterme, sadece sisteme):
+:::RESERVATION:::
+{"name":"Ad Soyad","date":"YYYY-MM-DD","time":"HH:MM","partySize":N,"phone":"05xx","notes":"varsa not"}
+:::END_RESERVATION:::
+
+Tarihleri bugünün tarihine göre hesapla. "Yarın" denmişse yarının tarihini yaz. Geçmiş tarih kabul etme.
+Bilgi eksikse sormaya devam et, JSON bloğunu EKSİK bilgiyle gönderme.
+Rezervasyonu onayladıktan sonra "Rezervasyonunuz alındı, en kısa sürede onaylanacaktır" de.` : "";
+
   return `Sen ${brandName} markasının yapay zekâ destekli müşteri asistanısın. Adın: ${botName}.
 
 Görevin: Müşterilerin sorularını Türkçe, samimi ve profesyonel bir şekilde yanıtlamak.
@@ -23,7 +44,7 @@ Temel kurallar:
 - Bilmediğin bir konuda "Bu konuda size en iyi şekilde yardımcı olmak için sizi yetkili personelinizle bağlantı kurmanızı öneririm." de.
 - Asla başka bir marka veya rakip hakkında yorum yapma.
 ${customPrompt ? `\nÖzel Talimatlar:\n${customPrompt}` : ""}
-${relevantKnowledge ? `\nİlgili Bilgi Tabanı:\n${relevantKnowledge}` : ""}`;
+${relevantKnowledge ? `\nİlgili Bilgi Tabanı:\n${relevantKnowledge}` : ""}${reservationInstructions}`;
 }
 
 export async function streamChatResponse(opts: {
@@ -31,9 +52,10 @@ export async function streamChatResponse(opts: {
   brandName: string;
   brandId: string;
   systemPrompt: string | null;
-  fallbackKnowledge: ChatbotKnowledge[]; // Pinecone yoksa kullanılır
+  fallbackKnowledge: ChatbotKnowledge[];
   history: ChatMessage[];
   userMessage: string;
+  reservationEnabled?: boolean;
 }): Promise<ReadableStream<Uint8Array>> {
   // Pinecone'dan semantik arama — yoksa DB'deki knowledge'ı kullan
   let relevantKnowledge = "";
@@ -58,7 +80,8 @@ export async function streamChatResponse(opts: {
     opts.botName,
     opts.brandName,
     opts.systemPrompt,
-    relevantKnowledge
+    relevantKnowledge,
+    opts.reservationEnabled ?? false
   );
 
   const messages = [

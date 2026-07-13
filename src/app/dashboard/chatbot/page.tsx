@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Bot, Plus, Trash2, Save, MessageSquare, Loader2,
   ChevronDown, ChevronUp, Sparkles, Settings, BookOpen,
-  Copy, Check, Code2, Search, X, ZapIcon,
+  Copy, Check, Code2, Search, X, ZapIcon, CalendarCheck,
 } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { ChatWidget } from "@/components/chatbot/chat-widget";
@@ -33,10 +33,17 @@ interface Conversation {
 }
 interface Chatbot {
   id: string; name: string; systemPrompt?: string | null; isActive: boolean;
+  reservationEnabled: boolean;
   knowledgeBase: KnowledgeEntry[];
 }
 
-type Tab = "settings" | "knowledge" | "conversations" | "embed";
+interface Reservation {
+  id: string; name: string; phone: string | null; email: string | null;
+  date: string; time: string; partySize: number; notes: string | null;
+  status: string; source: string; createdAt: string;
+}
+
+type Tab = "settings" | "knowledge" | "conversations" | "embed" | "reservations";
 
 export default function ChatbotPage() {
   const { activeBrand } = useBrand();
@@ -53,10 +60,14 @@ export default function ChatbotPage() {
   const [copied, setCopied] = useState<string | null>(null);
   const [previewKey, setPreviewKey] = useState(0);
 
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [resLoading, setResLoading] = useState(false);
+
   // Form state
   const [name, setName] = useState("Asistan");
   const [systemPrompt, setSystemPrompt] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [reservationEnabled, setReservationEnabled] = useState(false);
   const [saving, setSaving] = useState(false);
 
   // Knowledge form
@@ -75,6 +86,7 @@ export default function ChatbotPage() {
       setName(data.chatbot.name);
       setSystemPrompt(data.chatbot.systemPrompt ?? "");
       setIsActive(data.chatbot.isActive);
+      setReservationEnabled(data.chatbot.reservationEnabled ?? false);
     } else {
       setChatbot(null);
     }
@@ -96,13 +108,28 @@ export default function ChatbotPage() {
     if (tab === "conversations" && chatbot) loadConversations();
   }, [tab, chatbot, loadConversations]);
 
+  const loadReservations = useCallback(async () => {
+    if (!brandId) return;
+    setResLoading(true);
+    try {
+      const res = await fetch(`/api/reservations?brandId=${brandId}`);
+      const data = await res.json();
+      if (data.reservations) setReservations(data.reservations);
+    } catch { /* ignore */ }
+    setResLoading(false);
+  }, [brandId]);
+
+  useEffect(() => {
+    if (tab === "reservations" && chatbot) loadReservations();
+  }, [tab, chatbot, loadReservations]);
+
   async function saveSettings(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     const res = await fetch("/api/chatbot/setup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ brandId, name, systemPrompt, isActive }),
+      body: JSON.stringify({ brandId, name, systemPrompt, isActive, reservationEnabled }),
     });
     const data = await res.json();
     if (data.chatbot) {
@@ -213,6 +240,7 @@ export default function ChatbotPage() {
               { key: "settings", label: "Ayarlar", icon: Settings },
               { key: "knowledge", label: "Bilgi Tabanı", icon: BookOpen },
               { key: "conversations", label: "Konuşmalar", icon: MessageSquare },
+              { key: "reservations", label: "Rezervasyonlar", icon: CalendarCheck },
               { key: "embed", label: "Entegrasyon", icon: Code2 },
             ] as { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[]).map((t) => (
               <button
@@ -273,6 +301,25 @@ export default function ChatbotPage() {
                         <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${isActive ? "left-[18px]" : "left-0.5"}`} />
                       </div>
                       <span className="text-sm font-medium">{isActive ? "Aktif — ziyaretçiler chatbot'u kullanabilir" : "Pasif — chatbot devre dışı"}</span>
+                    </button>
+                  </div>
+
+                  <div>
+                    <label className="mb-3 block text-sm font-medium">Chatbot ile Rezervasyon</label>
+                    <button
+                      type="button"
+                      onClick={() => setReservationEnabled(!reservationEnabled)}
+                      className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition ${
+                        reservationEnabled ? "border-blue-500/30 bg-blue-500/5" : "border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)]"
+                      }`}
+                    >
+                      <div className={`relative h-5 w-9 rounded-full transition ${reservationEnabled ? "bg-blue-500" : "bg-[hsl(var(--muted))]"}`}>
+                        <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${reservationEnabled ? "left-[18px]" : "left-0.5"}`} />
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium">{reservationEnabled ? "Aktif — müşteriler chatbot üzerinden rezervasyon yapabilir" : "Pasif — rezervasyon özelliği kapalı"}</span>
+                        <p className="text-xs text-[hsl(var(--muted-foreground))]">Açıldığında chatbot otomatik olarak müşteriden ad, tarih, saat ve kişi bilgisi toplar</p>
+                      </div>
                     </button>
                   </div>
 
@@ -479,6 +526,97 @@ export default function ChatbotPage() {
                         </div>
                       );
                     })
+                  )}
+                </div>
+              )}
+
+              {/* REZERVASYONLAR */}
+              {tab === "reservations" && (
+                <div className="space-y-3">
+                  {resLoading ? (
+                    <div className="flex h-32 items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-[hsl(var(--primary))]" />
+                    </div>
+                  ) : !chatbot?.reservationEnabled ? (
+                    <div className="flex flex-col items-center gap-3 py-16 text-center">
+                      <CalendarCheck className="h-10 w-10 text-[hsl(var(--muted-foreground)/0.3)]" />
+                      <p className="text-sm font-semibold">Rezervasyon özelliği kapalı</p>
+                      <p className="text-xs text-[hsl(var(--muted-foreground))]">Ayarlar sekmesinden "Chatbot ile Rezervasyon" özelliğini aktif edin</p>
+                    </div>
+                  ) : reservations.length === 0 ? (
+                    <div className="flex flex-col items-center gap-3 py-16 text-center">
+                      <CalendarCheck className="h-10 w-10 text-[hsl(var(--muted-foreground)/0.3)]" />
+                      <p className="text-sm font-semibold">Henüz rezervasyon yok</p>
+                      <p className="text-xs text-[hsl(var(--muted-foreground))]">Müşteriler chatbot üzerinden rezervasyon yaptığında burada görünür</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex gap-6 rounded-xl border border-[hsl(var(--border))] px-5 py-3">
+                        <div>
+                          <span className="text-lg font-bold">{reservations.length}</span>
+                          <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">Toplam</span>
+                        </div>
+                        <div className="w-px bg-[hsl(var(--border))]" />
+                        <div>
+                          <span className="text-lg font-bold text-amber-500">{reservations.filter((r) => r.status === "PENDING").length}</span>
+                          <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">Bekleyen</span>
+                        </div>
+                        <div className="w-px bg-[hsl(var(--border))]" />
+                        <div>
+                          <span className="text-lg font-bold text-emerald-500">{reservations.filter((r) => r.status === "CONFIRMED").length}</span>
+                          <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">Onaylı</span>
+                        </div>
+                      </div>
+
+                      {reservations.map((res) => {
+                        const dateStr = new Date(res.date).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+                        const statusCls = res.status === "CONFIRMED" ? "bg-emerald-500/10 text-emerald-500" : res.status === "CANCELLED" ? "bg-red-500/10 text-red-500" : "bg-amber-500/10 text-amber-500";
+                        const statusLabel = res.status === "CONFIRMED" ? "Onaylandı" : res.status === "CANCELLED" ? "İptal" : "Bekliyor";
+                        return (
+                          <div key={res.id} className="glass rounded-xl p-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-sm font-semibold">{res.name}</span>
+                                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${statusCls}`}>{statusLabel}</span>
+                                  {res.source === "chatbot" && <span className="rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold text-blue-500">Chatbot</span>}
+                                </div>
+                                <div className="mt-1.5 flex flex-wrap gap-3 text-xs text-[hsl(var(--muted-foreground))]">
+                                  <span>📅 {dateStr}</span>
+                                  <span>🕐 {res.time}</span>
+                                  <span>👥 {res.partySize} kişi</span>
+                                  {res.phone && <span>📞 {res.phone}</span>}
+                                  {res.email && <span>✉️ {res.email}</span>}
+                                </div>
+                                {res.notes && <p className="mt-1.5 text-xs text-[hsl(var(--muted-foreground))] italic">"{res.notes}"</p>}
+                              </div>
+                              {res.status === "PENDING" && (
+                                <div className="flex shrink-0 gap-1.5">
+                                  <button
+                                    onClick={async () => {
+                                      await fetch("/api/reservations", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: res.id, status: "CONFIRMED" }) });
+                                      setReservations((prev) => prev.map((r) => r.id === res.id ? { ...r, status: "CONFIRMED" } : r));
+                                    }}
+                                    className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-500 transition hover:bg-emerald-500/20"
+                                  >
+                                    Onayla
+                                  </button>
+                                  <button
+                                    onClick={async () => {
+                                      await fetch("/api/reservations", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: res.id, status: "CANCELLED" }) });
+                                      setReservations((prev) => prev.map((r) => r.id === res.id ? { ...r, status: "CANCELLED" } : r));
+                                    }}
+                                    className="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-500 transition hover:bg-red-500/20"
+                                  >
+                                    İptal
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </>
                   )}
                 </div>
               )}

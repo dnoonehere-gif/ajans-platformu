@@ -232,6 +232,7 @@ model Brand {
   emailContacts  EmailContact[]
   crmLeads       CrmLead[]
   seoAnalyses    SeoAnalysis[]
+  reservations   Reservation[]
 
   @@index([ownerId])
 }
@@ -524,6 +525,7 @@ model Chatbot {
   name        String   @default("Asistan")
   systemPrompt String?
   isActive    Boolean  @default(true)
+  reservationEnabled Boolean @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -571,6 +573,32 @@ model ChatbotMessage {
   conversation ChatbotConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId])
+}
+
+// -------------------------------------------------------------
+//  REZERVASYONLAR (chatbot üzerinden alınan randevular)
+// -------------------------------------------------------------
+
+model Reservation {
+  id          String   @id @default(cuid())
+  brandId     String
+  name        String
+  phone       String?
+  email       String?
+  date        DateTime
+  time        String
+  partySize   Int      @default(1)
+  notes       String?
+  status      String   @default("PENDING") // PENDING | CONFIRMED | CANCELLED
+  source      String   @default("chatbot") // chatbot | manual
+  conversationId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@index([brandId, date])
+  @@index([brandId, status])
 }
 
 // -------------------------------------------------------------
