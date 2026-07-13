@@ -100,7 +100,7 @@ export default function CrmPage() {
     if (!lead || lead.stage === newStage) return;
 
     const oldStage = lead.stage;
-    setLeads(leads.map((l) => (l.id === id ? { ...l, stage: newStage } : l)));
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, stage: newStage } : l)));
 
     const res = await fetch("/api/crm", {
       method: "PATCH",
@@ -112,7 +112,7 @@ export default function CrmPage() {
       const wonLost = newStage === "WON" ? " 🎉" : newStage === "LOST" ? " ⚠️" : "";
       showToast(`${lead.name}: ${STAGE_LABELS[oldStage]} → ${STAGE_LABELS[newStage]}${wonLost}`);
     } else {
-      setLeads(leads.map((l) => (l.id === id ? { ...l, stage: oldStage } : l)));
+      setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, stage: oldStage } : l)));
     }
   }
 
@@ -122,16 +122,17 @@ export default function CrmPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, notes: notesDraft || null }),
     });
-    setLeads(leads.map((l) => (l.id === id ? { ...l, notes: notesDraft || null } : l)));
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, notes: notesDraft || null } : l)));
     setEditingNotes(null);
     showToast("Not kaydedildi");
   }
 
   async function handleDelete(id: string) {
     const lead = leads.find((l) => l.id === id);
+    if (!lead || !confirm(`${lead.name} adlı müşteri adayını silmek istediğinize emin misiniz?`)) return;
     await fetch(`/api/crm?id=${id}`, { method: "DELETE" });
-    setLeads(leads.filter((l) => l.id !== id));
-    if (lead) showToast(`${lead.name} silindi`);
+    setLeads((prev) => prev.filter((l) => l.id !== id));
+    showToast(`${lead.name} silindi`);
   }
 
   const inp = "w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2.5 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)]";

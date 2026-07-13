@@ -73,51 +73,61 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
 
-  const userId = (session.user as { id: string }).id;
-  const body = await req.json();
-  const parsed = updateSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
+    const userId = (session.user as { id: string }).id;
+    const body = await req.json();
+    const parsed = updateSchema.safeParse(body);
+    if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
 
-  const { id, ...data } = parsed.data;
-  const lead = await prisma.crmLead.findUnique({ where: { id }, include: { brand: true } });
-  if (!lead || lead.brand.ownerId !== userId) return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
+    const { id, ...data } = parsed.data;
+    const lead = await prisma.crmLead.findUnique({ where: { id }, include: { brand: true } });
+    if (!lead || lead.brand.ownerId !== userId) return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
 
-  const updated = await prisma.crmLead.update({ where: { id }, data });
+    const updated = await prisma.crmLead.update({ where: { id }, data });
 
-  const STAGE_LABELS: Record<string, string> = {
-    NEW: "Yeni", CONTACTED: "İletişime Geçildi", QUALIFIED: "Nitelikli",
-    PROPOSAL: "Teklif", WON: "Kazanıldı", LOST: "Kaybedildi",
-  };
+    const STAGE_LABELS: Record<string, string> = {
+      NEW: "Yeni", CONTACTED: "İletişime Geçildi", QUALIFIED: "Nitelikli",
+      PROPOSAL: "Teklif", WON: "Kazanıldı", LOST: "Kaybedildi",
+    };
 
-  if (data.stage && data.stage !== lead.stage) {
-    const owner = await prisma.user.findUnique({ where: { id: lead.brand.ownerId }, select: { email: true } });
-    if (owner?.email && (data.stage === "WON" || data.stage === "LOST")) {
-      const emoji = data.stage === "WON" ? "🎉" : "⚠️";
-      sendCustomEmail(
-        owner.email,
-        `${emoji} CRM: ${lead.name} — ${STAGE_LABELS[data.stage]}`,
-        `${lead.name}${lead.company ? ` (${lead.company})` : ""} adlı müşteri adayı "${STAGE_LABELS[lead.stage]}" aşamasından "${STAGE_LABELS[data.stage]}" aşamasına geçti.${lead.value ? ` Tahmini değer: ${lead.value.toLocaleString("tr-TR")}₺` : ""}`,
-      ).catch(() => {});
+    if (data.stage && data.stage !== lead.stage) {
+      const owner = await prisma.user.findUnique({ where: { id: lead.brand.ownerId }, select: { email: true } });
+      if (owner?.email && (data.stage === "WON" || data.stage === "LOST")) {
+        const emoji = data.stage === "WON" ? "🎉" : "⚠️";
+        sendCustomEmail(
+          owner.email,
+          `${emoji} CRM: ${lead.name} — ${STAGE_LABELS[data.stage]}`,
+          `${lead.name}${lead.company ? ` (${lead.company})` : ""} adlı müşteri adayı "${STAGE_LABELS[lead.stage]}" aşamasından "${STAGE_LABELS[data.stage]}" aşamasına geçti.${lead.value ? ` Tahmini değer: ${lead.value.toLocaleString("tr-TR")}₺` : ""}`,
+        ).catch(() => {});
+      }
     }
-  }
 
-  return NextResponse.json({ lead: updated, previousStage: lead.stage });
+    return NextResponse.json({ lead: updated, previousStage: lead.stage });
+  } catch (e) {
+    console.error("CRM PATCH error:", e);
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  }
 }
 
 export async function DELETE(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
 
-  const userId = (session.user as { id: string }).id;
-  const id = req.nextUrl.searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "id gerekli" }, { status: 400 });
+    const userId = (session.user as { id: string }).id;
+    const id = req.nextUrl.searchParams.get("id");
+    if (!id) return NextResponse.json({ error: "id gerekli" }, { status: 400 });
 
-  const lead = await prisma.crmLead.findUnique({ where: { id }, include: { brand: true } });
-  if (!lead || lead.brand.ownerId !== userId) return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
+    const lead = await prisma.crmLead.findUnique({ where: { id }, include: { brand: true } });
+    if (!lead || lead.brand.ownerId !== userId) return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
 
-  await prisma.crmLead.delete({ where: { id } });
-  return NextResponse.json({ success: true });
+    await prisma.crmLead.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (e) {
+    console.error("CRM DELETE error:", e);
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  }
 }
