@@ -12,6 +12,7 @@ async function startCronScheduler() {
   const endpoints = [
     { path: "/api/cron/subscription-check", method: "GET" },
     { path: "/api/cron/trial-check", method: "POST" },
+    { path: "/api/cron/google-sync", method: "POST" },
   ];
 
   const runChecks = async () => {

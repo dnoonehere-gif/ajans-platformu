@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
+import { analyzeBatch } from "@/server/ai/review-analyzer";
 
 interface PlaceReview {
   author_name: string;
@@ -53,11 +54,12 @@ export async function POST(req: NextRequest) {
 
   // Yorumları kaydet
   let synced = 0;
+  const newForAnalysis: { id: string; text: string }[] = [];
   for (const r of reviews) {
     const externalId = `maps_${placeId}_${r.time}`;
     const existing = await prisma.review.findFirst({ where: { brandId, externalId } });
     if (!existing) {
-      await prisma.review.create({
+      const created = await prisma.review.create({
         data: {
           brandId,
           source: "GOOGLE",
@@ -68,8 +70,22 @@ export async function POST(req: NextRequest) {
           createdAt: new Date(r.time * 1000),
         },
       });
+      if (r.text) newForAnalysis.push({ id: created.id, text: r.text });
     }
     synced++;
+  }
+
+  // Yeni yorumlara arka planda sentiment analizi
+  if (newForAnalysis.length > 0) {
+    (async () => {
+      const analyses = await analyzeBatch(newForAnalysis);
+      for (const [id, analysis] of analyses) {
+        await prisma.review.update({
+          where: { id },
+          data: { sentiment: analysis.sentiment, topics: analysis.topics, aiSummary: analysis.aiSummary },
+        }).catch(() => null);
+      }
+    })().catch(() => null);
   }
 
   return NextResponse.json({
