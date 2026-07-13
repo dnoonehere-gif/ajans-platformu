@@ -38,12 +38,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ bra
     conversationId = conversation.id;
   }
 
-  // Önceki mesajları al (son 10)
-  const history = await prisma.chatbotMessage.findMany({
+  // Önceki mesajları al (son 20 — desc çekip ters çevir, yoksa İLK mesajlar gelir)
+  const historyDesc = await prisma.chatbotMessage.findMany({
     where: { conversationId: conversation.id },
-    orderBy: { createdAt: "asc" },
-    take: 10,
+    orderBy: { createdAt: "desc" },
+    take: 20,
   });
+  const history = historyDesc.reverse();
 
   // Kullanıcı mesajını kaydet
   await prisma.chatbotMessage.create({

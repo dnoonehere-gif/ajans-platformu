@@ -22,6 +22,7 @@ const updateSchema = z.object({
   id: z.string(),
   status: z.enum(["PENDING", "CONFIRMED", "CANCELLED"]).optional(),
   notes: z.string().optional().nullable(),
+  cancelReason: z.string().max(500).optional().nullable(),
   date: z.string().optional(),
   time: z.string().optional(),
   partySize: z.number().int().min(1).max(50).optional(),
@@ -108,12 +109,13 @@ export async function PATCH(req: NextRequest) {
       const subject = confirmed
         ? `Rezervasyonunuz onaylandı — ${brandName}`
         : `Rezervasyonunuz iptal edildi — ${brandName}`;
+      const reasonText = !confirmed && updated.cancelReason ? ` Sebep: ${updated.cancelReason}.` : "";
       const text = confirmed
         ? `Sayın ${updated.name}, ${brandName} için ${dateStr} ${updated.time} tarihli ${updated.partySize} kişilik rezervasyonunuz onaylanmıştır. Sizi ağırlamayı sabırsızlıkla bekliyoruz!`
-        : `Sayın ${updated.name}, ${brandName} için ${dateStr} ${updated.time} tarihli rezervasyonunuz maalesef iptal edilmiştir. Yeni bir rezervasyon için bizimle iletişime geçebilirsiniz.`;
+        : `Sayın ${updated.name}, ${brandName} için ${dateStr} ${updated.time} tarihli rezervasyonunuz maalesef iptal edilmiştir.${reasonText} Yeni bir rezervasyon için bizimle iletişime geçebilirsiniz.`;
 
       if (updated.email) sendCustomEmail(updated.email, subject, text).catch(() => null);
-      if (updated.phone) sendSMS(updated.phone, `${brandName}: ${confirmed ? "Rezervasyonunuz ONAYLANDI" : "Rezervasyonunuz IPTAL edildi"} — ${dateStr} ${updated.time}, ${updated.partySize} kisi.`).catch(() => null);
+      if (updated.phone) sendSMS(updated.phone, `${brandName}: ${confirmed ? "Rezervasyonunuz ONAYLANDI" : "Rezervasyonunuz IPTAL edildi"} — ${dateStr} ${updated.time}, ${updated.partySize} kisi.${reasonText}`).catch(() => null);
     }
 
     return NextResponse.json({ reservation: updated });

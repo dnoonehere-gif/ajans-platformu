@@ -589,6 +589,7 @@ model Reservation {
   time        String
   partySize   Int      @default(1)
   notes       String?
+  cancelReason String? // İptal sebebi (dashboard'dan girilir)
   status      String   @default("PENDING") // PENDING | CONFIRMED | CANCELLED
   source      String   @default("chatbot") // chatbot | manual
   conversationId String?

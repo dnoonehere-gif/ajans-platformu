@@ -41,6 +41,7 @@ interface Chatbot {
 interface Reservation {
   id: string; name: string; phone: string | null; email: string | null;
   date: string; time: string; partySize: number; notes: string | null;
+  cancelReason?: string | null;
   status: string; source: string; createdAt: string;
 }
 
@@ -790,22 +791,29 @@ export default function ChatbotPage() {
                                   {res.email && <span>✉️ {res.email}</span>}
                                 </div>
                                 {res.notes && <p className="mt-1.5 text-xs text-[hsl(var(--muted-foreground))] italic">"{res.notes}"</p>}
+                                {res.status === "CANCELLED" && res.cancelReason && (
+                                  <p className="mt-1.5 text-xs text-red-400">İptal sebebi: {res.cancelReason}</p>
+                                )}
                               </div>
-                              {res.status === "PENDING" && (
+                              {(res.status === "PENDING" || res.status === "CONFIRMED") && (
                                 <div className="flex shrink-0 gap-1.5">
+                                  {res.status === "PENDING" && (
+                                    <button
+                                      onClick={async () => {
+                                        await fetch("/api/reservations", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: res.id, status: "CONFIRMED" }) });
+                                        setReservations((prev) => prev.map((r) => r.id === res.id ? { ...r, status: "CONFIRMED" } : r));
+                                      }}
+                                      className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-500 transition hover:bg-emerald-500/20"
+                                    >
+                                      Onayla
+                                    </button>
+                                  )}
                                   <button
                                     onClick={async () => {
-                                      await fetch("/api/reservations", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: res.id, status: "CONFIRMED" }) });
-                                      setReservations((prev) => prev.map((r) => r.id === res.id ? { ...r, status: "CONFIRMED" } : r));
-                                    }}
-                                    className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-500 transition hover:bg-emerald-500/20"
-                                  >
-                                    Onayla
-                                  </button>
-                                  <button
-                                    onClick={async () => {
-                                      await fetch("/api/reservations", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: res.id, status: "CANCELLED" }) });
-                                      setReservations((prev) => prev.map((r) => r.id === res.id ? { ...r, status: "CANCELLED" } : r));
+                                      const reason = prompt("İptal sebebi (müşteriye iletilecek, boş bırakabilirsiniz):");
+                                      if (reason === null) return; // vazgeçti
+                                      await fetch("/api/reservations", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: res.id, status: "CANCELLED", cancelReason: reason.trim() || null }) });
+                                      setReservations((prev) => prev.map((r) => r.id === res.id ? { ...r, status: "CANCELLED", cancelReason: reason.trim() || null } : r));
                                     }}
                                     className="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-500 transition hover:bg-red-500/20"
                                   >
