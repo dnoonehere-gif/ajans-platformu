@@ -4,6 +4,7 @@ import {
   Bot, Plus, Trash2, Save, MessageSquare, Loader2,
   ChevronDown, ChevronUp, Sparkles, Settings, BookOpen,
   Copy, Check, Code2, Search, X, ZapIcon, CalendarCheck,
+  Upload, FileText, FileSpreadsheet, AlertCircle,
 } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { ChatWidget } from "@/components/chatbot/chat-widget";
@@ -160,6 +161,134 @@ export default function ChatbotPage() {
   async function deleteKnowledge(id: string) {
     await fetch(`/api/chatbot/${brandId}/knowledge/${id}`, { method: "DELETE" });
     setChatbot((c) => c ? { ...c, knowledgeBase: c.knowledgeBase.filter((k) => k.id !== id) } : c);
+  }
+
+  const [importMode, setImportMode] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<{ count: number; error?: string } | null>(null);
+
+  function parseCSV(text: string): { category: string; question?: string; content: string }[] {
+    const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+    if (lines.length < 2) return [];
+    const header = lines[0].toLowerCase();
+    const hasCategory = header.includes("kategori") || header.includes("category");
+    const hasQuestion = header.includes("soru") || header.includes("question");
+
+    return lines.slice(1).map((line) => {
+      const cols = line.split(/[,;\t]/).map((c) => c.replace(/^["']|["']$/g, "").trim());
+      if (hasCategory && hasQuestion) {
+        return { category: cols[0] || "sss", question: cols[1] || undefined, content: cols[2] || "" };
+      } else if (hasCategory) {
+        return { category: cols[0] || "sss", content: cols[1] || "" };
+      } else if (hasQuestion) {
+        return { category: "sss", question: cols[0] || undefined, content: cols[1] || "" };
+      }
+      return { category: "sss", question: cols[0] || undefined, content: cols[1] || cols[0] || "" };
+    }).filter((e) => e.content);
+  }
+
+  function parseTXT(text: string): { category: string; question?: string; content: string }[] {
+    const blocks = text.split(/\n{2,}/).map((b) => b.trim()).filter(Boolean);
+    return blocks.map((block) => {
+      const lines = block.split("\n");
+      if (lines.length >= 2 && lines[0].endsWith("?")) {
+        return { category: "sss", question: lines[0], content: lines.slice(1).join("\n") };
+      }
+      return { category: "diğer", content: block };
+    });
+  }
+
+  function parseJSON(text: string): { category: string; question?: string; content: string }[] {
+    try {
+      const data = JSON.parse(text);
+      const arr = Array.isArray(data) ? data : data.entries ?? data.faqs ?? data.knowledge ?? [];
+      return arr.map((item: Record<string, string>) => ({
+        category: item.category || item.kategori || "sss",
+        question: item.question || item.soru || undefined,
+        content: item.content || item.answer || item.cevap || item.yanit || "",
+      })).filter((e: { content: string }) => e.content);
+    } catch { return []; }
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !chatbot) return;
+    e.target.value = "";
+
+    setImportLoading(true);
+    setImportResult(null);
+
+    try {
+      const text = await file.text();
+      let entries: { category: string; question?: string; content: string }[] = [];
+
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      if (ext === "csv" || ext === "tsv") {
+        entries = parseCSV(text);
+      } else if (ext === "json") {
+        entries = parseJSON(text);
+      } else {
+        entries = parseTXT(text);
+      }
+
+      if (entries.length === 0) {
+        setImportResult({ count: 0, error: "Dosyadan bilgi çıkarılamadı. Format kontrolü yapın." });
+        setImportLoading(false);
+        return;
+      }
+
+      if (entries.length > 200) entries = entries.slice(0, 200);
+
+      const res = await fetch(`/api/chatbot/${brandId}/knowledge/import`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entries }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setImportResult({ count: data.count });
+        await loadChatbot();
+      } else {
+        setImportResult({ count: 0, error: data.error ?? "İçe aktarma başarısız" });
+      }
+    } catch {
+      setImportResult({ count: 0, error: "Dosya okunamadı" });
+    }
+    setImportLoading(false);
+  }
+
+  async function handleSSSSampleImport() {
+    if (!chatbot) return;
+    setImportLoading(true);
+    setImportResult(null);
+
+    const sampleFAQs = [
+      { category: "saat", question: "Çalışma saatleriniz nedir?", content: "Hafta içi 09:00-18:00, Cumartesi 10:00-14:00 arası hizmet vermekteyiz. Pazar günleri kapalıyız." },
+      { category: "iletişim", question: "Size nasıl ulaşabilirim?", content: "Bize telefon, e-posta veya web sitemizdeki iletişim formu üzerinden ulaşabilirsiniz." },
+      { category: "fiyat", question: "Fiyatlarınız hakkında bilgi alabilir miyim?", content: "Fiyatlarımız hizmet türüne göre değişmektedir. Detaylı fiyat bilgisi için bizimle iletişime geçebilirsiniz." },
+      { category: "sss", question: "İade politikanız nedir?", content: "Satın alma tarihinden itibaren 14 gün içinde iade yapılabilir. Ürün kullanılmamış ve orijinal ambalajında olmalıdır." },
+      { category: "sss", question: "Kargo ne kadar sürede gelir?", content: "Siparişler genellikle 2-3 iş günü içinde teslim edilir. Yoğun dönemlerde bu süre uzayabilir." },
+      { category: "kampanya", question: "Aktif kampanyalarınız var mı?", content: "Güncel kampanya ve indirimlerimiz için web sitemizi ve sosyal medya hesaplarımızı takip edebilirsiniz." },
+    ];
+
+    try {
+      const res = await fetch(`/api/chatbot/${brandId}/knowledge/import`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entries: sampleFAQs }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setImportResult({ count: data.count });
+        await loadChatbot();
+      } else {
+        setImportResult({ count: 0, error: data.error ?? "Başarısız" });
+      }
+    } catch {
+      setImportResult({ count: 0, error: "Bağlantı hatası" });
+    }
+    setImportLoading(false);
   }
 
   function copyText(text: string, key: string) {
@@ -385,6 +514,78 @@ export default function ChatbotPage() {
                           Ekle
                         </button>
                       </form>
+
+                      {/* Import Section */}
+                      <div className="glass rounded-2xl p-5">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-sm font-semibold">Toplu İçe Aktar</p>
+                          <button
+                            onClick={() => setImportMode(!importMode)}
+                            className="text-xs text-[hsl(var(--primary))] hover:underline"
+                          >
+                            {importMode ? "Kapat" : "Seçenekleri göster"}
+                          </button>
+                        </div>
+
+                        {importMode && (
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                              {/* File Upload */}
+                              <label className="group flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-[hsl(var(--border))] p-4 transition hover:border-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.03)]">
+                                <Upload className="h-6 w-6 text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--primary))]" />
+                                <span className="text-xs font-medium text-center">Dosya Yükle</span>
+                                <span className="text-[10px] text-[hsl(var(--muted-foreground))]">CSV, JSON, TXT</span>
+                                <input
+                                  type="file"
+                                  accept=".csv,.tsv,.json,.txt"
+                                  onChange={handleFileUpload}
+                                  className="hidden"
+                                  disabled={importLoading}
+                                />
+                              </label>
+
+                              {/* Sample FAQ */}
+                              <button
+                                onClick={handleSSSSampleImport}
+                                disabled={importLoading}
+                                className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-[hsl(var(--border))] p-4 transition hover:border-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.03)] disabled:opacity-50"
+                              >
+                                <FileText className="h-6 w-6 text-[hsl(var(--muted-foreground))]" />
+                                <span className="text-xs font-medium">Örnek SSS</span>
+                                <span className="text-[10px] text-[hsl(var(--muted-foreground))]">6 hazır soru-cevap</span>
+                              </button>
+
+                              {/* Format Info */}
+                              <div className="flex flex-col gap-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.3)] p-4">
+                                <FileSpreadsheet className="h-5 w-5 text-[hsl(var(--muted-foreground))]" />
+                                <p className="text-[10px] leading-relaxed text-[hsl(var(--muted-foreground))]">
+                                  <strong>CSV:</strong> kategori, soru, cevap<br />
+                                  <strong>JSON:</strong> [{`{question, content}`}]<br />
+                                  <strong>TXT:</strong> boş satırla ayrılmış bloklar
+                                </p>
+                              </div>
+                            </div>
+
+                            {importLoading && (
+                              <div className="flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))]">
+                                <Loader2 className="h-4 w-4 animate-spin" /> İçe aktarılıyor...
+                              </div>
+                            )}
+
+                            {importResult && (
+                              <div className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm ${
+                                importResult.error ? "bg-red-500/10 text-red-400" : "bg-green-500/10 text-green-400"
+                              }`}>
+                                {importResult.error ? (
+                                  <><AlertCircle className="h-4 w-4 shrink-0" /> {importResult.error}</>
+                                ) : (
+                                  <><Check className="h-4 w-4 shrink-0" /> {importResult.count} bilgi başarıyla eklendi</>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
 
                       {chatbot.knowledgeBase.length > 0 && (
                         <div className="flex flex-wrap items-center gap-2">
