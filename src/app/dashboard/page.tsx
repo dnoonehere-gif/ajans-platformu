@@ -27,6 +27,10 @@ interface RatingDist { rating: number; count: number; label: string }
 interface SourceDist { source: string; count: number }
 interface RecentReview { id: string; authorName?: string | null; rating: number; text?: string | null; sentiment?: string | null; source: string; createdAt: string }
 interface Summary { performance: { reviewScore: number; sentimentScore: number; engagementScore: number; overallScore: number }; negativeTrend: { isRising: boolean; percentage: number }; topComplaint: string | null; aiSuggestions: string[] }
+interface Setup {
+  hasBrand: boolean; hasChatbot: boolean; hasKnowledge: boolean;
+  hasGoogle: boolean; websitePublished: boolean; hasReviews: boolean;
+}
 interface Extras {
   crm: { total: number; stages: Record<string, number> };
   reservations: { total: number; pending: number; confirmed: number };
@@ -38,6 +42,7 @@ interface DashboardData {
   kpis: KPIs; trend: TrendPoint[]; ratingDist: RatingDist[]; sourceDist: SourceDist[];
   recentReviews: RecentReview[]; latestSummary: Summary | null;
   extras?: Extras;
+  setup?: Setup;
 }
 
 const SENTIMENT_COLORS = { positive: "#22c55e", neutral: "#f59e0b", negative: "#ef4444" };
@@ -57,6 +62,74 @@ function ScoreRing({ value, label, color }: { value: number; label: string; colo
         <p className="absolute inset-0 flex items-center justify-center text-base font-bold" style={{ color }}>{value}</p>
       </div>
       <p className="text-xs text-[hsl(var(--muted-foreground))]">{label}</p>
+    </div>
+  );
+}
+
+function OnboardingCard({ setup, brandId }: { setup: Setup; brandId: string }) {
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    setDismissed(localStorage.getItem(`nv-onboarding-${brandId}`) === "1");
+  }, [brandId]);
+
+  const steps = [
+    { done: setup.hasBrand, label: "Markanı oluştur", href: "/dashboard/marka-olustur" },
+    { done: setup.hasChatbot, label: "AI chatbot'unu kur", href: "/dashboard/chatbot" },
+    { done: setup.hasKnowledge, label: "Bilgi tabanını doldur (SSS, saatler, fiyatlar)", href: "/dashboard/chatbot" },
+    { done: setup.hasGoogle, label: "Google işletmeni bağla", href: "/dashboard/google" },
+    { done: setup.websitePublished, label: "Web siteni yayınla", href: "/dashboard/website" },
+    { done: setup.hasReviews, label: "İlk yorumunu topla (QR kod)", href: "/dashboard/qr" },
+  ];
+  const doneCount = steps.filter((s) => s.done).length;
+  const allDone = doneCount === steps.length;
+
+  if (dismissed || allDone) return null;
+
+  function dismiss() {
+    localStorage.setItem(`nv-onboarding-${brandId}`, "1");
+    setDismissed(true);
+  }
+
+  return (
+    <div className="glass relative overflow-hidden rounded-2xl p-5 ring-1 ring-[hsl(var(--primary)/0.25)]">
+      <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[hsl(var(--primary)/0.08)] blur-2xl" />
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <p className="flex items-center gap-2 font-bold">
+            <Sparkles className="h-4 w-4 text-[hsl(var(--primary))]" />
+            Kurulum Rehberi
+          </p>
+          <p className="mt-0.5 text-xs text-[hsl(var(--muted-foreground))]">
+            {doneCount}/{steps.length} adım tamamlandı — platformdan tam verim almak için kalan adımları bitirin
+          </p>
+        </div>
+        <button onClick={dismiss} title="Gizle"
+          className="rounded-lg p-1.5 text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))]">
+          <Minus className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-[hsl(var(--muted))]">
+        <div className="h-full rounded-full bg-[hsl(var(--primary))] transition-all duration-700"
+          style={{ width: `${(doneCount / steps.length) * 100}%` }} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {steps.map((s) => (
+          <Link key={s.label} href={s.href}
+            className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition ${
+              s.done
+                ? "text-[hsl(var(--muted-foreground))] line-through opacity-60"
+                : "bg-[hsl(var(--muted)/0.4)] hover:bg-[hsl(var(--accent))] font-medium"
+            }`}>
+            {s.done
+              ? <CheckCircle className="h-4 w-4 shrink-0 text-green-400" />
+              : <ArrowUpRight className="h-4 w-4 shrink-0 text-[hsl(var(--primary))]" />}
+            <span className="min-w-0 truncate">{s.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -182,6 +255,9 @@ export default function DashboardPage() {
         </div>
       ) : !data ? null : (
         <div className="space-y-5">
+
+          {/* Onboarding */}
+          {data.setup && activeBrand && <OnboardingCard setup={data.setup} brandId={activeBrand.id} />}
 
           {/* KPI Cards */}
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

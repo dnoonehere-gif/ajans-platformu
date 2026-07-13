@@ -8,6 +8,7 @@ import {
   ArrowRight, CheckCircle2, Zap, Shield, TrendingUp,
   MessageSquare, Users, ChevronRight, Play,
   UtensilsCrossed, MapPin, Building2, Menu, X,
+  CalendarCheck, UserPlus, Mail, Send, Search, FileBarChart,
 } from "lucide-react";
 import BorderGlow from "@/components/reactbits/border-glow";
 import ElectricBorder from "@/components/reactbits/electric-border";
@@ -93,6 +94,12 @@ const FEATURES = [
   { icon: MapPin, title: "Google Business", desc: "Google işletme profilinizi bağlayın, konum ve yorumlarınızı tek panelden yönetin.", accent: "#60a5fa", delay: 420 },
   { icon: Building2, title: "Şube Yönetimi", desc: "Birden fazla şubenizi, adreslerini ve çalışanlarını tek yerden yönetin.", accent: "#2dd4bf", delay: 480 },
   { icon: Users, title: "Takım & Yetkiler", desc: "Ekibinizi davet edin, rol bazlı yetkilerle güvenli iş birliği yapın.", accent: "#a78bfa", delay: 540 },
+  { icon: CalendarCheck, title: "Chatbot ile Rezervasyon", desc: "Müşterileriniz chatbot ile konuşarak rezervasyon yapsın; SMS ve e-posta onayı otomatik gitsin.", accent: "#22d3ee", delay: 600 },
+  { icon: UserPlus, title: "CRM & Satış Pipeline", desc: "Müşteri adaylarınızı aşama aşama takip edin. Chatbot rezervasyonları otomatik CRM'e düşer.", accent: "#818cf8", delay: 660 },
+  { icon: Mail, title: "E-posta Pazarlama", desc: "Kişi listenize toplu kampanya gönderin, açılma oranlarını takip edin.", accent: "#fbbf24", delay: 720 },
+  { icon: Send, title: "Sosyal Medya Planlayıcı", desc: "Instagram, Facebook ve LinkedIn paylaşımlarınızı planlayın, tek panelden yönetin.", accent: "#f472b6", delay: 780 },
+  { icon: Search, title: "SEO Araçları", desc: "Sitenizi tarayın, rakip anahtar kelimeleri analiz edin, AI önerileri alın.", accent: "#4ade80", delay: 840 },
+  { icon: FileBarChart, title: "Müşteri Raporları", desc: "Ajanslar için beyaz etiketli PDF raporlar; 9 metrik tek tıkla müşterinize hazır.", accent: "#c084fc", delay: 900 },
 ];
 
 const STEPS = [

@@ -48,6 +48,7 @@ async function computeDashboard(brand: BrandWithRelations, brandId: string) {
     reviewsPrev7Count, chatbotConversations, contentItems, recentReviews,
     latestSummary, ratingDistRaw, sourceDistRaw, avgRating, prevAvgRating,
     crmLeadsByStage, reservationStats, emailCampaignStats, socialPostStats,
+    googleProfile, knowledgeCount,
   ] = await Promise.all([
     prisma.review.groupBy({ by: ["sentiment"], where: { brandId }, _count: true }),
     prisma.review.findMany({
@@ -90,6 +91,10 @@ async function computeDashboard(brand: BrandWithRelations, brandId: string) {
       prisma.socialPost.count({ where: { brandId, status: "PUBLISHED" } }),
       prisma.socialPost.count({ where: { brandId, status: "SCHEDULED" } }),
     ]),
+    prisma.googleBusinessProfile.findUnique({ where: { brandId }, select: { googlePlaceId: true } }),
+    brand.chatbot
+      ? prisma.chatbotKnowledge.count({ where: { chatbotId: brand.chatbot.id } })
+      : Promise.resolve(0),
   ]);
 
   const sentimentMap: Record<string, number> = { POSITIVE: 0, NEUTRAL: 0, NEGATIVE: 0 };
@@ -148,6 +153,14 @@ async function computeDashboard(brand: BrandWithRelations, brandId: string) {
       websitePublished: brand.website?.isPublished ?? false,
       last30Count, reviewsPrev30Count, reviewsLast7Count, reviewsPrev7Count,
       weeklyChange, monthlyChange,
+    },
+    setup: {
+      hasBrand: true,
+      hasChatbot: !!brand.chatbot,
+      hasKnowledge: knowledgeCount > 0,
+      hasGoogle: !!googleProfile?.googlePlaceId,
+      websitePublished: brand.website?.isPublished ?? false,
+      hasReviews: totalReviews > 0,
     },
     extras: {
       crm: { total: crmTotal, stages: crmStageMap },
