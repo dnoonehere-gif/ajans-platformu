@@ -291,7 +291,7 @@ export default function DashboardPage() {
               </Link>
 
               {/* Email */}
-              <Link href="/dashboard/email" className="glass nv-card-hover rounded-2xl p-4 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">
+              <Link href="/dashboard/email-kampanya" className="glass nv-card-hover rounded-2xl p-4 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">E-posta</span>
                   <Mail className="h-4 w-4 text-amber-400" />
@@ -303,7 +303,7 @@ export default function DashboardPage() {
               </Link>
 
               {/* Social */}
-              <Link href="/dashboard/social" className="glass nv-card-hover rounded-2xl p-4 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">
+              <Link href="/dashboard/sosyal-medya" className="glass nv-card-hover rounded-2xl p-4 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Sosyal Medya</span>
                   <Share2 className="h-4 w-4 text-pink-400" />
@@ -561,7 +561,7 @@ export default function DashboardPage() {
                 { label: "QR Kod", desc: "Geri bildirim topla", href: "/dashboard/qr", icon: QrCode, color: "text-orange-400", bg: "bg-orange-500/10" },
                 { label: "İçerik", desc: `${kpis!.contentItems} içerik`, href: "/dashboard/content", icon: Sparkles, color: "text-purple-400", bg: "bg-purple-500/10" },
                 { label: "CRM", desc: `${extras?.crm.total ?? 0} müşteri adayı`, href: "/dashboard/crm", icon: Users, color: "text-indigo-400", bg: "bg-indigo-500/10" },
-                { label: "E-posta", desc: `${extras?.email.campaignsSent ?? 0} kampanya`, href: "/dashboard/email", icon: Mail, color: "text-amber-400", bg: "bg-amber-500/10" },
+                { label: "E-posta", desc: `${extras?.email.campaignsSent ?? 0} kampanya`, href: "/dashboard/email-kampanya", icon: Mail, color: "text-amber-400", bg: "bg-amber-500/10" },
               ].map((m) => (
                 <Link key={m.href} href={m.href}
                   className="glass flex items-center gap-3 rounded-xl px-4 py-3 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">

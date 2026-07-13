@@ -76,12 +76,17 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: "Hesap",
+    items: [
+      { href: "/dashboard/abonelik", label: "Abonelik", icon: CreditCard },
+      { href: "/dashboard/faturalar", label: "Faturalar", icon: Receipt },
+    ],
+  },
+  {
     label: "",
     items: [
       { href: "/dashboard/subeler", label: "Şubeler", icon: Building2 },
       { href: "/dashboard/team", label: "Takım", icon: Users },
-      { href: "/dashboard/abonelik", label: "Abonelik", icon: CreditCard },
-      { href: "/dashboard/faturalar", label: "Faturalar", icon: Receipt },
       { href: "/dashboard/ayarlar", label: "Ayarlar", icon: Settings },
     ],
   },
