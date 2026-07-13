@@ -254,3 +254,12 @@ body {
   .nv-blob, .nv-enter, .nv-live-dot { animation: none !important; }
   .nv-enter { opacity: 1; transform: none; }
 }
+
+[data-reduced-motion="true"] .nv-blob,
+[data-reduced-motion="true"] .nv-enter,
+[data-reduced-motion="true"] .nv-live-dot { animation: none !important; }
+[data-reduced-motion="true"] .nv-enter { opacity: 1; transform: none; }
+[data-reduced-motion="true"] .nv-card-hover { transition: none; }
+[data-reduced-motion="true"] .nv-card-hover:hover { transform: none; box-shadow: none; }
+[data-reduced-motion="true"] .nv-dots { display: none; }
+[data-reduced-motion="true"] .nv-blob { display: none; }
