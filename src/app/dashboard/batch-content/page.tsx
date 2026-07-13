@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useBrand } from "@/components/dashboard/brand-provider";
-import { Loader2, Sparkles, Plus, Trash2, Copy, Check, Layers } from "lucide-react";
+import { Loader2, Sparkles, Plus, Trash2, Copy, Check, Layers, Download, Wand2, Edit3, Save } from "lucide-react";
 import type { ContentType } from "@prisma/client";
 
 const TYPE_OPTIONS: { value: ContentType; label: string }[] = [
@@ -16,6 +16,58 @@ const TYPE_OPTIONS: { value: ContentType; label: string }[] = [
   { value: "SEO_CONTENT", label: "SEO İçeriği" },
   { value: "HASHTAGS", label: "Hashtag Seti" },
   { value: "CONTENT_PLAN", label: "İçerik Planı" },
+];
+
+const TEMPLATES = [
+  {
+    label: "1 Haftalık Instagram",
+    icon: "📅",
+    items: [
+      { type: "INSTAGRAM_POST" as ContentType, topic: "Pazartesi motivasyon", tone: "ilham verici" },
+      { type: "INSTAGRAM_POST" as ContentType, topic: "Ürün/hizmet tanıtım", tone: "profesyonel" },
+      { type: "REELS_IDEA" as ContentType, topic: "Sahne arkası", tone: "samimi" },
+      { type: "INSTAGRAM_POST" as ContentType, topic: "Müşteri yorumu/başarı hikayesi", tone: "güven verici" },
+      { type: "STORY_IDEA" as ContentType, topic: "Soru-cevap / anket", tone: "eğlenceli" },
+      { type: "INSTAGRAM_POST" as ContentType, topic: "Bilgilendirici / ipucu", tone: "eğitici" },
+      { type: "REELS_IDEA" as ContentType, topic: "Hafta sonu planı / kapanış", tone: "enerjik" },
+    ],
+  },
+  {
+    label: "Lansman Paketi",
+    icon: "🚀",
+    items: [
+      { type: "INSTAGRAM_POST" as ContentType, topic: "Teaser / yakında", tone: "merak uyandırıcı" },
+      { type: "INSTAGRAM_POST" as ContentType, topic: "Lansman duyurusu", tone: "heyecanlı" },
+      { type: "REELS_IDEA" as ContentType, topic: "Ürün/hizmet tanıtım videosu", tone: "profesyonel" },
+      { type: "STORY_IDEA" as ContentType, topic: "Lansman geri sayım", tone: "enerjik" },
+      { type: "FACEBOOK_POST" as ContentType, topic: "Lansman duyurusu", tone: "resmi" },
+      { type: "LINKEDIN_POST" as ContentType, topic: "İş ortaklarına duyuru", tone: "kurumsal" },
+      { type: "HASHTAGS" as ContentType, topic: "Lansman kampanyası", tone: "" },
+      { type: "META_ADS" as ContentType, topic: "Lansman reklamı", tone: "ikna edici" },
+    ],
+  },
+  {
+    label: "Blog + SEO",
+    icon: "✍️",
+    items: [
+      { type: "BLOG_POST" as ContentType, topic: "Sektör rehberi", tone: "eğitici" },
+      { type: "BLOG_POST" as ContentType, topic: "Sık sorulan sorular", tone: "bilgilendirici" },
+      { type: "SEO_CONTENT" as ContentType, topic: "Ana sayfa SEO içeriği", tone: "profesyonel" },
+      { type: "SEO_CONTENT" as ContentType, topic: "Hizmet sayfası", tone: "ikna edici" },
+      { type: "HASHTAGS" as ContentType, topic: "Blog ve SEO", tone: "" },
+    ],
+  },
+  {
+    label: "Reklam Kampanyası",
+    icon: "📣",
+    items: [
+      { type: "GOOGLE_ADS" as ContentType, topic: "Arama reklamı", tone: "ikna edici" },
+      { type: "GOOGLE_ADS" as ContentType, topic: "Arama reklamı varyant", tone: "acil" },
+      { type: "META_ADS" as ContentType, topic: "Facebook/Instagram reklamı", tone: "dikkat çekici" },
+      { type: "META_ADS" as ContentType, topic: "Retargeting reklamı", tone: "samimi" },
+      { type: "INSTAGRAM_POST" as ContentType, topic: "Organik tanıtım", tone: "doğal" },
+    ],
+  },
 ];
 
 interface BatchItem {
@@ -41,6 +93,9 @@ export default function BatchContentPage() {
   const [results, setResults] = useState<ResultItem[] | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState<number | null>(null);
+  const [copiedAll, setCopiedAll] = useState(false);
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [editDraft, setEditDraft] = useState("");
 
   function addItem() {
     if (items.length >= 20) return;
@@ -53,6 +108,10 @@ export default function BatchContentPage() {
 
   function updateItem(i: number, key: keyof BatchItem, value: string) {
     setItems(items.map((item, idx) => (idx === i ? { ...item, [key]: value } : item)));
+  }
+
+  function applyTemplate(tpl: typeof TEMPLATES[number]) {
+    setItems(tpl.items.map((i) => ({ ...i })));
   }
 
   async function handleGenerate() {
@@ -81,6 +140,51 @@ export default function BatchContentPage() {
     setTimeout(() => setCopied(null), 2000);
   }
 
+  function copyAll() {
+    if (!results) return;
+    const text = results
+      .filter((r) => r.body)
+      .map((r) => {
+        const label = TYPE_OPTIONS.find((o) => o.value === r.type)?.label ?? r.type;
+        return `--- ${label} ---\n${r.title ? r.title + "\n\n" : ""}${r.body}`;
+      })
+      .join("\n\n\n");
+    navigator.clipboard.writeText(text);
+    setCopiedAll(true);
+    setTimeout(() => setCopiedAll(false), 2000);
+  }
+
+  function downloadCsv() {
+    if (!results) return;
+    const header = "Tür,Başlık,İçerik\n";
+    const rows = results
+      .filter((r) => r.body)
+      .map((r) => {
+        const label = TYPE_OPTIONS.find((o) => o.value === r.type)?.label ?? r.type;
+        const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
+        return `${esc(label)},${esc(r.title ?? "")},${esc(r.body ?? "")}`;
+      })
+      .join("\n");
+    const blob = new Blob(["﻿" + header + rows], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `toplu-icerik-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function startEdit(idx: number, body: string) {
+    setEditingIdx(idx);
+    setEditDraft(body);
+  }
+
+  function saveEdit(idx: number) {
+    if (!results) return;
+    setResults(results.map((r) => (r.index === idx ? { ...r, body: editDraft } : r)));
+    setEditingIdx(null);
+  }
+
   const inp = "w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2.5 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)]";
 
   return (
@@ -92,7 +196,7 @@ export default function BatchContentPage() {
         <div>
           <h1 className="text-xl font-bold">Toplu İçerik Üretimi</h1>
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            Tek seferde 20&apos;ye kadar içerik üretin
+            Tek seferde 20&apos;ye kadar içerik üretin — şablonlarla hızlı başlayın
           </p>
         </div>
       </div>
@@ -100,6 +204,26 @@ export default function BatchContentPage() {
       {error && (
         <div className="rounded-lg border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-500">{error}</div>
       )}
+
+      {/* Hazır şablonlar */}
+      <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
+        <div className="mb-3 flex items-center gap-2">
+          <Wand2 className="h-4 w-4 text-violet-500" />
+          <h2 className="font-semibold">Hazır Şablonlar</h2>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {TEMPLATES.map((tpl) => (
+            <button key={tpl.label} onClick={() => applyTemplate(tpl)}
+              className="flex items-center gap-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-3 text-left transition hover:border-[hsl(var(--primary)/0.5)] hover:bg-[hsl(var(--accent))]">
+              <span className="text-2xl">{tpl.icon}</span>
+              <div>
+                <p className="text-sm font-semibold">{tpl.label}</p>
+                <p className="text-[11px] text-[hsl(var(--muted-foreground))]">{tpl.items.length} içerik</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
 
       {/* Genel bilgiler */}
       <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
@@ -158,8 +282,21 @@ export default function BatchContentPage() {
 
       {/* Sonuçlar */}
       {results && (
-        <section className="space-y-3">
-          <h2 className="font-semibold">Sonuçlar</h2>
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold">Sonuçlar ({results.filter((r) => r.body).length}/{results.length})</h2>
+            <div className="flex items-center gap-2">
+              <button onClick={copyAll}
+                className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] px-3 py-1.5 text-xs font-medium transition hover:bg-[hsl(var(--accent))]">
+                {copiedAll ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                {copiedAll ? "Kopyalandı" : "Tümünü Kopyala"}
+              </button>
+              <button onClick={downloadCsv}
+                className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] px-3 py-1.5 text-xs font-medium transition hover:bg-[hsl(var(--accent))]">
+                <Download className="h-3.5 w-3.5" /> CSV İndir
+              </button>
+            </div>
+          </div>
           {results.map((r) => (
             <div key={r.index} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
               <div className="mb-2 flex items-center justify-between">
@@ -167,17 +304,29 @@ export default function BatchContentPage() {
                   {TYPE_OPTIONS.find((o) => o.value === r.type)?.label ?? r.type}
                 </span>
                 {r.body && (
-                  <button onClick={() => copyContent(r.index, r)}
-                    className="flex items-center gap-1 text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">
-                    {copied === r.index ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                    {copied === r.index ? "Kopyalandı" : "Kopyala"}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => editingIdx === r.index ? saveEdit(r.index) : startEdit(r.index, r.body!)}
+                      className="flex items-center gap-1 text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">
+                      {editingIdx === r.index ? <Save className="h-3.5 w-3.5 text-emerald-500" /> : <Edit3 className="h-3.5 w-3.5" />}
+                      {editingIdx === r.index ? "Kaydet" : "Düzenle"}
+                    </button>
+                    <button onClick={() => copyContent(r.index, r)}
+                      className="flex items-center gap-1 text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">
+                      {copied === r.index ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                      {copied === r.index ? "Kopyalandı" : "Kopyala"}
+                    </button>
+                  </div>
                 )}
               </div>
               {r.body ? (
                 <>
                   {r.title && <p className="mb-1 text-sm font-semibold text-[hsl(var(--foreground))]">{r.title}</p>}
-                  <p className="whitespace-pre-wrap text-sm text-[hsl(var(--foreground))]">{r.body}</p>
+                  {editingIdx === r.index ? (
+                    <textarea className={inp + " h-32 resize-y font-mono text-xs"} value={editDraft}
+                      onChange={(e) => setEditDraft(e.target.value)} />
+                  ) : (
+                    <p className="whitespace-pre-wrap text-sm text-[hsl(var(--foreground))]">{r.body}</p>
+                  )}
                 </>
               ) : (
                 <p className="text-sm text-red-400">{r.error}</p>
