@@ -85,63 +85,12 @@ export default function FaturalarPage() {
   const allCount = Object.values(stats ?? {}).reduce((a, s) => a + s.count, 0);
 
   function downloadInvoicePdf(inv: Invoice) {
-    const sc = STATUS_CONFIG[inv.status];
-    const html = `<!DOCTYPE html>
-<html lang="tr">
-<head><meta charset="UTF-8"><title>Fatura ${inv.id.slice(-8).toUpperCase()}</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1a1a2e;padding:48px;max-width:800px;margin:0 auto}
-.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #6366f1;padding-bottom:24px;margin-bottom:32px}
-.brand{font-size:28px;font-weight:800;color:#6366f1}
-.brand small{display:block;font-size:12px;font-weight:400;color:#888;margin-top:2px}
-.inv-no{text-align:right}
-.inv-no .no{font-size:20px;font-weight:700}
-.inv-no .date{font-size:13px;color:#888;margin-top:4px}
-table{width:100%;border-collapse:collapse;margin:24px 0}
-th{text-align:left;font-size:12px;text-transform:uppercase;color:#888;padding:10px 12px;border-bottom:2px solid #e5e7eb}
-td{padding:14px 12px;border-bottom:1px solid #f0f0f0;font-size:14px}
-.total-row{display:flex;justify-content:flex-end;margin-top:16px}
-.total-box{background:#f8f8fc;border-radius:12px;padding:20px 32px;text-align:right}
-.total-box .label{font-size:12px;color:#888}
-.total-box .amount{font-size:30px;font-weight:900;color:#6366f1}
-.status{display:inline-block;padding:4px 14px;border-radius:99px;font-size:12px;font-weight:700}
-.status.paid{background:#dcfce7;color:#16a34a}
-.status.pending{background:#fef9c3;color:#ca8a04}
-.status.failed{background:#fee2e2;color:#dc2626}
-.status.refunded{background:#dbeafe;color:#2563eb}
-.footer{margin-top:48px;padding-top:20px;border-top:1px solid #e5e7eb;font-size:11px;color:#999;text-align:center}
-@media print{body{padding:24px}}
-</style></head>
-<body>
-<div class="header">
-  <div class="brand">Novelya<small>novelya.com.tr</small></div>
-  <div class="inv-no">
-    <div class="no">Fatura #${inv.id.slice(-8).toUpperCase()}</div>
-    <div class="date">${formatDate(inv.createdAt)}</div>
-  </div>
-</div>
-<table>
-  <thead><tr><th>Açıklama</th><th>Marka</th><th>Ödeme Yöntemi</th><th>Durum</th><th style="text-align:right">Tutar</th></tr></thead>
-  <tbody><tr>
-    <td><strong>${inv.planName}</strong> aboneliği</td>
-    <td>${inv.brandName}</td>
-    <td>${PROVIDER_LABELS[inv.provider] ?? inv.provider}${inv.providerRef ? `<br><span style="font-size:11px;color:#999">Ref: ${inv.providerRef}</span>` : ""}</td>
-    <td><span class="status ${inv.status.toLowerCase()}">${sc?.label ?? inv.status}</span></td>
-    <td style="text-align:right;font-weight:700">${fmt(inv.amountCents, inv.currency)}</td>
-  </tr></tbody>
-</table>
-<div class="total-row"><div class="total-box">
-  <div class="label">TOPLAM</div>
-  <div class="amount">${fmt(inv.amountCents, inv.currency)}</div>
-  ${inv.paidAt ? `<div class="label" style="margin-top:6px">Ödeme: ${formatDateTime(inv.paidAt)}</div>` : ""}
-</div></div>
-<div class="footer">Bu belge Novelya platformu tarafından oluşturulmuştur. Resmi e-fatura yerine geçmez.</div>
-<script>window.onload=function(){setTimeout(function(){window.print()},400)}</script>
-</body></html>`;
-
-    const w = window.open("", "_blank");
-    if (w) { w.document.write(html); w.document.close(); }
+    const a = document.createElement("a");
+    a.href = `/api/invoices/${inv.id}/pdf`;
+    a.download = `fatura-${inv.id.slice(-8).toUpperCase()}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 
   function exportCSV() {
