@@ -4,7 +4,7 @@ import { useBrand } from "@/components/dashboard/brand-provider";
 import {
   Plus, Trash2, Save, Edit2, ChevronDown, ChevronUp,
   Globe, QrCode, Copy, Check, Loader2, Eye, EyeOff,
-  UtensilsCrossed, Star, X,
+  UtensilsCrossed, Star, X, Sparkles, ImageIcon,
 } from "lucide-react";
 import QRCode from "qrcode";
 
@@ -46,7 +46,8 @@ export default function MenuPage() {
 
   // Ürün formu
   const [editingItem, setEditingItem] = useState<{ categoryId: string; item?: MenuItem } | null>(null);
-  const [itemForm, setItemForm] = useState({ name: "", description: "", price: "", isPopular: false, allergens: [] as string[] });
+  const [itemForm, setItemForm] = useState({ name: "", description: "", price: "", imageUrl: "", isAvailable: true, isPopular: false, allergens: [] as string[] });
+  const [aiDescLoading, setAiDescLoading] = useState(false);
 
   // Açık kategoriler
   const [openCats, setOpenCats] = useState<Set<string>>(new Set());
@@ -106,6 +107,8 @@ export default function MenuPage() {
       name: itemForm.name.trim(),
       description: itemForm.description || null,
       price: itemForm.price ? parseFloat(itemForm.price) : null,
+      imageUrl: itemForm.imageUrl.trim() || null,
+      isAvailable: itemForm.isAvailable,
       isPopular: itemForm.isPopular,
       allergens: itemForm.allergens,
     };
@@ -132,7 +135,22 @@ export default function MenuPage() {
       } : prev);
     }
     setEditingItem(null);
-    setItemForm({ name: "", description: "", price: "", isPopular: false, allergens: [] });
+    setItemForm({ name: "", description: "", price: "", imageUrl: "", isAvailable: true, isPopular: false, allergens: [] });
+  }
+
+  async function generateAiDescription() {
+    if (!itemForm.name.trim() || !editingItem) return;
+    setAiDescLoading(true);
+    try {
+      const catName = menu?.categories.find(c => c.id === editingItem.categoryId)?.name;
+      const res = await fetch(`/api/menu/${brandId}/ai-description`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: itemForm.name.trim(), category: catName }),
+      });
+      const d = await res.json();
+      if (d.description) setItemForm(f => ({ ...f, description: d.description }));
+    } catch { /* sessiz */ }
+    setAiDescLoading(false);
   }
 
   async function deleteItem(categoryId: string, itemId: string) {
@@ -150,6 +168,8 @@ export default function MenuPage() {
       name: item?.name ?? "",
       description: item?.description ?? "",
       price: item?.price?.toString() ?? "",
+      imageUrl: item?.imageUrl ?? "",
+      isAvailable: item?.isAvailable ?? true,
       isPopular: item?.isPopular ?? false,
       allergens: item?.allergens ?? [],
     });
@@ -318,6 +338,15 @@ export default function MenuPage() {
                   <div>
                     {cat.items.map(item => (
                       <div key={item.id} className="flex items-center gap-3 px-5 py-3 border-b border-[hsl(var(--border)/0.5)] last:border-0">
+                        {item.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={item.imageUrl} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover border border-[hsl(var(--border))]"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                        ) : (
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[hsl(var(--muted)/0.5)]">
+                            <ImageIcon className="h-4 w-4 text-[hsl(var(--muted-foreground)/0.4)]" />
+                          </div>
+                        )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-semibold">{item.name}</p>
@@ -377,10 +406,28 @@ export default function MenuPage() {
                 <input className={inp} value={itemForm.name} onChange={e => setItemForm(f => ({ ...f, name: e.target.value }))} placeholder="örn: Margherita Pizza" autoFocus />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Açıklama</label>
+                <div className="mb-1 flex items-center justify-between">
+                  <label className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Açıklama</label>
+                  <button type="button" onClick={generateAiDescription} disabled={aiDescLoading || !itemForm.name.trim()}
+                    className="flex items-center gap-1 text-xs font-medium text-[hsl(var(--primary))] transition hover:opacity-80 disabled:opacity-40">
+                    {aiDescLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                    AI ile yaz
+                  </button>
+                </div>
                 <textarea className={`${inp} resize-none`} rows={2} value={itemForm.description}
                   onChange={e => setItemForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="İçerikler, pişirme yöntemi..." />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Görsel URL (opsiyonel)</label>
+                <input className={inp} type="url" value={itemForm.imageUrl}
+                  onChange={e => setItemForm(f => ({ ...f, imageUrl: e.target.value }))}
+                  placeholder="https://... ürün fotoğrafı linki" />
+                {itemForm.imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={itemForm.imageUrl} alt="" className="mt-2 h-20 w-20 rounded-xl object-cover border border-[hsl(var(--border))]"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                )}
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Fiyat ({menu?.currency ?? "₺"})</label>
@@ -407,6 +454,14 @@ export default function MenuPage() {
                   <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${itemForm.isPopular ? "left-4" : "left-0.5"}`} />
                 </div>
                 <span className="text-sm">Popüler ürün olarak işaretle</span>
+              </label>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <div className={`relative h-5 w-9 rounded-full transition ${itemForm.isAvailable ? "bg-green-500" : "bg-[hsl(var(--muted))]"}`}
+                  onClick={() => setItemForm(f => ({ ...f, isAvailable: !f.isAvailable }))}>
+                  <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${itemForm.isAvailable ? "left-4" : "left-0.5"}`} />
+                </div>
+                <span className="text-sm">{itemForm.isAvailable ? "Stokta / mevcut" : "Mevcut değil (menüde soluk görünür)"}</span>
               </label>
             </div>
 

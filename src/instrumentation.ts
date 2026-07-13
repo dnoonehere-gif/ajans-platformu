@@ -13,6 +13,7 @@ async function startCronScheduler() {
     { path: "/api/cron/subscription-check", method: "GET" },
     { path: "/api/cron/trial-check", method: "POST" },
     { path: "/api/cron/google-sync", method: "POST" },
+    { path: "/api/cron/weekly-digest", method: "POST" },
   ];
 
   const runChecks = async () => {
