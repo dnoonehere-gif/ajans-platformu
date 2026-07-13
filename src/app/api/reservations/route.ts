@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { sendCustomEmail } from "@/lib/email";
+import { sendSMS } from "@/lib/sms";
 
 const createSchema = z.object({
   brandId: z.string(),
@@ -97,6 +99,23 @@ export async function PATCH(req: NextRequest) {
       where: { id },
       data: { ...data, ...(date ? { date: new Date(date) } : {}) },
     });
+
+    // Onay/iptal bildirimi — müşteriye e-posta + SMS (arka planda, hata yut)
+    if (data.status && data.status !== reservation.status && (data.status === "CONFIRMED" || data.status === "CANCELLED")) {
+      const brandName = reservation.brand.name;
+      const dateStr = updated.date.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" });
+      const confirmed = data.status === "CONFIRMED";
+      const subject = confirmed
+        ? `Rezervasyonunuz onaylandı — ${brandName}`
+        : `Rezervasyonunuz iptal edildi — ${brandName}`;
+      const text = confirmed
+        ? `Sayın ${updated.name}, ${brandName} için ${dateStr} ${updated.time} tarihli ${updated.partySize} kişilik rezervasyonunuz onaylanmıştır. Sizi ağırlamayı sabırsızlıkla bekliyoruz!`
+        : `Sayın ${updated.name}, ${brandName} için ${dateStr} ${updated.time} tarihli rezervasyonunuz maalesef iptal edilmiştir. Yeni bir rezervasyon için bizimle iletişime geçebilirsiniz.`;
+
+      if (updated.email) sendCustomEmail(updated.email, subject, text).catch(() => null);
+      if (updated.phone) sendSMS(updated.phone, `${brandName}: ${confirmed ? "Rezervasyonunuz ONAYLANDI" : "Rezervasyonunuz IPTAL edildi"} — ${dateStr} ${updated.time}, ${updated.partySize} kisi.`).catch(() => null);
+    }
+
     return NextResponse.json({ reservation: updated });
   } catch (e) {
     console.error("Reservations PATCH error:", e);

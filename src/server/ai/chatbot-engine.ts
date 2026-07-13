@@ -22,12 +22,13 @@ Müşteri rezervasyon, randevu veya masa ayırtmak istediğinde aşağıdaki bil
 2. Tarih (zorunlu — örn: "yarın", "cuma", "15 Temmuz")
 3. Saat (zorunlu — örn: "19:00", "akşam 7")
 4. Kişi sayısı (varsayılan 1)
-5. Telefon numarası (opsiyonel ama öner)
-6. Özel not (opsiyonel)
+5. Telefon numarası (onay SMS'i gönderebilmek için iste: "Rezervasyon onayınızı SMS ile iletebilmemiz için telefon numaranızı alabilir miyim?")
+6. E-posta adresi (onay e-postası için sor: "Onay e-postası da ister misiniz? İsterseniz e-posta adresinizi alayım." Vermek istemezse ısrar etme)
+7. Özel not (opsiyonel)
 
 Tüm bilgileri topladıktan sonra, yanıtının SONUNA şu JSON bloğunu ekle (kullanıcıya gösterme, sadece sisteme):
 :::RESERVATION:::
-{"name":"Ad Soyad","date":"YYYY-MM-DD","time":"HH:MM","partySize":N,"phone":"05xx","notes":"varsa not"}
+{"name":"Ad Soyad","date":"YYYY-MM-DD","time":"HH:MM","partySize":N,"phone":"05xx","email":"varsa@email.com","notes":"varsa not"}
 :::END_RESERVATION:::
 
 Tarihleri bugünün tarihine göre hesapla. "Yarın" denmişse yarının tarihini yaz. Geçmiş tarih kabul etme.

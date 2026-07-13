@@ -105,6 +105,32 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ bra
               body: `${resData.date} ${resData.time} — ${resData.partySize || 1} kişi`,
               data: { reservationId: newRes.id, source: "chatbot" },
             }).catch(() => {});
+
+            // CRM'e lead olarak ekle (telefon veya e-posta varsa, tekrar yoksa)
+            if (resData.phone || resData.email) {
+              const existingLead = await prisma.crmLead.findFirst({
+                where: {
+                  brandId,
+                  OR: [
+                    ...(resData.phone ? [{ phone: resData.phone }] : []),
+                    ...(resData.email ? [{ email: resData.email }] : []),
+                  ],
+                },
+              });
+              if (!existingLead) {
+                await prisma.crmLead.create({
+                  data: {
+                    brandId,
+                    name: resData.name,
+                    phone: resData.phone || null,
+                    email: resData.email || null,
+                    source: "chatbot-rezervasyon",
+                    stage: "NEW",
+                    notes: `Chatbot rezervasyonundan otomatik eklendi (${resData.date} ${resData.time}, ${resData.partySize || 1} kişi)`,
+                  },
+                }).catch(() => null);
+              }
+            }
           }
         } catch { /* invalid JSON — skip */ }
       }
