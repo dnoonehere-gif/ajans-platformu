@@ -17,6 +17,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ skipped: true, reason: "Pazartesi değil" });
   }
 
+  // Aynı gün ikinci kez gönderme (her deploy/restart scheduler'ı yeniden tetikliyor)
+  const todayKey = today.toISOString().split("T")[0];
+  if (!force) {
+    const lastSent = await prisma.systemSetting.findUnique({ where: { key: "weekly_digest_last_sent" } });
+    if (lastSent?.value === todayKey) {
+      return NextResponse.json({ skipped: true, reason: "Bugün zaten gönderildi" });
+    }
+  }
+  await prisma.systemSetting.upsert({
+    where: { key: "weekly_digest_last_sent" },
+    create: { key: "weekly_digest_last_sent", value: todayKey },
+    update: { value: todayKey },
+  });
+
   const weekAgo = new Date(today);
   weekAgo.setDate(today.getDate() - 7);
 
