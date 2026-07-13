@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { sendBulkEmail } from "@/lib/email";
+import { sendNotification } from "@/server/notifications/send";
 
 export async function POST(req: NextRequest) {
   try {
@@ -48,6 +49,15 @@ export async function POST(req: NextRequest) {
         where: { id: campaignId },
         data: { status: "SENT", sentCount: emails.length, sentAt: new Date() },
       });
+      sendNotification({
+        userId,
+        brandId: campaign.brandId,
+        type: "email_campaign_sent",
+        title: `Kampanya gönderildi: ${campaign.subject}`,
+        body: `${emails.length} kişiye başarıyla gönderildi`,
+        data: { campaignId: campaign.id, sentCount: emails.length },
+      }).catch(() => {});
+
       return NextResponse.json({ success: true, sentCount: emails.length });
     } catch (sendErr) {
       console.error("Email send error:", sendErr);

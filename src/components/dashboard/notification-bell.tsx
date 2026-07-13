@@ -38,6 +38,12 @@ const TYPE_BG: Record<string, string> = {
   subscription_expiring: "bg-orange-500/10",
   team_invite: "bg-blue-500/10",
   chatbot_limit: "bg-cyan-500/10",
+  crm_lead_new: "bg-indigo-500/10",
+  crm_lead_won: "bg-emerald-500/10",
+  reservation_new: "bg-sky-500/10",
+  reservation_confirmed: "bg-green-500/10",
+  email_campaign_sent: "bg-amber-500/10",
+  social_post_published: "bg-pink-500/10",
   system: "bg-[hsl(var(--muted))]",
 };
 

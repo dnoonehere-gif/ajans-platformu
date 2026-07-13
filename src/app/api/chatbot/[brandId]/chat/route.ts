@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { streamChatResponse } from "@/server/ai/chatbot-engine";
 import { z } from "zod";
+import { notifyBrandOwner } from "@/server/notifications/send";
 
 const schema = z.object({
   message: z.string().min(1).max(1000),
@@ -84,7 +85,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ bra
         try {
           const resData = JSON.parse(resMatch[1]);
           if (resData.name && resData.date && resData.time) {
-            await prisma.reservation.create({
+            const newRes = await prisma.reservation.create({
               data: {
                 brandId,
                 name: resData.name,
@@ -98,6 +99,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ bra
                 conversationId: conversation!.id,
               },
             });
+            notifyBrandOwner(brandId, {
+              type: "reservation_new",
+              title: `Chatbot rezervasyonu: ${resData.name}`,
+              body: `${resData.date} ${resData.time} — ${resData.partySize || 1} kişi`,
+              data: { reservationId: newRes.id, source: "chatbot" },
+            }).catch(() => {});
           }
         } catch { /* invalid JSON — skip */ }
       }

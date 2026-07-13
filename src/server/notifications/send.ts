@@ -9,6 +9,12 @@ export type NotificationType =
   | "subscription_expiring"
   | "team_invite"
   | "chatbot_limit"
+  | "crm_lead_new"
+  | "crm_lead_won"
+  | "reservation_new"
+  | "reservation_confirmed"
+  | "email_campaign_sent"
+  | "social_post_published"
   | "system";
 
 interface SendNotificationOptions {
@@ -29,6 +35,12 @@ const TYPE_ICONS: Record<NotificationType, string> = {
   subscription_expiring: "⏰",
   team_invite: "👥",
   chatbot_limit: "🤖",
+  crm_lead_new: "👤",
+  crm_lead_won: "🎉",
+  reservation_new: "📅",
+  reservation_confirmed: "✅",
+  email_campaign_sent: "📧",
+  social_post_published: "📱",
   system: "🔔",
 };
 
@@ -47,6 +59,15 @@ export async function sendNotification(opts: SendNotificationOptions) {
         : { type: opts.type, icon: TYPE_ICONS[opts.type] },
     },
   });
+}
+
+export async function notifyBrandOwner(
+  brandId: string,
+  opts: Omit<SendNotificationOptions, "userId" | "brandId">
+) {
+  const brand = await prisma.brand.findUnique({ where: { id: brandId }, select: { ownerId: true } });
+  if (!brand) return null;
+  return sendNotification({ ...opts, userId: brand.ownerId, brandId });
 }
 
 export async function sendNotificationToMany(userIds: string[], opts: Omit<SendNotificationOptions, "userId">) {

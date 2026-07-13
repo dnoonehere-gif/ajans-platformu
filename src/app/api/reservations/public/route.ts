@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { notifyBrandOwner } from "@/server/notifications/send";
 
 const schema = z.object({
   brandId: z.string(),
@@ -30,6 +31,13 @@ export async function POST(req: NextRequest) {
     const reservation = await prisma.reservation.create({
       data: { brandId, date: new Date(date), source: "chatbot", ...data },
     });
+
+    notifyBrandOwner(brandId, {
+      type: "reservation_new",
+      title: `Yeni rezervasyon: ${data.name}`,
+      body: `${new Date(date).toLocaleDateString("tr-TR")} ${data.time} — ${data.partySize} kişi`,
+      data: { reservationId: reservation.id, source: "chatbot" },
+    }).catch(() => {});
 
     return NextResponse.json({ reservation }, { status: 201 });
   } catch (e) {

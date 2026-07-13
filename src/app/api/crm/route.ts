@@ -3,6 +3,7 @@ import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { sendCustomEmail } from "@/lib/email";
+import { sendNotification } from "@/server/notifications/send";
 
 const STAGES = ["NEW", "CONTACTED", "QUALIFIED", "PROPOSAL", "WON", "LOST"] as const;
 
@@ -65,6 +66,16 @@ export async function POST(req: NextRequest) {
     if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
 
     const lead = await prisma.crmLead.create({ data: { brandId, ...data } });
+
+    sendNotification({
+      userId,
+      brandId,
+      type: "crm_lead_new",
+      title: `Yeni müşteri adayı: ${lead.name}`,
+      body: lead.company ? `${lead.company} — ${lead.source ?? "Manuel"}` : lead.source ?? "Manuel eklendi",
+      data: { leadId: lead.id },
+    }).catch(() => {});
+
     return NextResponse.json({ lead }, { status: 201 });
   } catch (e) {
     console.error("CRM POST error:", e);
@@ -94,6 +105,17 @@ export async function PATCH(req: NextRequest) {
     };
 
     if (data.stage && data.stage !== lead.stage) {
+      sendNotification({
+        userId,
+        brandId: lead.brandId,
+        type: data.stage === "WON" ? "crm_lead_won" : "crm_lead_new",
+        title: data.stage === "WON"
+          ? `🎉 ${lead.name} kazanıldı!`
+          : `${lead.name} → ${STAGE_LABELS[data.stage]}`,
+        body: lead.value ? `Tahmini değer: ${lead.value.toLocaleString("tr-TR")}₺` : undefined,
+        data: { leadId: lead.id, fromStage: lead.stage, toStage: data.stage },
+      }).catch(() => {});
+
       const owner = await prisma.user.findUnique({ where: { id: lead.brand.ownerId }, select: { email: true } });
       if (owner?.email && (data.stage === "WON" || data.stage === "LOST")) {
         const emoji = data.stage === "WON" ? "🎉" : "⚠️";
