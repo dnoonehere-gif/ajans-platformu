@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Globe, Bot, Star, Sparkles, QrCode,
   Users, Settings, Shield, ChevronRight, Building2, MapPin, CreditCard,
   UtensilsCrossed, Lock, Crown, Layers, FileBarChart, Send,
-  Search, Mail, UserPlus,
+  Search, Mail, UserPlus, Receipt,
 } from "lucide-react";
 import { useBrand } from "./brand-provider";
 
@@ -81,6 +81,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/dashboard/subeler", label: "Şubeler", icon: Building2 },
       { href: "/dashboard/team", label: "Takım", icon: Users },
       { href: "/dashboard/abonelik", label: "Abonelik", icon: CreditCard },
+      { href: "/dashboard/faturalar", label: "Faturalar", icon: Receipt },
       { href: "/dashboard/ayarlar", label: "Ayarlar", icon: Settings },
     ],
   },

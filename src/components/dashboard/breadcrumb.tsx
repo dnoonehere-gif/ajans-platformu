@@ -21,6 +21,7 @@ const PAGE_LABELS: Record<string, string> = {
   "/dashboard/raporlar": "Müşteri Raporları",
   "/dashboard/white-label": "White-Label",
   "/dashboard/abonelik": "Abonelik",
+  "/dashboard/faturalar": "Faturalar",
   "/dashboard/ayarlar": "Ayarlar",
   "/dashboard/marka-olustur": "Marka Oluştur",
 };
