@@ -31,10 +31,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           zoom={2}
           backgroundGlow={1}
           opacity={1}
-          mouseInteraction={true}
-          mouseStrength={1}
-          mouseRadius={0.6}
-          dpr={1}
+          mouseInteraction={false}
+          dpr={0.75}
         />
       </div>
 
