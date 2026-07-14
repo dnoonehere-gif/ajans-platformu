@@ -273,6 +273,8 @@ export default function Lightfall({
       const rect = container.getBoundingClientRect();
       renderer.setSize(rect.width, rect.height);
       uniforms.iResolution.value = [gl.drawingBufferWidth, gl.drawingBufferHeight, 1];
+      // paused modda boyut değişince kareyi yeniden çiz
+      if (paused) requestAnimationFrame(loop);
     };
 
     resize();
@@ -290,8 +292,9 @@ export default function Lightfall({
     // Kart üzerindeyken de ışık imleci takip etsin diye window'u dinle
     if (mouseInteraction) window.addEventListener("pointermove", onPointerMove);
 
-    const loop = (t: number) => {
-      rafRef.current = requestAnimationFrame(loop);
+    function loop(t: number) {
+      // paused: ilk kareyi çiz, döngüyü sürdürme (statik arka plan — sıfır GPU yükü)
+      if (!paused) rafRef.current = requestAnimationFrame(loop);
       uniforms.iTime.value = t * 0.001;
       if (mouseDampening > 0) {
         if (!lastTimeRef.current) lastTimeRef.current = t;
@@ -307,12 +310,10 @@ export default function Lightfall({
       } else {
         lastTimeRef.current = t;
       }
-      if (!paused) {
-        try {
-          renderer.render({ scene: mesh });
-        } catch (e) {
-          console.error(e);
-        }
+      try {
+        renderer.render({ scene: mesh });
+      } catch (e) {
+        console.error(e);
       }
     };
     rafRef.current = requestAnimationFrame(loop);
