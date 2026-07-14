@@ -223,7 +223,7 @@ export default function Lightfall({
     const renderer = new Renderer({
       dpr: dpr ?? (typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1),
       alpha: true,
-      antialias: true,
+      antialias: false,
     });
     const gl = renderer.gl;
     const canvas = gl.canvas as HTMLCanvasElement;

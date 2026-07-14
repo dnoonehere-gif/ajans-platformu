@@ -22,11 +22,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           colors={["#a78bfa", "#7c3aed", "#e879f9"]}
           backgroundColor="#6d28d9"
           speed={1}
-          streakCount={8}
+          streakCount={4}
           streakWidth={1}
           streakLength={1}
           glow={1}
-          density={1}
+          density={0.8}
           twinkle={1}
           zoom={2}
           backgroundGlow={1}
@@ -34,6 +34,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           mouseInteraction={true}
           mouseStrength={1}
           mouseRadius={0.6}
+          dpr={1}
         />
       </div>
 
