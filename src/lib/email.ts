@@ -196,7 +196,7 @@ export async function sendCustomEmail(to: string, subject: string, content: stri
 export async function sendContactEmail(opts: {
   name: string; email: string; subject: string; message: string;
 }) {
-  const to = process.env.CONTACT_EMAIL ?? "dnoonehere@gmail.com";
+  const to = process.env.CONTACT_EMAIL ?? "novelya@novelya.com.tr";
   await sendMail(to, `İletişim formu: ${opts.subject}`, layout({
     preheader: `${opts.name} bir mesaj gönderdi.`,
     body: `
