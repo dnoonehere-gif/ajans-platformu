@@ -6,6 +6,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
+const lineInput =
+  "w-full border-0 border-b-2 border-gray-200 bg-transparent px-0 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-violet-600 placeholder:text-gray-400";
+
 function GirisForm() {
   const router = useRouter();
   const params = useSearchParams();
@@ -23,11 +26,7 @@ function GirisForm() {
     setLoading(true);
     setError("");
 
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    const res = await signIn("credentials", { email, password, redirect: false });
 
     if (res?.error) {
       setError("E-posta veya şifre hatalı");
@@ -40,31 +39,28 @@ function GirisForm() {
   }
 
   return (
-    <div className="glass rounded-3xl p-8">
-      <h1 className="mb-1 text-2xl font-bold">Giriş Yap</h1>
-      <p className="mb-6 text-sm text-[hsl(var(--muted-foreground))]">
-        Hesabınıza erişin
-      </p>
+    <div className="rounded-2xl bg-white p-8 shadow-2xl shadow-black/20">
+      <h1 className="mb-6 text-xl font-bold text-gray-900">Giriş Yap</h1>
 
       {basarili === "dogrulandi" && (
-        <div className="mb-4 rounded-xl bg-green-500/10 px-4 py-3 text-sm text-green-400">
+        <div className="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
           E-posta adresiniz doğrulandı. Giriş yapabilirsiniz.
         </div>
       )}
       {basarili === "sifre-sifirlandi" && (
-        <div className="mb-4 rounded-xl bg-green-500/10 px-4 py-3 text-sm text-green-400">
+        <div className="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
           Şifreniz başarıyla güncellendi.
         </div>
       )}
       {hata === "suresi-doldu" && (
-        <div className="mb-4 rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-400">
+        <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
           Doğrulama linkinin süresi dolmuş. Lütfen tekrar kayıt olun.
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">E-posta</label>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="mb-1 block text-xs font-medium text-gray-500">E-posta</label>
           <input
             type="email"
             required
@@ -72,20 +68,12 @@ function GirisForm() {
             placeholder="ornek@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="flex h-11 w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)]"
+            className={lineInput}
           />
         </div>
 
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">Şifre</label>
-            <Link
-              href="/sifremi-unuttum"
-              className="text-xs text-[hsl(var(--primary))] hover:underline"
-            >
-              Şifremi unuttum
-            </Link>
-          </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-gray-500">Şifre</label>
           <div className="relative">
             <input
               type={show ? "text" : "password"}
@@ -94,12 +82,12 @@ function GirisForm() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="flex h-11 w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 pr-11 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)]"
+              className={`${lineInput} pr-9`}
             />
             <button
               type="button"
               onClick={() => setShow((s) => !s)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+              className="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -107,32 +95,39 @@ function GirisForm() {
         </div>
 
         {error && (
-          <p className="rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-red-400">{error}</p>
+          <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-600">{error}</p>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[hsl(var(--primary))] text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-violet-600 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-violet-700 disabled:opacity-50"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           Giriş Yap
         </button>
+
+        <Link
+          href="/sifremi-unuttum"
+          className="block text-center text-sm font-medium text-violet-600 hover:underline"
+        >
+          Şifrenizi mi unuttunuz?
+        </Link>
       </form>
 
-      <p className="mt-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+      <div className="mt-6 border-t border-gray-100 pt-5 text-center text-sm text-gray-500">
         Hesabınız yok mu?{" "}
-        <Link href="/kayit" className="font-semibold text-[hsl(var(--primary))] hover:underline">
+        <Link href="/kayit" className="font-semibold text-violet-600 hover:underline">
           Kayıt Ol
         </Link>
-      </p>
+      </div>
     </div>
   );
 }
 
 export default function GirisPage() {
   return (
-    <Suspense fallback={<div className="glass rounded-3xl p-8 h-96 animate-pulse" />}>
+    <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl bg-white/20" />}>
       <GirisForm />
     </Suspense>
   );

@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { MotionProvider } from "@/components/motion-provider";
 import { PostHogProvider } from "@/components/posthog-provider";
 import { SessionProvider } from "next-auth/react";
+import { CookieBanner } from "@/components/cookie-banner";
 
 export const metadata: Metadata = {
   title: "Novelya — Yapay Zekâ Destekli Dijital Ajans",
@@ -25,7 +26,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <SessionProvider>
             <PostHogProvider>
-              <MotionProvider>{children}</MotionProvider>
+              <MotionProvider>
+                {children}
+                <CookieBanner />
+              </MotionProvider>
             </PostHogProvider>
           </SessionProvider>
         </ThemeProvider>

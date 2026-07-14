@@ -1,16 +1,31 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, CheckCircle2, RefreshCw, ShieldCheck } from "lucide-react";
+
+const lineInput =
+  "w-full border-0 border-b-2 border-gray-200 bg-transparent px-0 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-violet-600 placeholder:text-gray-400";
 
 export default function KayitPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({ name: "", phone: "", email: "", password: "" });
+  const [captcha, setCaptcha] = useState<{ question: string; token: string } | null>(null);
+  const [captchaAnswer, setCaptchaAnswer] = useState("");
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+
+  const loadCaptcha = useCallback(async () => {
+    setCaptchaAnswer("");
+    try {
+      const res = await fetch("/api/auth/captcha");
+      setCaptcha(await res.json());
+    } catch { /* sessiz */ }
+  }, []);
+
+  useEffect(() => { loadCaptcha(); }, [loadCaptcha]);
 
   const strength = (() => {
     const p = form.password;
@@ -22,25 +37,26 @@ export default function KayitPage() {
     if (/[^A-Za-z0-9]/.test(p)) s++;
     return s;
   })();
-
-  const strengthColor = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-500"][strength - 1] ?? "bg-[hsl(var(--border))]";
+  const strengthColor = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-500"][strength - 1] ?? "bg-gray-200";
   const strengthLabel = ["Çok zayıf", "Zayıf", "Orta", "Güçlü"][strength - 1] ?? "";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!captcha) return;
     setLoading(true);
     setError("");
 
     const res = await fetch("/api/auth/kayit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, captchaAnswer, captchaToken: captcha.token }),
     });
     const data = await res.json();
 
     if (!res.ok) {
       setError(data.error ?? "Bir hata oluştu");
       setLoading(false);
+      loadCaptcha(); // token tek kullanımlık gibi davran, yenile
       return;
     }
 
@@ -50,15 +66,15 @@ export default function KayitPage() {
 
   if (done) {
     return (
-      <div className="glass rounded-3xl p-8 text-center">
-        <CheckCircle2 className="mx-auto mb-4 h-14 w-14 text-green-400" />
-        <h2 className="mb-2 text-xl font-bold">Hesabınız oluşturuldu!</h2>
-        <p className="mb-6 text-sm text-[hsl(var(--muted-foreground))]">
+      <div className="rounded-2xl bg-white p-8 text-center shadow-2xl shadow-black/20">
+        <CheckCircle2 className="mx-auto mb-4 h-14 w-14 text-green-500" />
+        <h2 className="mb-2 text-xl font-bold text-gray-900">Hesabınız oluşturuldu!</h2>
+        <p className="mb-6 text-sm text-gray-500">
           <strong>{form.email}</strong> adresine doğrulama maili gönderdik. Lütfen gelen kutunuzu kontrol edin.
         </p>
         <button
           onClick={() => router.push("/giris")}
-          className="h-11 w-full rounded-xl bg-[hsl(var(--primary))] text-sm font-semibold text-white transition hover:opacity-90"
+          className="h-11 w-full rounded-lg bg-violet-600 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-violet-700"
         >
           Giriş Sayfasına Git
         </button>
@@ -67,39 +83,48 @@ export default function KayitPage() {
   }
 
   return (
-    <div className="glass rounded-3xl p-8">
-      <h1 className="mb-1 text-2xl font-bold">Kayıt Ol</h1>
-      <p className="mb-6 text-sm text-[hsl(var(--muted-foreground))]">
-        Ücretsiz hesap oluşturun
-      </p>
+    <div className="rounded-2xl bg-white p-8 shadow-2xl shadow-black/20">
+      <h1 className="mb-6 text-xl font-bold text-gray-900">Kayıt Ol</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Ad Soyad</label>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className="mb-1 block text-xs font-medium text-gray-500">Ad Soyad</label>
           <input
             type="text"
             required
             placeholder="Adınız Soyadınız"
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            className="flex h-11 w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)]"
+            className={lineInput}
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">E-posta</label>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-gray-500">Telefon</label>
+          <input
+            type="tel"
+            required
+            placeholder="05xx xxx xx xx"
+            value={form.phone}
+            onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+            className={lineInput}
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-medium text-gray-500">E-posta</label>
           <input
             type="email"
             required
             placeholder="ornek@email.com"
             value={form.email}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-            className="flex h-11 w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)]"
+            className={lineInput}
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Şifre</label>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-gray-500">Şifre</label>
           <div className="relative">
             <input
               type={show ? "text" : "password"}
@@ -108,60 +133,73 @@ export default function KayitPage() {
               placeholder="En az 8 karakter"
               value={form.password}
               onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-              className="flex h-11 w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 pr-11 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)]"
+              className={`${lineInput} pr-9`}
             />
             <button
               type="button"
               onClick={() => setShow((s) => !s)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+              className="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          {/* Şifre gücü */}
           {form.password.length > 0 && (
-            <div className="space-y-1">
+            <div className="mt-2 space-y-1">
               <div className="flex gap-1">
                 {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className={`h-1.5 flex-1 rounded-full transition-all ${i <= strength ? strengthColor : "bg-[hsl(var(--border))]"}`}
-                  />
+                  <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i <= strength ? strengthColor : "bg-gray-200"}`} />
                 ))}
               </div>
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">{strengthLabel}</p>
+              <p className="text-xs text-gray-400">{strengthLabel}</p>
             </div>
           )}
         </div>
 
+        {/* Captcha */}
+        <div className="rounded-lg bg-gray-50 p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
+              <ShieldCheck className="h-3.5 w-3.5 text-violet-600" /> Güvenlik Sorusu
+            </label>
+            <button type="button" onClick={loadCaptcha} title="Yeni soru"
+              className="text-gray-400 transition hover:text-gray-600">
+              <RefreshCw className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-base font-bold text-gray-900">{captcha?.question ?? "..."}</span>
+            <input
+              type="text"
+              required
+              inputMode="numeric"
+              placeholder="Cevap"
+              value={captchaAnswer}
+              onChange={(e) => setCaptchaAnswer(e.target.value)}
+              className="w-24 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-violet-600"
+            />
+          </div>
+        </div>
+
         {error && (
-          <p className="rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-red-400">{error}</p>
+          <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-600">{error}</p>
         )}
 
         <button
           type="submit"
-          disabled={loading}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[hsl(var(--primary))] text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+          disabled={loading || !captcha}
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-violet-600 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-violet-700 disabled:opacity-50"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           Kayıt Ol
         </button>
-
-        <p className="text-center text-xs text-[hsl(var(--muted-foreground))]">
-          Kayıt olarak{" "}
-          <Link href="/kullanim-sartlari" className="underline hover:text-[hsl(var(--foreground))]">
-            Kullanım Koşulları
-          </Link>
-          'nı kabul etmiş olursunuz.
-        </p>
       </form>
 
-      <p className="mt-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
+      <div className="mt-6 border-t border-gray-100 pt-5 text-center text-sm text-gray-500">
         Zaten hesabınız var mı?{" "}
-        <Link href="/giris" className="font-semibold text-[hsl(var(--primary))] hover:underline">
+        <Link href="/giris" className="font-semibold text-violet-600 hover:underline">
           Giriş Yap
         </Link>
-      </p>
+      </div>
     </div>
   );
 }

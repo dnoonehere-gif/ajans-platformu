@@ -9,11 +9,15 @@ import { rateLimit, getRateLimitKey, LIMITS } from "@/server/security/rate-limit
 import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { UserAgreementPDF } from "@/lib/pdf/contracts";
+import { verifyCaptcha } from "@/lib/captcha";
 
 const schema = z.object({
   name: z.string().min(2, "Ad en az 2 karakter olmalı"),
   email: z.string().email("Geçerli bir e-posta girin"),
+  phone: z.string().min(10, "Geçerli bir telefon numarası girin").max(20),
   password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
+  captchaAnswer: z.string().min(1, "Güvenlik sorusunu yanıtlayın"),
+  captchaToken: z.string().min(1),
 });
 
 export async function POST(req: NextRequest) {
@@ -26,7 +30,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, email, phone, password, captchaAnswer, captchaToken } = parsed.data;
+
+  if (!verifyCaptcha(captchaAnswer.trim(), captchaToken)) {
+    return NextResponse.json({ error: "Güvenlik sorusu yanlış veya süresi doldu. Tekrar deneyin." }, { status: 400 });
+  }
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -35,7 +43,7 @@ export async function POST(req: NextRequest) {
 
   const passwordHash = await bcrypt.hash(password, 12);
   const user = await prisma.user.create({
-    data: { name, email, passwordHash, globalRole: "CUSTOMER" },
+    data: { name, email, phone, passwordHash, globalRole: "CUSTOMER" },
   });
 
   // E-posta doğrulama token'ı oluştur

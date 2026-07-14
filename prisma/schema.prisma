@@ -150,6 +150,7 @@ model User {
   email         String     @unique
   passwordHash  String?    // Şifre (kredensiyel ile giriş için)
   name          String?
+  phone         String?
   avatarUrl     String?
   globalRole    GlobalRole @default(CUSTOMER)
   emailVerified DateTime?
