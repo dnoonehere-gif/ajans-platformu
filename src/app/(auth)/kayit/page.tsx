@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Eye, EyeOff, Loader2, CheckCircle2, RefreshCw, ShieldCheck } from "lucide-react";
 
 const lineInput =
-  "w-full border-0 border-b border-gray-300 bg-transparent px-0 py-2.5 text-[15px] text-gray-900 outline-none transition-colors focus:border-b-2 focus:border-violet-600 placeholder:text-gray-400";
+  "w-full border-0 border-b border-gray-300 bg-transparent px-0 py-2.5 text-[15px] text-gray-900 outline-none transition-colors hover:border-violet-500 focus:border-b-2 focus:border-violet-600 placeholder:text-gray-400 hover:placeholder:text-violet-400";
 
 export default function KayitPage() {
   const router = useRouter();

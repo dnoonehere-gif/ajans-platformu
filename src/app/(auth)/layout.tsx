@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LogoMark } from "@/components/logo";
 import { Sparkles, Bot, Star, Globe, TrendingUp } from "lucide-react";
+import Lightfall from "@/components/reactbits/lightfall";
 
 export const metadata: Metadata = { title: "Giriş — Novelya" };
 
@@ -14,12 +15,30 @@ const FEATURES = [
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700">
+    <div className="relative flex min-h-screen bg-[#1a0b2e]">
+      {/* Tam ekran Lightfall arka planı */}
+      <div className="absolute inset-0">
+        <Lightfall
+          colors={["#a78bfa", "#7c3aed", "#e879f9"]}
+          backgroundColor="#6d28d9"
+          speed={1}
+          streakCount={8}
+          streakWidth={1}
+          streakLength={1}
+          glow={1}
+          density={1}
+          twinkle={1}
+          zoom={2}
+          backgroundGlow={1}
+          opacity={1}
+          mouseInteraction={true}
+          mouseStrength={1}
+          mouseRadius={0.6}
+        />
+      </div>
+
       {/* Sol panel — marka */}
-      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden p-12 lg:flex">
-        {/* Dekoratif bloblar */}
-        <div className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -right-16 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/20 blur-3xl" />
+      <div className="relative z-10 hidden w-1/2 flex-col justify-between overflow-hidden p-12 lg:flex">
 
         <Link href="/" className="relative z-10 flex items-center gap-3">
           <LogoMark size={40} />
@@ -55,7 +74,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* Sağ panel — form kartı */}
-      <div className="flex w-full items-center justify-center px-4 py-10 lg:w-1/2">
+      <div className="relative z-10 flex w-full items-center justify-center px-4 py-10 lg:w-1/2">
         <div className="w-full max-w-sm">
           {/* Mobil logo */}
           <div className="mb-6 text-center lg:hidden">
