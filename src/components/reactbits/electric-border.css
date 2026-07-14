@@ -23,6 +23,13 @@
   position: relative;
   border-radius: inherit;
   z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.eb-content > * {
+  flex: 1;
 }
 
 .eb-layers {
