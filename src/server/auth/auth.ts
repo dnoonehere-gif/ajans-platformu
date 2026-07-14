@@ -18,11 +18,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       name: "Kredensiyel",
       credentials: { email: {}, password: {} },
       async authorize(credentials) {
-        const email = String(credentials?.email ?? "");
+        const identifier = String(credentials?.email ?? "").trim();
         const password = String(credentials?.password ?? "");
-        if (!email || !password) return null;
+        if (!identifier || !password) return null;
 
-        const user = await prisma.user.findUnique({ where: { email } });
+        // E-posta, telefon veya kullanıcı adı (isim) ile giriş
+        const phoneDigits = identifier.replace(/\D/g, "");
+        const phoneVariants = phoneDigits.length >= 10
+          ? [phoneDigits, phoneDigits.startsWith("0") ? phoneDigits.slice(1) : `0${phoneDigits}`]
+          : [];
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: identifier.toLowerCase() },
+              ...(phoneVariants.length ? [{ phone: { in: phoneVariants } }] : []),
+              { name: identifier },
+            ],
+          },
+        });
         if (!user?.passwordHash) return null;
 
         const ok = await bcrypt.compare(password, user.passwordHash);

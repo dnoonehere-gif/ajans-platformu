@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Eye, EyeOff, Loader2, CheckCircle2, RefreshCw, ShieldCheck } from "lucide-react";
 
 const lineInput =
-  "w-full border-0 border-b-2 border-gray-200 bg-transparent px-0 py-2.5 text-sm text-gray-900 outline-none transition-colors focus:border-violet-600 placeholder:text-gray-400";
+  "w-full border-0 border-b border-gray-300 bg-transparent px-0 py-2.5 text-[15px] text-gray-900 outline-none transition-colors focus:border-b-2 focus:border-violet-600 placeholder:text-gray-400";
 
 export default function KayitPage() {
   const router = useRouter();
@@ -74,7 +74,7 @@ export default function KayitPage() {
         </p>
         <button
           onClick={() => router.push("/giris")}
-          className="h-11 w-full rounded-lg bg-violet-600 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-violet-700"
+          className="h-11 w-full rounded-md bg-violet-600 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-violet-700"
         >
           Giriş Sayfasına Git
         </button>
@@ -83,12 +83,11 @@ export default function KayitPage() {
   }
 
   return (
-    <div className="rounded-2xl bg-white p-8 shadow-2xl shadow-black/20">
-      <h1 className="mb-6 text-xl font-bold text-gray-900">Kayıt Ol</h1>
+    <div className="rounded-xl bg-white p-8 shadow-2xl shadow-black/25">
+      <h1 className="mb-8 text-lg font-bold text-gray-900">Kayıt Ol</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-7">
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Ad Soyad</label>
           <input
             type="text"
             required
@@ -100,7 +99,6 @@ export default function KayitPage() {
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Telefon</label>
           <input
             type="tel"
             required
@@ -112,7 +110,6 @@ export default function KayitPage() {
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">E-posta</label>
           <input
             type="email"
             required
@@ -124,7 +121,6 @@ export default function KayitPage() {
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-500">Şifre</label>
           <div className="relative">
             <input
               type={show ? "text" : "password"}
@@ -187,7 +183,7 @@ export default function KayitPage() {
         <button
           type="submit"
           disabled={loading || !captcha}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-violet-600 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-violet-700 disabled:opacity-50"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-violet-600 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-violet-700 disabled:opacity-50"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           Kayıt Ol
