@@ -501,9 +501,8 @@ export default function AnaSayfa() {
             </div>
           </div>
 
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/[0.06] pt-6 text-sm text-slate-600 sm:flex-row">
+          <div className="mt-12 border-t border-white/[0.06] pt-6 text-sm text-slate-600">
             <p>© {new Date().getFullYear()} Novelya. Tüm hakları saklıdır.</p>
-            <p>Türkiye’de sevgiyle geliştirildi ✨</p>
           </div>
         </div>
       </footer>
