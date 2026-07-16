@@ -5,6 +5,7 @@ import { MotionProvider } from "@/components/motion-provider";
 import { PostHogProvider } from "@/components/posthog-provider";
 import { SessionProvider } from "next-auth/react";
 import { CookieBanner } from "@/components/cookie-banner";
+import { LanguageProvider } from "@/components/language-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.novelya.com.tr"),
@@ -43,8 +44,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SessionProvider>
             <PostHogProvider>
               <MotionProvider>
-                {children}
-                <CookieBanner />
+                <LanguageProvider>
+                  {children}
+                  <CookieBanner />
+                </LanguageProvider>
               </MotionProvider>
             </PostHogProvider>
           </SessionProvider>

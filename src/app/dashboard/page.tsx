@@ -12,6 +12,7 @@ import {
   Users, CalendarCheck, Mail, Share2,
 } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
+import { useLang } from "@/components/language-provider";
 import Link from "next/link";
 
 interface KPIs {
@@ -171,6 +172,7 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 
 export default function DashboardPage() {
   const { activeBrand, brands } = useBrand();
+  const { t } = useLang();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
@@ -204,10 +206,10 @@ export default function DashboardPage() {
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[hsl(var(--primary)/0.15)]">
           <Globe className="h-8 w-8 text-[hsl(var(--primary))]" />
         </div>
-        <h2 className="text-xl font-bold">Henüz marka yok</h2>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">İlk markanızı oluşturarak başlayın.</p>
+        <h2 className="text-xl font-bold">{t("dashboard.noBrandTitle")}</h2>
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">{t("dashboard.noBrandDesc")}</p>
         <Link href="/dashboard/marka-olustur" className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition">
-          <Plus className="h-4 w-4" /> Marka Oluştur
+          <Plus className="h-4 w-4" /> {t("dashboard.createBrand")}
         </Link>
       </div>
     );
@@ -219,9 +221,9 @@ export default function DashboardPage() {
 
   const sentimentTotal = kpis ? kpis.sentiment.positive + kpis.sentiment.neutral + kpis.sentiment.negative : 0;
   const pieData = kpis ? [
-    { name: "Olumlu", value: kpis.sentiment.positive, color: SENTIMENT_COLORS.positive },
-    { name: "Nötr", value: kpis.sentiment.neutral, color: SENTIMENT_COLORS.neutral },
-    { name: "Olumsuz", value: kpis.sentiment.negative, color: SENTIMENT_COLORS.negative },
+    { name: t("dashboard.positive"), value: kpis.sentiment.positive, color: SENTIMENT_COLORS.positive },
+    { name: t("dashboard.neutral"), value: kpis.sentiment.neutral, color: SENTIMENT_COLORS.neutral },
+    { name: t("dashboard.negative"), value: kpis.sentiment.negative, color: SENTIMENT_COLORS.negative },
   ].filter(d => d.value > 0) : [];
 
   const maxRatingCount = Math.max(...(data?.ratingDist.map(r => r.count) ?? [1]), 1);
@@ -234,17 +236,17 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold">
             {activeBrand ? `${activeBrand.name}` : "Dashboard"}
           </h1>
-          <p className="flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))]"><span className="nv-live-dot" />Genel performans özeti</p>
+          <p className="flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))]"><span className="nv-live-dot" />{t("dashboard.summary")}</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => activeBrand && loadDashboard(activeBrand.id)} disabled={loading}
             className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] px-3 py-2 text-sm transition hover:bg-[hsl(var(--accent))] disabled:opacity-50">
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Yenile
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> {t("dashboard.refresh")}
           </button>
           <button onClick={generateSummary} disabled={summaryLoading || !activeBrand}
             className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-3 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
             {summaryLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            AI Özet
+            {t("dashboard.aiSummary")}
           </button>
         </div>
       </div>
@@ -264,20 +266,20 @@ export default function DashboardPage() {
             {/* Toplam Yorum */}
             <div className="glass nv-enter nv-enter-1 nv-card-hover rounded-2xl p-4">
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Toplam Yorum</span>
+                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{t("dashboard.totalReviews")}</span>
                 <Star className="h-4 w-4 text-yellow-400" />
               </div>
               <p className="text-3xl font-bold">{kpis!.totalReviews}</p>
               <div className="mt-1.5 flex items-center gap-1.5">
                 <ChangeChip value={kpis!.monthlyChange} />
-                <span className="text-xs text-[hsl(var(--muted-foreground))]">son 30 gün</span>
+                <span className="text-xs text-[hsl(var(--muted-foreground))]">{t("dashboard.last30Days")}</span>
               </div>
             </div>
 
             {/* Ortalama Puan */}
             <div className="glass nv-enter nv-enter-2 nv-card-hover rounded-2xl p-4">
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Ort. Puan</span>
+                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{t("dashboard.avgRating")}</span>
                 <TrendingUp className="h-4 w-4 text-green-400" />
               </div>
               <div className="flex items-end gap-2">
@@ -294,20 +296,20 @@ export default function DashboardPage() {
             {/* Bu Hafta */}
             <div className="glass nv-enter nv-enter-3 nv-card-hover rounded-2xl p-4">
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Bu Hafta</span>
+                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{t("dashboard.thisWeek")}</span>
                 <TrendingUp className="h-4 w-4 text-blue-400" />
               </div>
               <p className="text-3xl font-bold">{kpis!.reviewsLast7Count}</p>
               <div className="mt-1.5 flex items-center gap-1.5">
                 <ChangeChip value={kpis!.weeklyChange} />
-                <span className="text-xs text-[hsl(var(--muted-foreground))]">geçen haftaya göre</span>
+                <span className="text-xs text-[hsl(var(--muted-foreground))]">{t("dashboard.vsLastWeek")}</span>
               </div>
             </div>
 
             {/* Olumlu Oran */}
             <div className="glass nv-enter nv-enter-4 nv-card-hover rounded-2xl p-4">
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Olumlu Oran</span>
+                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{t("dashboard.positiveRate")}</span>
                 <CheckCircle className="h-4 w-4 text-green-400" />
               </div>
               <p className="text-3xl font-bold">
@@ -325,12 +327,12 @@ export default function DashboardPage() {
           {/* Secondary KPI row */}
           <div className="nv-enter nv-enter-5 grid grid-cols-3 gap-3 md:grid-cols-6">
             {[
-              { label: "Olumlu", value: kpis!.sentiment.positive, color: "text-green-400 bg-green-500/10" },
-              { label: "Nötr", value: kpis!.sentiment.neutral, color: "text-yellow-400 bg-yellow-500/10" },
-              { label: "Olumsuz", value: kpis!.sentiment.negative, color: "text-red-400 bg-red-500/10" },
-              { label: "Chatbot", value: kpis!.chatbotConversations, color: "text-teal-400 bg-teal-500/10" },
-              { label: "İçerik", value: kpis!.contentItems, color: "text-purple-400 bg-purple-500/10" },
-              { label: "Website", value: kpis!.websitePublished ? "Yayında" : "Taslak", color: kpis!.websitePublished ? "text-green-400 bg-green-500/10" : "text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted))]" },
+              { label: t("dashboard.positive"), value: kpis!.sentiment.positive, color: "text-green-400 bg-green-500/10" },
+              { label: t("dashboard.neutral"), value: kpis!.sentiment.neutral, color: "text-yellow-400 bg-yellow-500/10" },
+              { label: t("dashboard.negative"), value: kpis!.sentiment.negative, color: "text-red-400 bg-red-500/10" },
+              { label: t("dashboard.chatbot"), value: kpis!.chatbotConversations, color: "text-teal-400 bg-teal-500/10" },
+              { label: t("dashboard.content"), value: kpis!.contentItems, color: "text-purple-400 bg-purple-500/10" },
+              { label: t("dashboard.website"), value: kpis!.websitePublished ? t("dashboard.published") : t("dashboard.draft"), color: kpis!.websitePublished ? "text-green-400 bg-green-500/10" : "text-[hsl(var(--muted-foreground))] bg-[hsl(var(--muted))]" },
             ].map((k) => (
               <div key={k.label} className={`rounded-xl px-4 py-3 ${k.color.split(" ")[1]}`}>
                 <p className={`text-lg font-bold ${k.color.split(" ")[0]}`}>{k.value}</p>
@@ -345,48 +347,48 @@ export default function DashboardPage() {
               {/* CRM */}
               <Link href="/dashboard/crm" className="glass nv-card-hover rounded-2xl p-4 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">CRM Pipeline</span>
+                  <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{t("dashboard.crmPipeline")}</span>
                   <Users className="h-4 w-4 text-indigo-400" />
                 </div>
                 <p className="text-2xl font-bold">{extras.crm.total}</p>
                 <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
-                  {extras.crm.stages.WON ?? 0} kazanılan · {extras.crm.stages.NEW ?? 0} yeni
+                  {extras.crm.stages.WON ?? 0} {t("dashboard.won")} · {extras.crm.stages.NEW ?? 0} {t("dashboard.new")}
                 </p>
               </Link>
 
               {/* Reservations */}
               <Link href="/dashboard/chatbot" className="glass nv-card-hover rounded-2xl p-4 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Rezervasyonlar</span>
+                  <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{t("dashboard.reservations")}</span>
                   <CalendarCheck className="h-4 w-4 text-cyan-400" />
                 </div>
                 <p className="text-2xl font-bold">{extras.reservations.total}</p>
                 <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
-                  {extras.reservations.pending} bekleyen · {extras.reservations.confirmed} onaylı
+                  {extras.reservations.pending} {t("dashboard.pending")} · {extras.reservations.confirmed} {t("dashboard.confirmed")}
                 </p>
               </Link>
 
               {/* Email */}
               <Link href="/dashboard/email-kampanya" className="glass nv-card-hover rounded-2xl p-4 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">E-posta</span>
+                  <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{t("dashboard.email")}</span>
                   <Mail className="h-4 w-4 text-amber-400" />
                 </div>
                 <p className="text-2xl font-bold">{extras.email.totalSent}</p>
                 <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
-                  {extras.email.campaignsSent} kampanya · %{extras.email.totalSent > 0 ? Math.round((extras.email.totalOpened / extras.email.totalSent) * 100) : 0} açılma
+                  {extras.email.campaignsSent} {t("dashboard.campaigns")} · %{extras.email.totalSent > 0 ? Math.round((extras.email.totalOpened / extras.email.totalSent) * 100) : 0} {t("dashboard.openRate")}
                 </p>
               </Link>
 
               {/* Social */}
               <Link href="/dashboard/sosyal-medya" className="glass nv-card-hover rounded-2xl p-4 transition hover:ring-1 hover:ring-[hsl(var(--primary)/0.3)]">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Sosyal Medya</span>
+                  <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{t("dashboard.socialMedia")}</span>
                   <Share2 className="h-4 w-4 text-pink-400" />
                 </div>
                 <p className="text-2xl font-bold">{extras.social.published}</p>
                 <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
-                  yayınlanan · {extras.social.scheduled} planlanmış
+                  {t("dashboard.publishedPosts")} · {extras.social.scheduled} {t("dashboard.scheduled")}
                 </p>
               </Link>
             </div>
@@ -443,8 +445,8 @@ export default function DashboardPage() {
           <LazySection fallback={<ChartSkeleton height="h-64" />}>
           <div className="glass nv-enter nv-enter-6 nv-card-hover rounded-2xl p-5">
             <div className="mb-4 flex items-center justify-between">
-              <p className="text-sm font-semibold">30 Günlük Yorum Trendi</p>
-              <span className="text-xs text-[hsl(var(--muted-foreground))]">{kpis!.last30Count} yorum son 30 günde</span>
+              <p className="text-sm font-semibold">{t("dashboard.trendTitle")}</p>
+              <span className="text-xs text-[hsl(var(--muted-foreground))]">{kpis!.last30Count} {t("dashboard.reviewsInLast30")}</span>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={data.trend} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
@@ -470,7 +472,7 @@ export default function DashboardPage() {
 
             {/* Rating Distribution */}
             <div className="glass nv-card-hover rounded-2xl p-5">
-              <p className="mb-4 text-sm font-semibold">Puan Dağılımı</p>
+              <p className="mb-4 text-sm font-semibold">{t("dashboard.ratingDist")}</p>
               <div className="space-y-2.5">
                 {data.ratingDist.map((r, i) => (
                   <div key={r.rating} className="flex items-center gap-3">
@@ -492,9 +494,9 @@ export default function DashboardPage() {
 
             {/* Sentiment Donut */}
             <div className="glass nv-card-hover rounded-2xl p-5">
-              <p className="mb-2 text-sm font-semibold">Duygu Dağılımı</p>
+              <p className="mb-2 text-sm font-semibold">{t("dashboard.sentimentDist")}</p>
               {pieData.length === 0 ? (
-                <div className="flex h-40 items-center justify-center text-sm text-[hsl(var(--muted-foreground))]">Veri yok</div>
+                <div className="flex h-40 items-center justify-center text-sm text-[hsl(var(--muted-foreground))]">{t("dashboard.noData")}</div>
               ) : (
                 <>
                   <ResponsiveContainer width="100%" height={140}>
@@ -521,9 +523,9 @@ export default function DashboardPage() {
 
             {/* Source Breakdown */}
             <div className="glass nv-card-hover rounded-2xl p-5">
-              <p className="mb-4 text-sm font-semibold">Kaynak Dağılımı</p>
+              <p className="mb-4 text-sm font-semibold">{t("dashboard.sourceDist")}</p>
               {data.sourceDist.length === 0 ? (
-                <div className="flex h-40 items-center justify-center text-sm text-[hsl(var(--muted-foreground))]">Veri yok</div>
+                <div className="flex h-40 items-center justify-center text-sm text-[hsl(var(--muted-foreground))]">{t("dashboard.noData")}</div>
               ) : (
                 <ResponsiveContainer width="100%" height={160}>
                   <BarChart data={data.sourceDist} layout="vertical" margin={{ left: 8, right: 16 }}>
@@ -588,8 +590,8 @@ export default function DashboardPage() {
             {/* Recent Reviews */}
             <div className="glass nv-card-hover col-span-2 overflow-hidden rounded-2xl">
               <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-5 py-3">
-                <p className="text-sm font-semibold">Son Yorumlar</p>
-                <Link href="/dashboard/reviews" className="text-xs text-[hsl(var(--primary))] hover:underline">Tümünü gör →</Link>
+                <p className="text-sm font-semibold">{t("dashboard.recentReviews")}</p>
+                <Link href="/dashboard/reviews" className="text-xs text-[hsl(var(--primary))] hover:underline">{t("dashboard.seeAll")}</Link>
               </div>
               <div className="divide-y divide-[hsl(var(--border))]">
                 {data.recentReviews.slice(0, 5).map((r) => (
@@ -621,14 +623,14 @@ export default function DashboardPage() {
                   </div>
                 ))}
                 {data.recentReviews.length === 0 && (
-                  <p className="px-5 py-8 text-center text-sm text-[hsl(var(--muted-foreground))]">Henüz yorum yok</p>
+                  <p className="px-5 py-8 text-center text-sm text-[hsl(var(--muted-foreground))]">{t("dashboard.noReviewsYet")}</p>
                 )}
               </div>
             </div>
 
             {/* Module Shortcuts */}
             <div className="space-y-2">
-              <p className="px-1 text-sm font-semibold">Modüller</p>
+              <p className="px-1 text-sm font-semibold">{t("dashboard.modules")}</p>
               {[
                 { label: "Website", desc: kpis!.websitePublished ? "Yayında" : "Taslak", href: "/dashboard/website", icon: Globe, color: "text-blue-400", bg: "bg-blue-500/10" },
                 { label: "Chatbot", desc: `${kpis!.chatbotConversations} konuşma`, href: "/dashboard/chatbot", icon: Bot, color: "text-teal-400", bg: "bg-teal-500/10" },

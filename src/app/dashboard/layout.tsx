@@ -7,6 +7,7 @@ import { WhiteLabelProvider } from "@/components/dashboard/white-label-provider"
 import { WhiteLabelLogo } from "@/components/dashboard/white-label-logo";
 import { BrandSwitcher } from "@/components/dashboard/brand-switcher";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
+import { LanguageSwitcher } from "@/components/language-provider";
 import { Breadcrumb } from "@/components/dashboard/breadcrumb";
 import { ThemeSwitcher } from "@/components/dashboard/theme-switcher";
 import { NavClient } from "@/components/dashboard/nav-client";
@@ -119,7 +120,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
               </div>
             </MobileSidebarToggle>
             <Breadcrumb />
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              <LanguageSwitcher />
               <NotificationBell />
             </div>
           </div>

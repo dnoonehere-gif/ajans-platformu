@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import BorderGlow from "@/components/reactbits/border-glow";
 import ElectricBorder from "@/components/reactbits/electric-border";
+import { useLang, LanguageSwitcher } from "@/components/language-provider";
 
 // Canvas bileşeni — SSR kapalı, sadece istemcide yüklenir
 const DotField = dynamic(() => import("@/components/reactbits/dot-field"), { ssr: false });
@@ -109,9 +110,131 @@ const STEPS = [
   { num: "04", title: "Büyüyün", desc: "Analizleri takip edin, müşterilerinizle bağlantıda kalın." },
 ];
 
+// ── EN çevirileri (index eşlemeli) ──
+const FEATURES_EN = [
+  { title: "AI Website Builder", desc: "Answer a few questions and get a professional business website in minutes." },
+  { title: "AI Chatbot", desc: "A smart assistant trained on your brand. Answers your customers 24/7." },
+  { title: "AI Content Generator", desc: "Instagram, blog and ad copy plus a 30-day content calendar in one click." },
+  { title: "AI Dashboard", desc: "Automatic daily performance summaries, suggestions and growth analytics." },
+  { title: "QR Feedback", desc: "Collect customer reviews via QR code and analyze them with AI." },
+  { title: "Review Analysis", desc: "Pull your Google reviews, run sentiment analysis, get improvement tips." },
+  { title: "Digital Menu", desc: "QR menu for restaurants and cafes; visual menu, web page and QR in one click." },
+  { title: "Google Business", desc: "Connect your Google Business profile, manage location and reviews in one panel." },
+  { title: "Branch Management", desc: "Manage multiple branches, their addresses and staff from one place." },
+  { title: "Team & Permissions", desc: "Invite your team and collaborate safely with role-based permissions." },
+  { title: "Chatbot Reservations", desc: "Customers book by chatting with the bot; SMS and email confirmations are automatic." },
+  { title: "CRM & Sales Pipeline", desc: "Track leads stage by stage. Chatbot reservations flow into CRM automatically." },
+  { title: "Email Marketing", desc: "Send bulk campaigns to your contact list and track open rates." },
+  { title: "Social Media Planner", desc: "Plan your Instagram, Facebook and LinkedIn posts from a single panel." },
+  { title: "SEO Tools", desc: "Scan your site, analyze competitor keywords, get AI suggestions." },
+  { title: "Client Reports", desc: "White-label PDF reports for agencies; 9 metrics ready for your client in one click." },
+];
+
+const STEPS_EN = [
+  { title: "Sign Up", desc: "Create a free account and explore every feature." },
+  { title: "Add Your Brand", desc: "Enter your business details and upload a logo." },
+  { title: "Run the AI", desc: "Website, chatbot, content — everything is prepared automatically." },
+  { title: "Grow", desc: "Track analytics and stay connected with your customers." },
+];
+
+const L = {
+  tr: {
+    navFeatures: "Özellikler",
+    navHow: "Nasıl Çalışır?",
+    navPricing: "Fiyatlar",
+    navLogin: "Giriş Yap",
+    navSignup: "Ücretsiz Başla",
+    heroBadge: "Türkiye'nin Yeni Nesil AI Dijital Ajansı",
+    heroT1: "İşletmenizi",
+    heroGrad: "yapay zekâ",
+    heroT2: "ile büyütün",
+    heroDesc: "Web sitesi kurun, chatbot eğitin, içerik üretin, yorumları analiz edin.",
+    heroDescBold: "Tek panel, sıfır teknik bilgi, tamamen Türkçe.",
+    heroCta: "Hemen Başla",
+    heroDemo: "Demo İzle",
+    checks: ["Kredi kartı gerekmez", "Türkçe destek", "İstediğin zaman iptal", "7/24 destek"],
+    stats: ["Kayıtlı İşletme", "Kullanıcı Memnuniyeti", "Analiz Edilen Yorum", "Ajans Maliyetinden Tasarruf"],
+    featBadge: "Tüm Araçlar Tek Yerde",
+    featT1: "İşletmeniz için ihtiyaç",
+    featGrad: "duyduğunuz her şey",
+    featDesc: "{s.featDesc}",
+    stepsT1: "4 adımda",
+    stepsGrad: "başlayın",
+    trust: [
+      { title: "SSL & Güvenli", desc: "Tüm verileriniz şifrelenerek saklanır." },
+      { title: "Hızlı Kurulum", desc: "10 dakikada kurulum, hemen kullanmaya başlayın." },
+      { title: "Türkçe Destek", desc: "Sorunlarınız için yanınızdayız." },
+    ],
+    ctaTitle: "Hemen başlayın",
+    ctaDesc: "{s.ctaDesc}",
+    ctaBtn: "Ücretsiz Hesap Oluştur",
+    ctaLogin: "Giriş Yap",
+    fDesc: "İşletmeniz için yapay zeka destekli dijital ajans: website, chatbot, içerik, menü ve müşteri yönetimi tek platformda.",
+    fProduct: "Ürün",
+    fCorp: "Kurumsal",
+    fLegal: "Yasal",
+    fAbout: "Hakkımızda",
+    fContact: "İletişim",
+    fFaq: "SSS",
+    fTerms: "Kullanım Şartları",
+    fPrivacy: "Gizlilik Politikası",
+    fKvkk: "KVKK Aydınlatma",
+    fCookies: "Çerez Politikası",
+    fRefund: "İade & İptal",
+    fRights: "Tüm hakları saklıdır.",
+  },
+  en: {
+    navFeatures: "Features",
+    navHow: "How It Works",
+    navPricing: "Pricing",
+    navLogin: "Sign In",
+    navSignup: "Start Free",
+    heroBadge: "The New Generation AI Digital Agency",
+    heroT1: "Grow your business",
+    heroGrad: "with AI",
+    heroT2: "",
+    heroDesc: "Build a website, train a chatbot, generate content, analyze reviews.",
+    heroDescBold: "One panel, zero technical skills required.",
+    heroCta: "Get Started",
+    heroDemo: "Watch Demo",
+    checks: ["No credit card required", "Live support", "Cancel anytime", "24/7 support"],
+    stats: ["Registered Businesses", "User Satisfaction", "Reviews Analyzed", "Saved vs Agency Costs"],
+    featBadge: "All Tools in One Place",
+    featT1: "Everything your business",
+    featGrad: "needs to grow",
+    featDesc: "Strengthen your digital presence with AI-powered tools. No technical skills needed.",
+    stepsT1: "Start in",
+    stepsGrad: "4 steps",
+    trust: [
+      { title: "SSL & Secure", desc: "All your data is stored encrypted." },
+      { title: "Fast Setup", desc: "Set up in 10 minutes, start using right away." },
+      { title: "Live Support", desc: "We're here whenever you need help." },
+    ],
+    ctaTitle: "Get started now",
+    ctaDesc: "Set up in minutes. Cancel anytime.",
+    ctaBtn: "Create Free Account",
+    ctaLogin: "Sign In",
+    fDesc: "AI-powered digital agency for your business: website, chatbot, content, menu and customer management in one platform.",
+    fProduct: "Product",
+    fCorp: "Company",
+    fLegal: "Legal",
+    fAbout: "About",
+    fContact: "Contact",
+    fFaq: "FAQ",
+    fTerms: "Terms of Service",
+    fPrivacy: "Privacy Policy",
+    fKvkk: "KVKK Notice",
+    fCookies: "Cookie Policy",
+    fRefund: "Refund & Cancellation",
+    fRights: "All rights reserved.",
+  },
+};
+
 export default function AnaSayfa() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { lang } = useLang();
+  const s = L[lang];
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
@@ -130,14 +253,15 @@ export default function AnaSayfa() {
             <span className="text-sm font-bold text-white">Novelya</span>
           </Link>
           <div className="hidden items-center gap-8 md:flex">
-            <a href="#ozellikler" className="text-sm text-slate-400 transition hover:text-white">Özellikler</a>
-            <a href="#nasil-calisir" className="text-sm text-slate-400 transition hover:text-white">Nasıl Çalışır?</a>
-            <Link href="/fiyatlar" className="text-sm text-slate-400 transition hover:text-white">Fiyatlar</Link>
+            <a href="#ozellikler" className="text-sm text-slate-400 transition hover:text-white">{s.navFeatures}</a>
+            <a href="#nasil-calisir" className="text-sm text-slate-400 transition hover:text-white">{s.navHow}</a>
+            <Link href="/fiyatlar" className="text-sm text-slate-400 transition hover:text-white">{s.navPricing}</Link>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/giris" className="hidden text-sm font-medium text-slate-300 transition hover:text-white sm:block">Giriş Yap</Link>
+            <LanguageSwitcher />
+            <Link href="/giris" className="hidden text-sm font-medium text-slate-300 transition hover:text-white sm:block">{s.navLogin}</Link>
             <Link href="/kayit" className="rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 transition hover:opacity-90 hover:shadow-violet-500/40">
-              Ücretsiz Başla
+              {s.navSignup}
             </Link>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
@@ -151,10 +275,10 @@ export default function AnaSayfa() {
         {menuOpen && (
           <div className="border-t border-white/[0.06] bg-[#0a0a14]/95 px-6 py-4 backdrop-blur-xl md:hidden">
             <div className="flex flex-col gap-4">
-              <a href="#ozellikler" onClick={() => setMenuOpen(false)} className="text-sm text-slate-300">Özellikler</a>
-              <a href="#nasil-calisir" onClick={() => setMenuOpen(false)} className="text-sm text-slate-300">Nasıl Çalışır?</a>
-              <Link href="/fiyatlar" className="text-sm text-slate-300">Fiyatlar</Link>
-              <Link href="/giris" className="text-sm text-slate-300">Giriş Yap</Link>
+              <a href="#ozellikler" onClick={() => setMenuOpen(false)} className="text-sm text-slate-300">{s.navFeatures}</a>
+              <a href="#nasil-calisir" onClick={() => setMenuOpen(false)} className="text-sm text-slate-300">{s.navHow}</a>
+              <Link href="/fiyatlar" className="text-sm text-slate-300">{s.navPricing}</Link>
+              <Link href="/giris" className="text-sm text-slate-300">{s.navLogin}</Link>
             </div>
           </div>
         )}
@@ -186,21 +310,20 @@ export default function AnaSayfa() {
           {/* Badge */}
           <div className="pointer-events-auto mb-6 inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-500/10 px-4 py-1.5 text-xs font-semibold text-violet-300 backdrop-blur">
             <Zap className="h-3.5 w-3.5" />
-            Türkiye&apos;nin Yeni Nesil AI Dijital Ajansı
+            {s.heroBadge}
           </div>
 
           {/* Başlık */}
           <h1 className="text-5xl font-black leading-[1.08] tracking-tight text-white md:text-7xl">
-            İşletmenizi{" "}
+            {s.heroT1}{" "}
             <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent">
-              yapay zekâ
-            </span>{" "}
-            ile büyütün
+              {s.heroGrad}
+            </span>{s.heroT2 ? " " + s.heroT2 : ""}
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-400 md:text-xl">
-            Web sitesi kurun, chatbot eğitin, içerik üretin, yorumları analiz edin.{" "}
-            <strong className="font-semibold text-slate-200">Tek panel, sıfır teknik bilgi, tamamen Türkçe.</strong>
+            {s.heroDesc}{" "}
+            <strong className="font-semibold text-slate-200">{s.heroDescBold}</strong>
           </p>
 
           {/* CTA butonları */}
@@ -209,7 +332,7 @@ export default function AnaSayfa() {
               href="/kayit"
               className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-4 text-base font-bold text-white shadow-[0_0_40px_-8px_rgba(139,92,246,0.6)] transition hover:-translate-y-0.5 hover:shadow-[0_0_60px_-8px_rgba(139,92,246,0.8)]"
             >
-              Hemen Başla
+              {s.heroCta}
               <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
             </Link>
             <Link
@@ -217,18 +340,13 @@ export default function AnaSayfa() {
               className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-8 py-4 text-base font-semibold text-slate-200 backdrop-blur transition hover:border-violet-400/30 hover:bg-white/[0.07]"
             >
               <Play className="h-4 w-4 text-violet-400" />
-              Demo İzle
+              {s.heroDemo}
             </Link>
           </div>
 
           {/* Sosyal kanıt */}
           <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-            {[
-              "Kredi kartı gerekmez",
-              "Türkçe destek",
-              "İstediğin zaman iptal",
-              "7/24 destek",
-            ].map((t) => (
+            {s.checks.map((t) => (
               <div key={t} className="flex items-center gap-2 text-sm text-slate-400">
                 <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                 {t}
@@ -316,10 +434,10 @@ export default function AnaSayfa() {
       <section className="relative px-6 py-20">
         <div className="mx-auto max-w-4xl">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <StatCard value="120+" label="Kayıtlı İşletme" icon={Users} delay={0} />
-            <StatCard value="4.8★" label="Kullanıcı Memnuniyeti" icon={Star} delay={80} />
-            <StatCard value="8.500+" label="Analiz Edilen Yorum" icon={MessageSquare} delay={160} />
-            <StatCard value="%90" label="Ajans Maliyetinden Tasarruf" icon={TrendingUp} delay={240} />
+            <StatCard value="120+" label={s.stats[0]} icon={Users} delay={0} />
+            <StatCard value="4.8★" label={s.stats[1]} icon={Star} delay={80} />
+            <StatCard value="8.500+" label={s.stats[2]} icon={MessageSquare} delay={160} />
+            <StatCard value="%90" label={s.stats[3]} icon={TrendingUp} delay={240} />
           </div>
         </div>
       </section>
@@ -332,12 +450,12 @@ export default function AnaSayfa() {
           <div className="mb-16 text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-500/10 px-4 py-1.5 text-xs font-semibold text-violet-300">
               <Sparkles className="h-3.5 w-3.5" />
-              Tüm Araçlar Tek Yerde
+              {s.featBadge}
             </div>
             <h2 className="text-4xl font-black text-white md:text-5xl">
-              İşletmeniz için ihtiyaç{" "}
+              {s.featT1}{" "}
               <span className="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">
-                duyduğunuz her şey
+                {s.featGrad}
               </span>
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-slate-400">
@@ -346,8 +464,13 @@ export default function AnaSayfa() {
           </div>
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f) => (
-              <FeatureCard key={f.title} {...f} />
+            {FEATURES.map((f, i) => (
+              <FeatureCard
+                key={f.title}
+                {...f}
+                title={lang === "en" ? FEATURES_EN[i].title : f.title}
+                desc={lang === "en" ? FEATURES_EN[i].desc : f.desc}
+              />
             ))}
           </div>
         </div>
@@ -358,23 +481,23 @@ export default function AnaSayfa() {
         <div className="mx-auto max-w-5xl">
           <div className="mb-16 text-center">
             <h2 className="text-4xl font-black text-white md:text-5xl">
-              4 adımda{" "}
-              <span className="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">başlayın</span>
+              {s.stepsT1}{" "}
+              <span className="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">{s.stepsGrad}</span>
             </h2>
           </div>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {STEPS.map((s, i) => (
-              <Reveal key={s.num} delay={i * 100} className="relative">
+            {STEPS.map((step, i) => (
+              <Reveal key={step.num} delay={i * 100} className="relative">
                 {i < STEPS.length - 1 && (
                   <div className="absolute top-6 left-full z-0 hidden h-px w-6 bg-gradient-to-r from-violet-400/40 to-transparent lg:block" />
                 )}
                 <div className="relative z-10 h-full rounded-2xl border border-white/[0.07] bg-white/[0.03] p-6 transition hover:border-violet-400/25 hover:bg-white/[0.05]">
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-violet-400/20 bg-gradient-to-br from-violet-500/20 to-indigo-500/10">
-                    <span className="text-lg font-black text-violet-300">{s.num}</span>
+                    <span className="text-lg font-black text-violet-300">{step.num}</span>
                   </div>
-                  <h3 className="mb-2 font-bold text-white">{s.title}</h3>
-                  <p className="text-sm text-slate-400">{s.desc}</p>
+                  <h3 className="mb-2 font-bold text-white">{lang === "en" ? STEPS_EN[i].title : step.title}</h3>
+                  <p className="text-sm text-slate-400">{lang === "en" ? STEPS_EN[i].desc : step.desc}</p>
                 </div>
               </Reveal>
             ))}
@@ -389,9 +512,9 @@ export default function AnaSayfa() {
             <div className="rounded-3xl border border-white/[0.07] bg-gradient-to-br from-white/[0.04] to-transparent p-10">
               <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
                 {[
-                  { icon: Shield, title: "SSL & Güvenli", desc: "Tüm verileriniz şifrelenerek saklanır." },
-                  { icon: Zap, title: "Hızlı Kurulum", desc: "10 dakikada kurulum, hemen kullanmaya başlayın." },
-                  { icon: MessageSquare, title: "Türkçe Destek", desc: "Sorunlarınız için yanınızdayız." },
+                  { icon: Shield, ...s.trust[0] },
+                  { icon: Zap, ...s.trust[1] },
+                  { icon: MessageSquare, ...s.trust[2] },
                 ].map(({ icon: Icon, title, desc }) => (
                   <div key={title} className="flex items-start gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/10">
@@ -429,7 +552,7 @@ export default function AnaSayfa() {
                 />
                 <div className="relative z-10">
                   <h2 className="text-4xl font-black text-white md:text-5xl">
-                    Hemen başlayın
+                    {s.ctaTitle}
                   </h2>
                   <p className="mx-auto mt-4 max-w-md text-slate-400">
                     Dakikalar içinde kurun. İstediğiniz zaman iptal edin.
@@ -439,14 +562,14 @@ export default function AnaSayfa() {
                       href="/kayit"
                       className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-4 text-base font-bold text-white shadow-[0_0_40px_-8px_rgba(139,92,246,0.6)] transition hover:-translate-y-0.5 hover:shadow-[0_0_60px_-8px_rgba(139,92,246,0.85)]"
                     >
-                      Ücretsiz Hesap Oluştur
+                      {s.ctaBtn}
                       <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
                     </Link>
                     <Link
                       href="/giris"
                       className="flex items-center gap-2 rounded-2xl border border-white/15 px-8 py-4 text-base font-semibold text-white transition hover:bg-white/[0.06]"
                     >
-                      Giriş Yap <ChevronRight className="h-4 w-4" />
+                      {s.ctaLogin} <ChevronRight className="h-4 w-4" />
                     </Link>
                   </div>
                 </div>
@@ -466,43 +589,42 @@ export default function AnaSayfa() {
                 <span className="font-bold text-white">Novelya</span>
               </div>
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
-                İşletmeniz için yapay zeka destekli dijital ajans: website, chatbot,
-                içerik, menü ve müşteri yönetimi tek platformda.
+                {s.fDesc}
               </p>
             </div>
 
             <div>
-              <p className="text-sm font-bold text-white">Ürün</p>
+              <p className="text-sm font-bold text-white">{s.fProduct}</p>
               <ul className="mt-4 space-y-2.5 text-sm text-slate-500">
-                <li><a href="#ozellikler" className="transition hover:text-violet-400">Özellikler</a></li>
-                <li><a href="/fiyatlar" className="transition hover:text-violet-400">Fiyatlar</a></li>
-                <li><a href="/kayit" className="transition hover:text-violet-400">Ücretsiz Başla</a></li>
+                <li><a href="#ozellikler" className="transition hover:text-violet-400">{s.navFeatures}</a></li>
+                <li><a href="/fiyatlar" className="transition hover:text-violet-400">{s.navPricing}</a></li>
+                <li><a href="/kayit" className="transition hover:text-violet-400">{s.navSignup}</a></li>
               </ul>
             </div>
 
             <div>
-              <p className="text-sm font-bold text-white">Kurumsal</p>
+              <p className="text-sm font-bold text-white">{s.fCorp}</p>
               <ul className="mt-4 space-y-2.5 text-sm text-slate-500">
-                <li><a href="/hakkimizda" className="transition hover:text-violet-400">Hakkımızda</a></li>
-                <li><a href="/iletisim" className="transition hover:text-violet-400">İletişim</a></li>
-                <li><a href="/sss" className="transition hover:text-violet-400">SSS</a></li>
+                <li><a href="/hakkimizda" className="transition hover:text-violet-400">{s.fAbout}</a></li>
+                <li><a href="/iletisim" className="transition hover:text-violet-400">{s.fContact}</a></li>
+                <li><a href="/sss" className="transition hover:text-violet-400">{s.fFaq}</a></li>
               </ul>
             </div>
 
             <div>
-              <p className="text-sm font-bold text-white">Yasal</p>
+              <p className="text-sm font-bold text-white">{s.fLegal}</p>
               <ul className="mt-4 space-y-2.5 text-sm text-slate-500">
-                <li><a href="/kullanim-sartlari" className="transition hover:text-violet-400">Kullanım Şartları</a></li>
-                <li><a href="/gizlilik" className="transition hover:text-violet-400">Gizlilik Politikası</a></li>
-                <li><a href="/kvkk" className="transition hover:text-violet-400">KVKK Aydınlatma</a></li>
-                <li><a href="/cerez-politikasi" className="transition hover:text-violet-400">Çerez Politikası</a></li>
-                <li><a href="/iade-politikasi" className="transition hover:text-violet-400">İade &amp; İptal</a></li>
+                <li><a href="/kullanim-sartlari" className="transition hover:text-violet-400">{s.fTerms}</a></li>
+                <li><a href="/gizlilik" className="transition hover:text-violet-400">{s.fPrivacy}</a></li>
+                <li><a href="/kvkk" className="transition hover:text-violet-400">{s.fKvkk}</a></li>
+                <li><a href="/cerez-politikasi" className="transition hover:text-violet-400">{s.fCookies}</a></li>
+                <li><a href="/iade-politikasi" className="transition hover:text-violet-400">{s.fRefund}</a></li>
               </ul>
             </div>
           </div>
 
           <div className="mt-12 border-t border-white/[0.06] pt-6 text-sm text-slate-600">
-            <p>© {new Date().getFullYear()} Novelya. Tüm hakları saklıdır.</p>
+            <p>© {new Date().getFullYear()} Novelya. {s.fRights}</p>
           </div>
         </div>
       </footer>
