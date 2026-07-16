@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { notifyBrandOwner } from "@/server/notifications/send";
+import { rateLimit, getRateLimitKey, LIMITS } from "@/server/security/rate-limit";
 
 const schema = z.object({
   brandId: z.string(),
@@ -17,6 +18,12 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    // Public endpoint — IP başına dakikada 20 istek
+    const rl = await rateLimit(getRateLimitKey(req, "res-public"), LIMITS.CHATBOT_MSG);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "Çok fazla istek. Lütfen biraz bekleyin." }, { status: 429 });
+    }
+
     const body = await req.json();
     const parsed = schema.safeParse(body);
     if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });

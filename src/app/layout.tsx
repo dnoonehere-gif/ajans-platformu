@@ -7,8 +7,24 @@ import { SessionProvider } from "next-auth/react";
 import { CookieBanner } from "@/components/cookie-banner";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.novelya.com.tr"),
   title: "Novelya — Yapay Zekâ Destekli Dijital Ajans",
   description: "Türkiye'deki işletmeler için yapay zekâ destekli, çok kiracılı SaaS dijital ajans platformu.",
+  openGraph: {
+    title: "Novelya — Yapay Zekâ Destekli Dijital Ajans",
+    description: "Website, AI chatbot, rezervasyon, CRM ve pazarlama — hepsi tek platformda.",
+    url: "https://www.novelya.com.tr",
+    siteName: "Novelya",
+    locale: "tr_TR",
+    type: "website",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Novelya — AI destekli işletme platformu" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Novelya — Yapay Zekâ Destekli Dijital Ajans",
+    description: "Website, AI chatbot, rezervasyon, CRM ve pazarlama — hepsi tek platformda.",
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

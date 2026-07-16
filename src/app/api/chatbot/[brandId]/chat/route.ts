@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { streamChatResponse } from "@/server/ai/chatbot-engine";
 import { z } from "zod";
 import { notifyBrandOwner } from "@/server/notifications/send";
+import { rateLimit, getRateLimitKey, LIMITS } from "@/server/security/rate-limit";
 
 const schema = z.object({
   message: z.string().min(1).max(1000),
@@ -12,6 +13,12 @@ const schema = z.object({
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ brandId: string }> }) {
   const { brandId } = await params;
+
+  // Public endpoint — IP başına dakikada 20 mesaj (AI maliyeti koruması)
+  const rl = await rateLimit(getRateLimitKey(req, brandId), LIMITS.CHATBOT_MSG);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Çok fazla mesaj gönderdiniz. Lütfen biraz bekleyin." }, { status: 429 });
+  }
 
   const chatbot = await prisma.chatbot.findFirst({
     where: { brandId, isActive: true },
