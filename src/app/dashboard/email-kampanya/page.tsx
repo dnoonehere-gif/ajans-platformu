@@ -2,6 +2,46 @@
 import { useEffect, useState } from "react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { Loader2, Mail, Plus, Trash2, Users, Send, FileText } from "lucide-react";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    loadFail: "Veriler yüklenemedi", connFail: "Sunucuya bağlanılamadı",
+    createFail: "Oluşturulamadı", retryFail: "Sunucuya bağlanılamadı, lütfen tekrar deneyin",
+    sendFail: "Gönderilemedi",
+    sendConfirm: "Kampanyayı tüm kişilere göndermek istediğinize emin misiniz?",
+    title: "E-posta Pazarlama",
+    people: "kişi", campaignsWord: "kampanya",
+    newCampaign: "Yeni Kampanya",
+    tabCampaigns: "Kampanyalar", tabContacts: "Kişiler",
+    formTitle: "Yeni Kampanya", subjectLabel: "Konu", subjectPh: "E-posta konusu",
+    bodyLabel: "İçerik (HTML destekli)",
+    creating: "Oluşturuluyor...", createDraft: "Taslak Oluştur",
+    noCampaigns: "Henüz kampanya yok",
+    status: { DRAFT: "Taslak", SCHEDULED: "Planlandı", SENDING: "Gönderiliyor", SENT: "Gönderildi", FAILED: "Başarısız" },
+    send: "Gönder",
+    addContact: "Kişi Ekle", emailPh: "E-posta", namePh: "İsim (opsiyonel)",
+    noContacts: "Henüz kişi eklenmemiş",
+  },
+  en: {
+    loadFail: "Failed to load data", connFail: "Could not reach the server",
+    createFail: "Could not create", retryFail: "Could not reach the server, please try again",
+    sendFail: "Could not send",
+    sendConfirm: "Send this campaign to all contacts?",
+    title: "Email Marketing",
+    people: "contacts", campaignsWord: "campaigns",
+    newCampaign: "New Campaign",
+    tabCampaigns: "Campaigns", tabContacts: "Contacts",
+    formTitle: "New Campaign", subjectLabel: "Subject", subjectPh: "Email subject",
+    bodyLabel: "Content (HTML supported)",
+    creating: "Creating...", createDraft: "Create Draft",
+    noCampaigns: "No campaigns yet",
+    status: { DRAFT: "Draft", SCHEDULED: "Scheduled", SENDING: "Sending", SENT: "Sent", FAILED: "Failed" },
+    send: "Send",
+    addContact: "Add Contact", emailPh: "Email", namePh: "Name (optional)",
+    noContacts: "No contacts added yet",
+  },
+};
 
 interface Campaign {
   id: string;
@@ -25,6 +65,8 @@ interface Contact {
 
 export default function EmailKampanyaPage() {
   const { activeBrand } = useBrand();
+  const { lang } = useLang();
+  const sL = L[lang];
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [contactCount, setContactCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -47,12 +89,12 @@ export default function EmailKampanyaPage() {
     fetch(`/api/email-campaigns?brandId=${activeBrand.id}`)
       .then(async (r) => {
         const d = await r.json();
-        if (!r.ok) { setError(d.error ?? "Veriler yüklenemedi"); return; }
+        if (!r.ok) { setError(d.error ?? sL.loadFail); return; }
         setCampaigns(d.campaigns ?? []);
         setContactCount(d.contactCount ?? 0);
         setError("");
       })
-      .catch(() => setError("Sunucuya bağlanılamadı"))
+      .catch(() => setError(sL.connFail))
       .finally(() => setLoading(false));
   }, [activeBrand?.id]);
 
@@ -67,14 +109,14 @@ export default function EmailKampanyaPage() {
         body: JSON.stringify({ brandId: activeBrand.id, subject, body, status: "DRAFT" }),
       });
       const data = await res.json();
-      if (!res.ok) setError(data.error ?? "Oluşturulamadı");
+      if (!res.ok) setError(data.error ?? sL.createFail);
       else {
         setCampaigns([data.campaign, ...campaigns]);
         setSubject("");
         setBody("");
         setShowForm(false);
       }
-    } catch { setError("Sunucuya bağlanılamadı, lütfen tekrar deneyin"); }
+    } catch { setError(sL.retryFail); }
     setCreating(false);
   }
 
@@ -86,7 +128,7 @@ export default function EmailKampanyaPage() {
   const [sending, setSending] = useState<string | null>(null);
 
   async function handleSend(id: string) {
-    if (!confirm("Kampanyayı tüm kişilere göndermek istediğinize emin misiniz?")) return;
+    if (!confirm(sL.sendConfirm)) return;
     setSending(id);
     setError("");
     try {
@@ -96,7 +138,7 @@ export default function EmailKampanyaPage() {
         body: JSON.stringify({ campaignId: id }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Gönderilemedi"); }
+      if (!res.ok) { setError(data.error ?? sL.sendFail); }
       else {
         setCampaigns(campaigns.map((c) => c.id === id ? { ...c, status: "SENT", sentCount: data.sentCount } : c));
       }
@@ -164,13 +206,13 @@ export default function EmailKampanyaPage() {
             <Mail className="h-5 w-5 text-blue-500" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">E-posta Pazarlama</h1>
-            <p className="text-sm text-[hsl(var(--muted-foreground))]">{contactCount} kişi · {campaigns.length} kampanya</p>
+            <h1 className="text-xl font-bold">{sL.title}</h1>
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">{contactCount} {sL.people} · {campaigns.length} {sL.campaignsWord}</p>
           </div>
         </div>
         <button onClick={() => { setShowForm(!showForm); setTab("campaigns"); }}
           className="flex items-center gap-1.5 rounded-xl bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
-          <Plus className="h-4 w-4" /> Yeni Kampanya
+          <Plus className="h-4 w-4" /> {sL.newCampaign}
         </button>
       </div>
 
@@ -180,11 +222,11 @@ export default function EmailKampanyaPage() {
       <div className="flex gap-1 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1">
         <button onClick={() => setTab("campaigns")}
           className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition ${tab === "campaigns" ? "bg-[hsl(var(--primary))] text-white" : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"}`}>
-          <FileText className="mr-1.5 inline h-4 w-4" /> Kampanyalar
+          <FileText className="mr-1.5 inline h-4 w-4" /> {sL.tabCampaigns}
         </button>
         <button onClick={() => setTab("contacts")}
           className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition ${tab === "contacts" ? "bg-[hsl(var(--primary))] text-white" : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"}`}>
-          <Users className="mr-1.5 inline h-4 w-4" /> Kişiler ({contactCount})
+          <Users className="mr-1.5 inline h-4 w-4" /> {sL.tabContacts} ({contactCount})
         </button>
       </div>
 
@@ -192,14 +234,14 @@ export default function EmailKampanyaPage() {
         <>
           {showForm && (
             <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
-              <h2 className="mb-4 font-semibold">Yeni Kampanya</h2>
+              <h2 className="mb-4 font-semibold">{sL.formTitle}</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Konu</label>
-                  <input className={inp} placeholder="E-posta konusu" value={subject} onChange={(e) => setSubject(e.target.value)} />
+                  <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.subjectLabel}</label>
+                  <input className={inp} placeholder={sL.subjectPh} value={subject} onChange={(e) => setSubject(e.target.value)} />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">İçerik (HTML destekli)</label>
+                  <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.bodyLabel}</label>
                   <textarea className={inp + " h-40 resize-none font-mono text-xs"} placeholder="<h1>Merhaba!</h1><p>Kampanya içeriğiniz...</p>"
                     value={body} onChange={(e) => setBody(e.target.value)} />
                 </div>
@@ -207,7 +249,7 @@ export default function EmailKampanyaPage() {
               <button onClick={handleCreate} disabled={creating || !subject || !body}
                 className="mt-4 flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60">
                 {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                {creating ? "Oluşturuluyor..." : "Taslak Oluştur"}
+                {creating ? sL.creating : sL.createDraft}
               </button>
             </section>
           )}
@@ -216,7 +258,7 @@ export default function EmailKampanyaPage() {
             {campaigns.length === 0 ? (
               <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 text-center">
                 <Mail className="mx-auto h-8 w-8 text-[hsl(var(--muted-foreground))]" />
-                <p className="mt-3 text-sm text-[hsl(var(--muted-foreground))]">Henüz kampanya yok</p>
+                <p className="mt-3 text-sm text-[hsl(var(--muted-foreground))]">{sL.noCampaigns}</p>
               </div>
             ) : campaigns.map((c) => {
               const st = statusLabel[c.status] ?? statusLabel.DRAFT;
@@ -226,7 +268,7 @@ export default function EmailKampanyaPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold truncate">{c.subject}</span>
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${st.cls}`}>{st.text}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${st.cls}`}>{sL.status[c.status as keyof typeof sL.status] ?? st.text}</span>
                     </div>
                     <div className="mt-0.5 flex gap-3 text-xs text-[hsl(var(--muted-foreground))]">
                       <span>{formatDate(c.createdAt)}</span>
@@ -239,7 +281,7 @@ export default function EmailKampanyaPage() {
                       <button onClick={() => handleSend(c.id)} disabled={sending === c.id}
                         className="shrink-0 flex items-center gap-1 rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-500 transition hover:bg-emerald-500/20 disabled:opacity-60">
                         {sending === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-                        Gönder
+                        {sL.send}
                       </button>
                       <button onClick={() => handleDelete(c.id)} className="shrink-0 text-red-400 transition hover:text-red-500">
                         <Trash2 className="h-4 w-4" />
@@ -256,10 +298,10 @@ export default function EmailKampanyaPage() {
       {tab === "contacts" && (
         <div className="space-y-4">
           <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
-            <h2 className="mb-4 font-semibold">Kişi Ekle</h2>
+            <h2 className="mb-4 font-semibold">{sL.addContact}</h2>
             <div className="flex gap-3">
-              <input className={inp} placeholder="E-posta" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
-              <input className={inp + " max-w-[150px]"} placeholder="İsim (opsiyonel)" value={contactName} onChange={(e) => setContactName(e.target.value)} />
+              <input className={inp} placeholder={sL.emailPh} value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
+              <input className={inp + " max-w-[150px]"} placeholder={sL.namePh} value={contactName} onChange={(e) => setContactName(e.target.value)} />
               <button onClick={handleAddContact} disabled={addingContact || !contactEmail}
                 className="shrink-0 rounded-lg bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60">
                 {addingContact ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
@@ -270,7 +312,7 @@ export default function EmailKampanyaPage() {
           {contacts.length === 0 ? (
             <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 text-center">
               <Users className="mx-auto h-8 w-8 text-[hsl(var(--muted-foreground))]" />
-              <p className="mt-3 text-sm text-[hsl(var(--muted-foreground))]">Henüz kişi eklenmemiş</p>
+              <p className="mt-3 text-sm text-[hsl(var(--muted-foreground))]">{sL.noContacts}</p>
             </div>
           ) : (
             <section className="space-y-2">
