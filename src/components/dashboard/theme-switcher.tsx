@@ -1,5 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useLang } from "@/components/language-provider";
+
+const TS_L = {
+  tr: { appearance: "Görünüm", light: "Açık", dark: "Koyu", system: "Sistem", color: "Renk", perf: "Performans", motionOff: "Animasyonları kapat" },
+  en: { appearance: "Appearance", light: "Light", dark: "Dark", system: "System", color: "Color", perf: "Performance", motionOff: "Disable animations" },
+};
 import { useTheme } from "next-themes";
 import { Sun, Moon, Monitor, Zap } from "lucide-react";
 
@@ -17,6 +23,8 @@ const COLORS = [
 ];
 
 export function ThemeSwitcher() {
+  const { lang } = useLang();
+  const tsL = TS_L[lang];
   const { theme, setTheme } = useTheme();
   const [color, setColor] = useState("purple");
   const [mounted, setMounted] = useState(false);
@@ -52,12 +60,12 @@ export function ThemeSwitcher() {
     <div className="space-y-3 p-3">
       {/* Karanlık / Aydınlık */}
       <div>
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Görünüm</p>
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{tsL.appearance}</p>
         <div className="flex gap-1">
           {[
-            { v: "light", icon: Sun, label: "Açık" },
-            { v: "dark",  icon: Moon, label: "Koyu" },
-            { v: "system", icon: Monitor, label: "Sistem" },
+            { v: "light", icon: Sun, label: tsL.light },
+            { v: "dark",  icon: Moon, label: tsL.dark },
+            { v: "system", icon: Monitor, label: tsL.system },
           ].map(({ v, icon: Icon, label }) => (
             <button
               key={v}
@@ -78,7 +86,7 @@ export function ThemeSwitcher() {
 
       {/* Renk teması */}
       <div>
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Renk</p>
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{tsL.color}</p>
         <div className="flex flex-wrap gap-2">
           {COLORS.map((c) => (
             <button
@@ -96,7 +104,7 @@ export function ThemeSwitcher() {
 
       {/* Animasyon */}
       <div>
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Performans</p>
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{tsL.perf}</p>
         <button
           onClick={toggleMotion}
           className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-medium transition ${
@@ -106,7 +114,7 @@ export function ThemeSwitcher() {
           }`}
         >
           <Zap className="h-3.5 w-3.5" />
-          <span className="flex-1 text-left">Animasyonları kapat</span>
+          <span className="flex-1 text-left">{tsL.motionOff}</span>
           <span className={`h-4 w-7 rounded-full transition-colors ${reducedMotion ? "bg-amber-500" : "bg-[hsl(var(--border))]"}`}>
             <span className={`block h-3 w-3 translate-y-0.5 rounded-full bg-white transition-transform ${reducedMotion ? "translate-x-3.5" : "translate-x-0.5"}`} />
           </span>

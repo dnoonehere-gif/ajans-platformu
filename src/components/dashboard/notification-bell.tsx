@@ -2,6 +2,16 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Bell, Check, CheckCheck, Loader2, X } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
+import { useLang } from "@/components/language-provider";
+
+const NB_L = {
+  tr: { title: "Bildirimler", newBadge: "yeni", markAll: "Tümünü okundu yap", all: "Tümü",
+        markOne: "Okundu yap", empty: "Henüz bildirim yok", loadMore: "Daha fazla yükle",
+        justNow: "az önce", m: "dk önce", h: "sa önce", d: "g önce" },
+  en: { title: "Notifications", newBadge: "new", markAll: "Mark all as read", all: "All",
+        markOne: "Mark as read", empty: "No notifications yet", loadMore: "Load more",
+        justNow: "just now", m: "m ago", h: "h ago", d: "d ago" },
+};
 
 interface NotificationData {
   type?: string;
@@ -19,14 +29,14 @@ interface Notification {
   brandId: string | null;
 }
 
-function timeAgo(date: string) {
+function timeAgo(date: string, L: typeof NB_L.tr) {
   const diff = Date.now() - new Date(date).getTime();
   const m = Math.floor(diff / 60000);
-  if (m < 1) return "az önce";
-  if (m < 60) return `${m}dk önce`;
+  if (m < 1) return L.justNow;
+  if (m < 60) return `${m}${L.m}`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}sa önce`;
-  return `${Math.floor(h / 24)}g önce`;
+  if (h < 24) return `${h}${L.h}`;
+  return `${Math.floor(h / 24)}${L.d}`;
 }
 
 const TYPE_BG: Record<string, string> = {
@@ -49,6 +59,8 @@ const TYPE_BG: Record<string, string> = {
 
 export function NotificationBell() {
   const { activeBrand } = useBrand();
+  const { lang } = useLang();
+  const nbL = NB_L[lang];
   const brandId = activeBrand?.id;
 
   const [open, setOpen] = useState(false);
@@ -149,9 +161,9 @@ export function NotificationBell() {
           {/* Header */}
           <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-4 py-3">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold">Bildirimler</p>
+              <p className="text-sm font-semibold">{nbL.title}</p>
               {unread > 0 && (
-                <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-bold text-red-400">{unread} yeni</span>
+                <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-bold text-red-400">{unread} {nbL.newBadge}</span>
               )}
             </div>
             <div className="flex items-center gap-1">
@@ -159,10 +171,10 @@ export function NotificationBell() {
                 <button
                   onClick={() => markRead()}
                   disabled={marking}
-                  title="Tümünü okundu yap"
+                  title={nbL.markAll}
                   className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
                 >
-                  <CheckCheck className="h-3 w-3" /> Tümü
+                  <CheckCheck className="h-3 w-3" /> {nbL.all}
                 </button>
               )}
               <button onClick={() => setOpen(false)} className="rounded-lg p-1 text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))]">
@@ -180,7 +192,7 @@ export function NotificationBell() {
             ) : items.length === 0 ? (
               <div className="flex h-32 flex-col items-center justify-center gap-2 text-center">
                 <Bell className="h-8 w-8 text-[hsl(var(--muted-foreground)/0.3)]" />
-                <p className="text-xs text-[hsl(var(--muted-foreground))]">Henüz bildirim yok</p>
+                <p className="text-xs text-[hsl(var(--muted-foreground))]">{nbL.empty}</p>
               </div>
             ) : (
               <div className="divide-y divide-[hsl(var(--border))]">
@@ -204,7 +216,7 @@ export function NotificationBell() {
                           {isUnread && (
                             <button
                               onClick={() => markRead(n.id)}
-                              title="Okundu yap"
+                              title={nbL.markOne}
                               className="shrink-0 opacity-0 group-hover:opacity-100 transition"
                             >
                               <Check className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))]" />
@@ -212,7 +224,7 @@ export function NotificationBell() {
                           )}
                         </div>
                         {n.body && <p className="mt-0.5 text-[11px] leading-snug text-[hsl(var(--muted-foreground))] line-clamp-2">{n.body}</p>}
-                        <p className="mt-1 text-[10px] text-[hsl(var(--muted-foreground)/0.6)]">{timeAgo(n.createdAt)}</p>
+                        <p className="mt-1 text-[10px] text-[hsl(var(--muted-foreground)/0.6)]">{timeAgo(n.createdAt, nbL)}</p>
                       </div>
                       {isUnread && <div className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[hsl(var(--primary))]" />}
                     </div>
@@ -227,7 +239,7 @@ export function NotificationBell() {
                       className="flex items-center gap-2 mx-auto text-xs text-[hsl(var(--muted-foreground))] transition hover:text-[hsl(var(--foreground))]"
                     >
                       {loadingMore ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-                      Daha fazla yükle
+                      {nbL.loadMore}
                     </button>
                   </div>
                 )}
