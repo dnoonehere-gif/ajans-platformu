@@ -2,6 +2,32 @@
 import { useEffect, useState } from "react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { Loader2, Plus, Trash2, Calendar, Instagram, Facebook, Linkedin, Twitter, Send } from "lucide-react";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    loadFail: "Veriler yüklenemedi", connFail: "Sunucuya bağlanılamadı",
+    createFail: "Oluşturulamadı", retryFail: "Sunucuya bağlanılamadı, lütfen tekrar deneyin",
+    title: "Sosyal Medya Yönetimi", subtitle: "İçerik takvimi ve planlanmış paylaşımlar",
+    newPost: "Yeni Paylaşım", formTitle: "Yeni Paylaşım Planla",
+    platform: "Platform", dateTime: "Tarih & Saat", contentLabel: "İçerik",
+    contentPh: "Paylaşım metni...",
+    scheduling: "Planlanıyor...", schedule: "Planla",
+    scheduled: "Planlanmış Paylaşımlar", noPosts: "Henüz planlanmış paylaşım yok",
+    stPublished: "Yayında", stFailed: "Başarısız", stDraft: "Taslak", stScheduled: "Planlandı",
+  },
+  en: {
+    loadFail: "Failed to load data", connFail: "Could not reach the server",
+    createFail: "Could not create", retryFail: "Could not reach the server, please try again",
+    title: "Social Media Management", subtitle: "Content calendar and scheduled posts",
+    newPost: "New Post", formTitle: "Schedule a New Post",
+    platform: "Platform", dateTime: "Date & Time", contentLabel: "Content",
+    contentPh: "Post text...",
+    scheduling: "Scheduling...", schedule: "Schedule",
+    scheduled: "Scheduled Posts", noPosts: "No scheduled posts yet",
+    stPublished: "Published", stFailed: "Failed", stDraft: "Draft", stScheduled: "Scheduled",
+  },
+};
 
 const PLATFORMS = [
   { value: "INSTAGRAM", label: "Instagram", icon: Instagram, color: "text-pink-500" },
@@ -22,6 +48,8 @@ interface SocialPost {
 
 export default function SosyalMedyaPage() {
   const { activeBrand } = useBrand();
+  const { lang } = useLang();
+  const sL = L[lang];
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -38,11 +66,11 @@ export default function SosyalMedyaPage() {
     fetch(`/api/social?brandId=${activeBrand.id}`)
       .then(async (r) => {
         const d = await r.json();
-        if (!r.ok) { setError(d.error ?? "Veriler yüklenemedi"); return; }
+        if (!r.ok) { setError(d.error ?? sL.loadFail); return; }
         setPosts(d.posts ?? []);
         setError("");
       })
-      .catch(() => setError("Sunucuya bağlanılamadı"))
+      .catch(() => setError(sL.connFail))
       .finally(() => setLoading(false));
   }, [activeBrand?.id]);
 
@@ -62,7 +90,7 @@ export default function SosyalMedyaPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) setError(data.error ?? "Oluşturulamadı");
+      if (!res.ok) setError(data.error ?? sL.createFail);
       else {
         setPosts([...posts, data.post].sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()));
         setContent("");
@@ -70,7 +98,7 @@ export default function SosyalMedyaPage() {
         setShowForm(false);
       }
     } catch {
-      setError("Sunucuya bağlanılamadı, lütfen tekrar deneyin");
+      setError(sL.retryFail);
     }
     setCreating(false);
   }
@@ -94,13 +122,13 @@ export default function SosyalMedyaPage() {
             <Send className="h-5 w-5 text-pink-500" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">Sosyal Medya Yönetimi</h1>
-            <p className="text-sm text-[hsl(var(--muted-foreground))]">İçerik takvimi ve planlanmış paylaşımlar</p>
+            <h1 className="text-xl font-bold">{sL.title}</h1>
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">{sL.subtitle}</p>
           </div>
         </div>
         <button onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-1.5 rounded-xl bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
-          <Plus className="h-4 w-4" /> Yeni Paylaşım
+          <Plus className="h-4 w-4" /> {sL.newPost}
         </button>
       </div>
 
@@ -109,38 +137,38 @@ export default function SosyalMedyaPage() {
       {/* Yeni paylaşım formu */}
       {showForm && (
         <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
-          <h2 className="mb-4 font-semibold">Yeni Paylaşım Planla</h2>
+          <h2 className="mb-4 font-semibold">{sL.formTitle}</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Platform</label>
+              <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.platform}</label>
               <select className={inp} value={platform} onChange={(e) => setPlatform(e.target.value)}>
                 {PLATFORMS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
               </select>
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Tarih & Saat</label>
+              <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.dateTime}</label>
               <input type="datetime-local" className={inp} value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
             </div>
           </div>
           <div className="mt-4">
-            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">İçerik</label>
-            <textarea className={inp + " h-24 resize-none"} placeholder="Paylaşım metni..." value={content} onChange={(e) => setContent(e.target.value)} />
+            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.contentLabel}</label>
+            <textarea className={inp + " h-24 resize-none"} placeholder={sL.contentPh} value={content} onChange={(e) => setContent(e.target.value)} />
           </div>
           <button onClick={handleCreate} disabled={creating || !content || !scheduledAt}
             className="mt-4 flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60">
             {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Calendar className="h-4 w-4" />}
-            {creating ? "Planlanıyor..." : "Planla"}
+            {creating ? sL.scheduling : sL.schedule}
           </button>
         </section>
       )}
 
       {/* Takvim listesi */}
       <section className="space-y-3">
-        <h2 className="font-semibold">Planlanmış Paylaşımlar ({posts.length})</h2>
+        <h2 className="font-semibold">{sL.scheduled} ({posts.length})</h2>
         {posts.length === 0 ? (
           <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-8 text-center">
             <Calendar className="mx-auto h-8 w-8 text-[hsl(var(--muted-foreground))]" />
-            <p className="mt-3 text-sm text-[hsl(var(--muted-foreground))]">Henüz planlanmış paylaşım yok</p>
+            <p className="mt-3 text-sm text-[hsl(var(--muted-foreground))]">{sL.noPosts}</p>
           </div>
         ) : (
           posts.map((post) => {
@@ -160,7 +188,7 @@ export default function SosyalMedyaPage() {
                       post.status === "DRAFT" ? "bg-slate-500/10 text-slate-500" :
                       "bg-violet-500/10 text-violet-500"
                     }`}>
-                      {post.status === "PUBLISHED" ? "Yayında" : post.status === "FAILED" ? "Başarısız" : post.status === "DRAFT" ? "Taslak" : "Planlandı"}
+                      {post.status === "PUBLISHED" ? sL.stPublished : post.status === "FAILED" ? sL.stFailed : post.status === "DRAFT" ? sL.stDraft : sL.stScheduled}
                     </span>
                     <span className="text-xs text-[hsl(var(--muted-foreground))]">{formatDate(post.scheduledAt)}</span>
                   </div>
