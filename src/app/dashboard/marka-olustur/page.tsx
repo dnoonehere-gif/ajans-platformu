@@ -5,6 +5,42 @@ import {
   Building2, ImagePlus, MapPin, Phone, Instagram,
   MessageCircle, ChevronRight, ChevronLeft, Check, Loader2,
 } from "lucide-react";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    genericError: "Hata oluştu",
+    title: "Marka Oluştur", stepWord: "Adım",
+    s1Title: "İşletmenizin adı nedir?", s1Desc: "Müşterilerinizin sizi tanıdığı isim",
+    pageUrl: "Sayfa adresi:",
+    sector: "Sektör (opsiyonel)", pick: "Seçin...",
+    sectors: ["Restoran & Kafe", "Güzellik & Kuaför", "Sağlık & Klinik", "Eğitim", "Perakende", "Hizmet", "Teknoloji", "Diğer"],
+    s2Title: "Logonuzu ekleyin", s2Desc: "PNG veya JPG, en az 200×200px önerilir",
+    clickOrDrag: "Tıkla veya sürükle", removeLogo: "Logoyu kaldır",
+    optionalNote: "Opsiyonel — daha sonra da ekleyebilirsiniz.",
+    s3Title: "Adresiniz nedir?", s3Desc: "Müşterilerinizin sizi bulabileceği yer",
+    s4Title: "Telefon numaranız?", s4Desc: "Müşterileriniz sizi bu numaradan arayabilir",
+    s5Title: "Instagram hesabınız?", s5Desc: "@ olmadan sadece kullanıcı adınızı girin",
+    s6Title: "WhatsApp numaranız?", s6Desc: "Ülke kodu dahil girin",
+    back: "Geri", next: "Devam Et", create: "Markayı Oluştur", skip: "Bu adımı atla →",
+  },
+  en: {
+    genericError: "Something went wrong",
+    title: "Create Brand", stepWord: "Step",
+    s1Title: "What is your business called?", s1Desc: "The name your customers know you by",
+    pageUrl: "Page address:",
+    sector: "Industry (optional)", pick: "Select...",
+    sectors: ["Restaurant & Cafe", "Beauty & Salon", "Health & Clinic", "Education", "Retail", "Services", "Technology", "Other"],
+    s2Title: "Add your logo", s2Desc: "PNG or JPG, at least 200×200px recommended",
+    clickOrDrag: "Click or drag", removeLogo: "Remove logo",
+    optionalNote: "Optional — you can add it later.",
+    s3Title: "What is your address?", s3Desc: "Where customers can find you",
+    s4Title: "Your phone number?", s4Desc: "Customers can call you at this number",
+    s5Title: "Your Instagram handle?", s5Desc: "Enter your username without the @",
+    s6Title: "Your WhatsApp number?", s6Desc: "Include the country code",
+    back: "Back", next: "Continue", create: "Create Brand", skip: "Skip this step →",
+  },
+};
 
 interface FormData {
   name: string;
@@ -31,6 +67,8 @@ const STEPS = [
 const inputCls = "flex h-12 w-full rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.4)] px-4 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)] placeholder:text-[hsl(var(--muted-foreground))]";
 
 export default function MarkaOlusturPage() {
+  const { lang } = useLang();
+  const sL = L[lang];
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -101,7 +139,7 @@ export default function MarkaOlusturPage() {
     });
 
     const data = await res.json();
-    if (!res.ok) { setError(data.error ?? "Hata oluştu"); setLoading(false); return; }
+    if (!res.ok) { setError(data.error ?? sL.genericError); setLoading(false); return; }
     window.location.href = "/dashboard";
   }
 
@@ -116,8 +154,8 @@ export default function MarkaOlusturPage() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[hsl(var(--primary))]">
             <Building2 className="h-6 w-6 text-white" />
           </div>
-          <h1 className="text-xl font-bold">Marka Oluştur</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">Adım {step} / {STEPS.length}</p>
+          <h1 className="text-xl font-bold">{sL.title}</h1>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">{sL.stepWord} {step} / {STEPS.length}</p>
         </div>
 
         {/* Progress bar */}
@@ -150,27 +188,27 @@ export default function MarkaOlusturPage() {
           {step === 1 && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-2xl font-bold">İşletmenizin adı nedir?</h2>
-                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Müşterilerinizin sizi tanıdığı isim</p>
+                <h2 className="text-2xl font-bold">{sL.s1Title}</h2>
+                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{sL.s1Desc}</p>
               </div>
               <input autoFocus className={inputCls} placeholder="ABC Cafe" value={form.name}
                 onChange={(e) => handleNameChange(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && canNext() && setStep(2)} />
               {form.name && (
                 <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                  Sayfa adresi: <span className="font-mono text-[hsl(var(--primary))]">/{form.slug}</span>
+                  {sL.pageUrl} <span className="font-mono text-[hsl(var(--primary))]">/{form.slug}</span>
                 </p>
               )}
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Sektör (opsiyonel)</label>
+                <label className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.sector}</label>
                 <select
                   value={form.sector}
                   onChange={(e) => set("sector", e.target.value)}
                   className={`${inputCls} cursor-pointer`}
                 >
-                  <option value="">Seçin...</option>
-                  {["Restoran & Kafe", "Güzellik & Kuaför", "Sağlık & Klinik", "Eğitim", "Perakende", "Hizmet", "Teknoloji", "Diğer"].map((s) => (
+                  <option value="">{sL.pick}</option>
+                  {sL.sectors.map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
@@ -182,8 +220,8 @@ export default function MarkaOlusturPage() {
           {step === 2 && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-2xl font-bold">Logonuzu ekleyin</h2>
-                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">PNG veya JPG, en az 200×200px önerilir</p>
+                <h2 className="text-2xl font-bold">{sL.s2Title}</h2>
+                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{sL.s2Desc}</p>
               </div>
 
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogo} />
@@ -197,7 +235,7 @@ export default function MarkaOlusturPage() {
                 ) : (
                   <>
                     <ImagePlus className="h-8 w-8 text-[hsl(var(--muted-foreground))]" />
-                    <span className="text-sm text-[hsl(var(--muted-foreground))]">Tıkla veya sürükle</span>
+                    <span className="text-sm text-[hsl(var(--muted-foreground))]">{sL.clickOrDrag}</span>
                   </>
                 )}
               </button>
@@ -205,11 +243,11 @@ export default function MarkaOlusturPage() {
               {form.logoPreview && (
                 <button type="button" onClick={() => { set("logoFile", null); set("logoPreview", ""); }}
                   className="text-xs text-red-400 hover:underline">
-                  Logoyu kaldır
+                  {sL.removeLogo}
                 </button>
               )}
 
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">Opsiyonel — daha sonra da ekleyebilirsiniz.</p>
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">{sL.optionalNote}</p>
             </div>
           )}
 
@@ -217,8 +255,8 @@ export default function MarkaOlusturPage() {
           {step === 3 && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-2xl font-bold">Adresiniz nedir?</h2>
-                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Müşterilerinizin sizi bulabileceği yer</p>
+                <h2 className="text-2xl font-bold">{sL.s3Title}</h2>
+                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{sL.s3Desc}</p>
               </div>
               <textarea
                 autoFocus
@@ -228,7 +266,7 @@ export default function MarkaOlusturPage() {
                 value={form.address}
                 onChange={(e) => set("address", e.target.value)}
               />
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">Opsiyonel — daha sonra da ekleyebilirsiniz.</p>
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">{sL.optionalNote}</p>
             </div>
           )}
 
@@ -236,8 +274,8 @@ export default function MarkaOlusturPage() {
           {step === 4 && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-2xl font-bold">Telefon numaranız?</h2>
-                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Müşterileriniz sizi bu numaradan arayabilir</p>
+                <h2 className="text-2xl font-bold">{sL.s4Title}</h2>
+                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{sL.s4Desc}</p>
               </div>
               <input
                 autoFocus type="tel" className={inputCls}
@@ -246,7 +284,7 @@ export default function MarkaOlusturPage() {
                 onChange={(e) => set("phone", e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && setStep(5)}
               />
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">Opsiyonel — daha sonra da ekleyebilirsiniz.</p>
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">{sL.optionalNote}</p>
             </div>
           )}
 
@@ -254,8 +292,8 @@ export default function MarkaOlusturPage() {
           {step === 5 && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-2xl font-bold">Instagram hesabınız?</h2>
-                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">@ olmadan sadece kullanıcı adınızı girin</p>
+                <h2 className="text-2xl font-bold">{sL.s5Title}</h2>
+                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{sL.s5Desc}</p>
               </div>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-[hsl(var(--muted-foreground))]">@</span>
@@ -267,7 +305,7 @@ export default function MarkaOlusturPage() {
                   onKeyDown={(e) => e.key === "Enter" && setStep(6)}
                 />
               </div>
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">Opsiyonel — daha sonra da ekleyebilirsiniz.</p>
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">{sL.optionalNote}</p>
             </div>
           )}
 
@@ -275,8 +313,8 @@ export default function MarkaOlusturPage() {
           {step === 6 && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-2xl font-bold">WhatsApp numaranız?</h2>
-                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">Ülke kodu dahil girin</p>
+                <h2 className="text-2xl font-bold">{sL.s6Title}</h2>
+                <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{sL.s6Desc}</p>
               </div>
               <input
                 autoFocus type="tel" className={inputCls}
@@ -284,7 +322,7 @@ export default function MarkaOlusturPage() {
                 value={form.whatsapp}
                 onChange={(e) => set("whatsapp", e.target.value)}
               />
-              <p className="text-xs text-[hsl(var(--muted-foreground))]">Opsiyonel — daha sonra da ekleyebilirsiniz.</p>
+              <p className="text-xs text-[hsl(var(--muted-foreground))]">{sL.optionalNote}</p>
 
               {error && (
                 <p className="rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-red-400">{error}</p>
@@ -297,7 +335,7 @@ export default function MarkaOlusturPage() {
             {step > 1 && (
               <button onClick={() => setStep((s) => s - 1)}
                 className="flex items-center gap-2 rounded-2xl border border-[hsl(var(--border))] px-5 py-3 text-sm font-semibold transition hover:bg-[hsl(var(--accent))]">
-                <ChevronLeft className="h-4 w-4" /> Geri
+                <ChevronLeft className="h-4 w-4" /> {sL.back}
               </button>
             )}
 
@@ -307,7 +345,7 @@ export default function MarkaOlusturPage() {
                 disabled={!canNext()}
                 className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[hsl(var(--primary))] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
               >
-                Devam Et <ChevronRight className="h-4 w-4" />
+                {sL.next} <ChevronRight className="h-4 w-4" />
               </button>
             ) : (
               <button
@@ -316,7 +354,7 @@ export default function MarkaOlusturPage() {
                 className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[hsl(var(--primary))] px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                Markayı Oluştur
+                {sL.create}
               </button>
             )}
           </div>
@@ -325,7 +363,7 @@ export default function MarkaOlusturPage() {
           {step > 1 && step < STEPS.length && (
             <button onClick={() => setStep((s) => s + 1)}
               className="mt-3 w-full text-center text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition">
-              Bu adımı atla →
+              {sL.skip}
             </button>
           )}
         </div>
