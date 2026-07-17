@@ -9,7 +9,7 @@ import { BrandSwitcher } from "@/components/dashboard/brand-switcher";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { LanguageSwitcher } from "@/components/language-provider";
 import { Breadcrumb } from "@/components/dashboard/breadcrumb";
-import { ThemeSwitcher } from "@/components/dashboard/theme-switcher";
+import { ThemeSwitcher, ThemeLabel, LogoutTitle, UserName } from "@/components/dashboard/theme-switcher";
 import { NavClient } from "@/components/dashboard/nav-client";
 import { SubscriptionBanner } from "@/components/dashboard/subscription-banner";
 import { MobileSidebarToggle } from "@/components/dashboard/mobile-sidebar";
@@ -52,7 +52,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <details className="group">
               <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:text-[hsl(var(--foreground))]">
                 <Palette className="h-4 w-4 shrink-0" />
-                <span className="flex-1">Tema</span>
+                <ThemeLabel />
                 <ChevronRight className="h-3 w-3 transition group-open:rotate-90" />
               </summary>
               <ThemeSwitcher />
@@ -66,13 +66,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 {initials}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="truncate text-xs font-semibold">{user.name ?? "Kullanıcı"}</p>
+                <p className="truncate text-xs font-semibold"><UserName name={user.name} /></p>
                 <p className="truncate text-[10px] text-[hsl(var(--muted-foreground))]">{user.email}</p>
               </div>
               <form action={async () => { "use server"; await signOut({ redirectTo: `${process.env.NEXTAUTH_URL ?? ""}/giris` }); }}>
-                <button type="submit" title="Çıkış Yap" className="text-[hsl(var(--muted-foreground))] transition hover:text-red-400">
-                  <LogOut className="h-3.5 w-3.5" />
-                </button>
+                <LogoutTitle>{(title) => (
+                  <button type="submit" title={title} className="text-[hsl(var(--muted-foreground))] transition hover:text-red-400">
+                    <LogOut className="h-3.5 w-3.5" />
+                  </button>
+                )}</LogoutTitle>
               </form>
             </div>
           </div>
@@ -94,7 +96,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 <details className="group">
                   <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:text-[hsl(var(--foreground))]">
                     <Palette className="h-4 w-4 shrink-0" />
-                    <span className="flex-1">Tema</span>
+                    <ThemeLabel />
                     <ChevronRight className="h-3 w-3 transition group-open:rotate-90" />
                   </summary>
                   <ThemeSwitcher />
@@ -108,13 +110,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
                     {initials}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="truncate text-xs font-semibold">{user.name ?? "Kullanıcı"}</p>
+                    <p className="truncate text-xs font-semibold"><UserName name={user.name} /></p>
                     <p className="truncate text-[10px] text-[hsl(var(--muted-foreground))]">{user.email}</p>
                   </div>
                   <form action={async () => { "use server"; await signOut({ redirectTo: `${process.env.NEXTAUTH_URL ?? ""}/giris` }); }}>
-                    <button type="submit" title="Çıkış Yap" className="text-[hsl(var(--muted-foreground))] transition hover:text-red-400">
-                      <LogOut className="h-3.5 w-3.5" />
-                    </button>
+                    <LogoutTitle>{(title) => (
+                      <button type="submit" title={title} className="text-[hsl(var(--muted-foreground))] transition hover:text-red-400">
+                        <LogOut className="h-3.5 w-3.5" />
+                      </button>
+                    )}</LogoutTitle>
                   </form>
                 </div>
               </div>

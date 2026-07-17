@@ -15,7 +15,7 @@ const L = {
     newCampaign: "Yeni Kampanya",
     tabCampaigns: "Kampanyalar", tabContacts: "Kişiler",
     formTitle: "Yeni Kampanya", subjectLabel: "Konu", subjectPh: "E-posta konusu",
-    bodyLabel: "İçerik (HTML destekli)",
+    bodyLabel: "İçerik (HTML destekli)", bodyPh: "<h1>Merhaba!</h1><p>Kampanya içeriğiniz...</p>",
     creating: "Oluşturuluyor...", createDraft: "Taslak Oluştur",
     noCampaigns: "Henüz kampanya yok",
     status: { DRAFT: "Taslak", SCHEDULED: "Planlandı", SENDING: "Gönderiliyor", SENT: "Gönderildi", FAILED: "Başarısız" },
@@ -33,7 +33,7 @@ const L = {
     newCampaign: "New Campaign",
     tabCampaigns: "Campaigns", tabContacts: "Contacts",
     formTitle: "New Campaign", subjectLabel: "Subject", subjectPh: "Email subject",
-    bodyLabel: "Content (HTML supported)",
+    bodyLabel: "Content (HTML supported)", bodyPh: "<h1>Hello!</h1><p>Your campaign content...</p>",
     creating: "Creating...", createDraft: "Create Draft",
     noCampaigns: "No campaigns yet",
     status: { DRAFT: "Draft", SCHEDULED: "Scheduled", SENDING: "Sending", SENT: "Sent", FAILED: "Failed" },
@@ -242,7 +242,7 @@ export default function EmailKampanyaPage() {
                 </div>
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.bodyLabel}</label>
-                  <textarea className={inp + " h-40 resize-none font-mono text-xs"} placeholder="<h1>Merhaba!</h1><p>Kampanya içeriğiniz...</p>"
+                  <textarea className={inp + " h-40 resize-none font-mono text-xs"} placeholder={sL.bodyPh}
                     value={body} onChange={(e) => setBody(e.target.value)} />
                 </div>
               </div>

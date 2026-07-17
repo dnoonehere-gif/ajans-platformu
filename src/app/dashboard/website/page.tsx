@@ -136,6 +136,11 @@ export default function WebsitePage() {
 
   const effectiveSector = sector === "Diğer" ? customSector : sector;
   const effectiveColor = customColor || primaryColor;
+  // Özet için: seçili sektörün TR değerini görüntü dilindeki etikete çevir (custom sektör aynen kalır)
+  const sectorLabel = (() => {
+    const idx = SECTORS.indexOf(sector);
+    return idx >= 0 ? sL.sectors[idx] : effectiveSector;
+  })();
 
   function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -206,7 +211,7 @@ export default function WebsitePage() {
           <p className="text-xl font-bold">{sL.generatingTitle}</p>
           <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
             <span className="font-semibold text-[hsl(var(--foreground))]">{activeBrand.name}</span> ·{" "}
-            {effectiveSector}
+            {sectorLabel}
           </p>
           <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">{sL.takesTime}</p>
         </div>
@@ -455,7 +460,7 @@ export default function WebsitePage() {
             </p>
             {[
               { k: sL.brand, v: activeBrand.name },
-              { k: sL.sector, v: effectiveSector },
+              { k: sL.sector, v: sectorLabel },
               { k: sL.logo, v: logoPreview ? sL.yes : sL.no },
               ...(phone ? [{ k: sL.phone, v: phone }] : []),
             ].map(({ k, v }) => (

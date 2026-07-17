@@ -3,9 +3,23 @@ import { useEffect, useState } from "react";
 import { useLang } from "@/components/language-provider";
 
 const TS_L = {
-  tr: { appearance: "Görünüm", light: "Açık", dark: "Koyu", system: "Sistem", color: "Renk", perf: "Performans", motionOff: "Animasyonları kapat" },
-  en: { appearance: "Appearance", light: "Light", dark: "Dark", system: "System", color: "Color", perf: "Performance", motionOff: "Disable animations" },
+  tr: { theme: "Tema", logout: "Çıkış Yap", userFallback: "Kullanıcı", appearance: "Görünüm", light: "Açık", dark: "Koyu", system: "Sistem", color: "Renk", perf: "Performans", motionOff: "Animasyonları kapat" },
+  en: { theme: "Theme", logout: "Sign Out", userFallback: "User", appearance: "Appearance", light: "Light", dark: "Dark", system: "System", color: "Color", perf: "Performance", motionOff: "Disable animations" },
 };
+
+// Server component'lerin (dashboard layout) kullanabilmesi için küçük client etiketler
+export function ThemeLabel() {
+  const { lang } = useLang();
+  return <span className="flex-1">{TS_L[lang].theme}</span>;
+}
+export function LogoutTitle({ children }: { children: (title: string) => React.ReactNode }) {
+  const { lang } = useLang();
+  return <>{children(TS_L[lang].logout)}</>;
+}
+export function UserName({ name }: { name: string | null | undefined }) {
+  const { lang } = useLang();
+  return <>{name ?? TS_L[lang].userFallback}</>;
+}
 import { useTheme } from "next-themes";
 import { Sun, Moon, Monitor, Zap } from "lucide-react";
 

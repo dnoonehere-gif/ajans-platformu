@@ -8,6 +8,7 @@ const L = {
   tr: {
     selectBrand: "Önce bir marka seçin",
     branchName: "Şube Adı *", address: "Adres", phone: "Telefon",
+    branchNamePh: "Kadıköy", addressPh: "Moda Cad. No:5, Kadıköy", phonePh: "0216 xxx xx xx",
     save: "Kaydet", add: "Ekle", cancel: "İptal",
     title: "Şubeler", branchCount: "şube", addBranch: "Şube Ekle",
     newBranch: "Yeni Şube", editBranch: "Şubeyi Düzenle",
@@ -19,6 +20,7 @@ const L = {
   en: {
     selectBrand: "Select a brand first",
     branchName: "Branch Name *", address: "Address", phone: "Phone",
+    branchNamePh: "Downtown", addressPh: "123 Main St, Downtown", phonePh: "+1 555 xxx xx xx",
     save: "Save", add: "Add", cancel: "Cancel",
     title: "Branches", branchCount: "branches", addBranch: "Add Branch",
     newBranch: "New Branch", editBranch: "Edit Branch",
@@ -53,17 +55,17 @@ function BranchForm({
     <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
       <div className="space-y-1">
         <label className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.branchName}</label>
-        <input className={inputCls} placeholder="Kadıköy" value={form.name}
+        <input className={inputCls} placeholder={sL.branchNamePh} value={form.name}
           onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
       </div>
       <div className="space-y-1">
         <label className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.address}</label>
-        <input className={inputCls} placeholder="Moda Cad. No:5, Kadıköy" value={form.address}
+        <input className={inputCls} placeholder={sL.addressPh} value={form.address}
           onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
       </div>
       <div className="space-y-1">
         <label className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.phone}</label>
-        <input className={inputCls} placeholder="0216 xxx xx xx" value={form.phone}
+        <input className={inputCls} placeholder={sL.phonePh} value={form.phone}
           onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
       </div>
       <div className="col-span-full flex gap-2">

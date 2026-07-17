@@ -20,6 +20,7 @@ const L = {
     botName: "Bot Adı", botNamePh: "Asistan, Yardımcı, Mia...",
     sysPrompt: "Sistem Talimatı",
     sysPromptDesc: "Botun kişiliğini, tonunu ve davranışını özelleştir. Marka bilgi tabanı otomatik eklenir.",
+    sysPromptPh: "Örnek: Samimi ve arkadaşça bir ton kullan. Ürün fiyatlarını asla söyleme, müşteriyi kasaya yönlendir. Şikayet geldiğinde özür dile ve müdür ile görüşmesini öner.",
     botStatus: "Chatbot Durumu",
     statusOn: "Aktif — ziyaretçiler chatbot'u kullanabilir",
     statusOff: "Pasif — chatbot devre dışı",
@@ -28,7 +29,7 @@ const L = {
     resOff: "Pasif — rezervasyon özelliği kapalı",
     resDesc: "Açıldığında chatbot otomatik olarak müşteriden ad, tarih, saat ve kişi bilgisi toplar",
     save: "Kaydet", create: "Chatbot Oluştur",
-    createFirst: "{sL.createFirst}",
+    createFirst: "Önce Ayarlar sekmesinden chatbot oluşturun.",
     addKnowledge: "Yeni Bilgi Ekle", category: "Kategori", question: "Soru (opsiyonel)",
     questionPh: "Çalışma saatleriniz nedir?",
     contentPh: "Hafta içi 09:00 – 22:00, Cumartesi-Pazar 10:00 – 23:00 arası açığız.",
@@ -74,6 +75,7 @@ const L = {
     botName: "Bot Name", botNamePh: "Assistant, Helper, Mia...",
     sysPrompt: "System Prompt",
     sysPromptDesc: "Customize the bot's personality, tone and behavior. The brand knowledge base is added automatically.",
+    sysPromptPh: "Example: Use a friendly tone. Never state prices, direct the customer to checkout. On complaints, apologize and suggest speaking to the manager.",
     botStatus: "Chatbot Status",
     statusOn: "Active — visitors can use the chatbot",
     statusOff: "Inactive — chatbot is disabled",
@@ -527,7 +529,7 @@ export default function ChatbotPage() {
                       rows={5}
                       value={systemPrompt}
                       onChange={(e) => setSystemPrompt(e.target.value)}
-                      placeholder={`Örnek: Samimi ve arkadaşça bir ton kullan. Ürün fiyatlarını asla söyleme, müşteriyi kasaya yönlendir. Şikayet geldiğinde özür dile ve müdür ile görüşmesini öner.`}
+                      placeholder={sL.sysPromptPh}
                       className="w-full resize-none rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-3 text-sm outline-none transition focus:border-[hsl(var(--primary))] placeholder:text-[hsl(var(--muted-foreground))]"
                     />
                   </div>
@@ -584,7 +586,7 @@ export default function ChatbotPage() {
                 <div className="space-y-4">
                   {!chatbot ? (
                     <div className="rounded-xl border border-dashed border-[hsl(var(--border))] p-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
-                      Önce Ayarlar sekmesinden chatbot oluşturun.
+                      {sL.createFirst}
                     </div>
                   ) : (
                     <>
@@ -949,7 +951,7 @@ export default function ChatbotPage() {
                 <div className="space-y-4">
                   {!chatbot ? (
                     <div className="rounded-xl border border-dashed border-[hsl(var(--border))] p-6 text-center text-sm text-[hsl(var(--muted-foreground))]">
-                      Önce Ayarlar sekmesinden chatbot oluşturun.
+                      {sL.createFirst}
                     </div>
                   ) : (
                     <>

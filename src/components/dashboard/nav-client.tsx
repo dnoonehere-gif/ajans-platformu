@@ -98,7 +98,7 @@ const NAV_GROUPS: NavGroup[] = [
 export function NavClient({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
   const { activeBrand } = useBrand();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const label = (item: { label: string; key?: string }) =>
     item.key ? t(`sidebar.${item.key}`) : item.label;
   const [features, setFeatures] = useState<PlanFeatures | null>(null);
@@ -170,7 +170,7 @@ export function NavClient({ isAdmin }: { isAdmin: boolean }) {
       {isAdmin && (
         <div className="mt-4">
           <p className="mb-1 px-3 text-[10px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground)/0.6)]">
-            Yönetim
+            {lang === "en" ? "Management" : "Yönetim"}
           </p>
           <Link
             href="/admin"

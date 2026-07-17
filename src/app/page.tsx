@@ -157,7 +157,7 @@ const L = {
     featBadge: "Tüm Araçlar Tek Yerde",
     featT1: "İşletmeniz için ihtiyaç",
     featGrad: "duyduğunuz her şey",
-    featDesc: "{s.featDesc}",
+    featDesc: "Yapay zekâ destekli araçlarla dijital varlığınızı güçlendirin. Teknik bilgi gerekmez.",
     stepsT1: "4 adımda",
     stepsGrad: "başlayın",
     trust: [
@@ -166,7 +166,7 @@ const L = {
       { title: "Türkçe Destek", desc: "Sorunlarınız için yanınızdayız." },
     ],
     ctaTitle: "Hemen başlayın",
-    ctaDesc: "{s.ctaDesc}",
+    ctaDesc: "Dakikalar içinde kurun. İstediğiniz zaman iptal edin.",
     ctaBtn: "Ücretsiz Hesap Oluştur",
     ctaLogin: "Giriş Yap",
     fDesc: "İşletmeniz için yapay zeka destekli dijital ajans: website, chatbot, içerik, menü ve müşteri yönetimi tek platformda.",
@@ -459,7 +459,7 @@ export default function AnaSayfa() {
               </span>
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-slate-400">
-              Yapay zekâ destekli araçlarla dijital varlığınızı güçlendirin. Teknik bilgi gerekmez.
+              {s.featDesc}
             </p>
           </div>
 
@@ -555,7 +555,7 @@ export default function AnaSayfa() {
                     {s.ctaTitle}
                   </h2>
                   <p className="mx-auto mt-4 max-w-md text-slate-400">
-                    Dakikalar içinde kurun. İstediğiniz zaman iptal edin.
+                    {s.ctaDesc}
                   </p>
                   <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
                     <Link

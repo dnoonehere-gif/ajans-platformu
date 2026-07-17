@@ -2,10 +2,12 @@
 import { useState } from "react";
 import { ChevronDown, Check, Plus, Building2 } from "lucide-react";
 import { useBrand } from "./brand-provider";
+import { useLang } from "@/components/language-provider";
 import Link from "next/link";
 
 export function BrandSwitcher() {
   const { brands, activeBrand, setActiveBrand } = useBrand();
+  const { lang } = useLang();
   const [open, setOpen] = useState(false);
 
   if (!activeBrand) {
@@ -15,7 +17,7 @@ export function BrandSwitcher() {
         className="flex h-10 w-full items-center gap-2 rounded-xl border border-dashed border-[hsl(var(--border))] px-3 text-sm text-[hsl(var(--muted-foreground))] transition hover:border-[hsl(var(--primary))] hover:text-[hsl(var(--primary))]"
       >
         <Plus className="h-4 w-4" />
-        Marka Oluştur
+        {lang === "en" ? "Create Brand" : "Marka Oluştur"}
       </Link>
     );
   }
@@ -57,7 +59,7 @@ export function BrandSwitcher() {
               className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
             >
               <Plus className="h-4 w-4" />
-              Yeni Marka Ekle
+              {lang === "en" ? "Add New Brand" : "Yeni Marka Ekle"}
             </Link>
           </div>
         </div>
