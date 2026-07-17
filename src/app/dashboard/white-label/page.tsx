@@ -2,6 +2,38 @@
 import { useEffect, useState } from "react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { Loader2, Save, Crown, Palette, Globe, Image } from "lucide-react";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    loadFail: "Veriler yüklenemedi", connFail: "Sunucuya bağlanılamadı",
+    saveFail: "Kayıt başarısız", retryFail: "Sunucuya bağlanılamadı, lütfen tekrar deneyin",
+    title: "White-Label Ayarları", subtitle: "Müşterilerinize kendi markanızla site sunun",
+    identity: "Marka Kimliği",
+    agencyName: "Ajans Adı", agencyNamePh: "Ajansınızın adı",
+    logoUrl: "Logo URL", faviconUrl: "Favicon URL", footerText: "Footer Metni", footerPh: "© 2026 Ajansınız",
+    colors: "Renkler", primary: "Ana Renk", accent: "Vurgu Rengi",
+    domainAdv: "Domain & Gelişmiş", customDomain: "Özel Domain",
+    cnameHint: "CNAME kaydını novelya.com.tr'ye yönlendirin",
+    customCss: "Özel CSS",
+    hideNovelya: 'Novelya markasını gizle (footer "Powered by" kaldır)',
+    saving: "Kaydediliyor...", save: "Kaydet", savedMsg: "Kaydedildi!",
+  },
+  en: {
+    loadFail: "Failed to load data", connFail: "Could not reach the server",
+    saveFail: "Save failed", retryFail: "Could not reach the server, please try again",
+    title: "White-Label Settings", subtitle: "Serve your clients under your own brand",
+    identity: "Brand Identity",
+    agencyName: "Agency Name", agencyNamePh: "Your agency's name",
+    logoUrl: "Logo URL", faviconUrl: "Favicon URL", footerText: "Footer Text", footerPh: "© 2026 Your Agency",
+    colors: "Colors", primary: "Primary Color", accent: "Accent Color",
+    domainAdv: "Domain & Advanced", customDomain: "Custom Domain",
+    cnameHint: "Point a CNAME record to novelya.com.tr",
+    customCss: "Custom CSS",
+    hideNovelya: 'Hide Novelya branding (remove "Powered by" footer)',
+    saving: "Saving...", save: "Save", savedMsg: "Saved!",
+  },
+};
 
 interface WhiteLabelData {
   agencyName: string;
@@ -29,6 +61,8 @@ const EMPTY: WhiteLabelData = {
 
 export default function WhiteLabelPage() {
   const { activeBrand } = useBrand();
+  const { lang } = useLang();
+  const sL = L[lang];
   const [data, setData] = useState<WhiteLabelData>(EMPTY);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -41,7 +75,7 @@ export default function WhiteLabelPage() {
     fetch(`/api/white-label?brandId=${activeBrand.id}`)
       .then(async (r) => {
         const d = await r.json();
-        if (!r.ok) { setError(d.error ?? "Veriler yüklenemedi"); setLoading(false); return; }
+        if (!r.ok) { setError(d.error ?? sL.loadFail); setLoading(false); return; }
         if (d.whiteLabel) {
           setData({
             agencyName: d.whiteLabel.agencyName ?? "",
@@ -59,7 +93,7 @@ export default function WhiteLabelPage() {
         setLoading(false);
       })
       .catch(() => {
-        setError("Sunucuya bağlanılamadı");
+        setError(sL.connFail);
         setLoading(false);
       });
   }, [activeBrand?.id]);
@@ -85,13 +119,13 @@ export default function WhiteLabelPage() {
       });
       const result = await res.json();
       if (!res.ok) {
-        setError(result.error ?? "Kayıt başarısız");
+        setError(result.error ?? sL.saveFail);
       } else {
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
       }
     } catch {
-      setError("Sunucuya bağlanılamadı, lütfen tekrar deneyin");
+      setError(sL.retryFail);
     }
     setSaving(false);
   }
@@ -113,9 +147,9 @@ export default function WhiteLabelPage() {
           <Crown className="h-5 w-5 text-amber-500" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">White-Label Ayarları</h1>
+          <h1 className="text-xl font-bold">{sL.title}</h1>
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            Müşterilerinize kendi markanızla site sunun
+            {sL.subtitle}
           </p>
         </div>
       </div>
@@ -130,27 +164,27 @@ export default function WhiteLabelPage() {
       <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
         <div className="mb-4 flex items-center gap-2">
           <Image className="h-4 w-4 text-[hsl(var(--primary))]" />
-          <h2 className="font-semibold">Marka Kimliği</h2>
+          <h2 className="font-semibold">{sL.identity}</h2>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Ajans Adı</label>
-            <input className={inp} placeholder="Ajansınızın adı" value={data.agencyName}
+            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.agencyName}</label>
+            <input className={inp} placeholder={sL.agencyNamePh} value={data.agencyName}
               onChange={(e) => setData((d) => ({ ...d, agencyName: e.target.value }))} />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Logo URL</label>
+            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.logoUrl}</label>
             <input className={inp} placeholder="https://..." value={data.agencyLogoUrl}
               onChange={(e) => setData((d) => ({ ...d, agencyLogoUrl: e.target.value }))} />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Favicon URL</label>
+            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.faviconUrl}</label>
             <input className={inp} placeholder="https://..." value={data.agencyFaviconUrl}
               onChange={(e) => setData((d) => ({ ...d, agencyFaviconUrl: e.target.value }))} />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Footer Metni</label>
-            <input className={inp} placeholder="© 2026 Ajansınız" value={data.footerText}
+            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.footerText}</label>
+            <input className={inp} placeholder={sL.footerPh} value={data.footerText}
               onChange={(e) => setData((d) => ({ ...d, footerText: e.target.value }))} />
           </div>
         </div>
@@ -160,11 +194,11 @@ export default function WhiteLabelPage() {
       <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
         <div className="mb-4 flex items-center gap-2">
           <Palette className="h-4 w-4 text-[hsl(var(--primary))]" />
-          <h2 className="font-semibold">Renkler</h2>
+          <h2 className="font-semibold">{sL.colors}</h2>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Ana Renk</label>
+            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.primary}</label>
             <div className="flex items-center gap-2">
               <input type="color" className="h-10 w-10 cursor-pointer rounded-lg border border-[hsl(var(--border))]" value={data.primaryColor}
                 onChange={(e) => setData((d) => ({ ...d, primaryColor: e.target.value }))} />
@@ -173,7 +207,7 @@ export default function WhiteLabelPage() {
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Vurgu Rengi</label>
+            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.accent}</label>
             <div className="flex items-center gap-2">
               <input type="color" className="h-10 w-10 cursor-pointer rounded-lg border border-[hsl(var(--border))]" value={data.accentColor}
                 onChange={(e) => setData((d) => ({ ...d, accentColor: e.target.value }))} />
@@ -188,17 +222,17 @@ export default function WhiteLabelPage() {
       <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
         <div className="mb-4 flex items-center gap-2">
           <Globe className="h-4 w-4 text-[hsl(var(--primary))]" />
-          <h2 className="font-semibold">Domain & Gelişmiş</h2>
+          <h2 className="font-semibold">{sL.domainAdv}</h2>
         </div>
         <div className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Özel Domain</label>
+            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.customDomain}</label>
             <input className={inp} placeholder="app.ajansiniz.com" value={data.customDomain}
               onChange={(e) => setData((d) => ({ ...d, customDomain: e.target.value }))} />
-            <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">CNAME kaydını novelya.com.tr&apos;ye yönlendirin</p>
+            <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{sL.cnameHint}</p>
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Özel CSS</label>
+            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.customCss}</label>
             <textarea className={inp + " h-24 resize-none font-mono text-xs"} placeholder=":root { --custom-var: #fff; }" value={data.customCss}
               onChange={(e) => setData((d) => ({ ...d, customCss: e.target.value }))} />
           </div>
@@ -206,7 +240,7 @@ export default function WhiteLabelPage() {
             <input type="checkbox" checked={data.hideNovelya}
               onChange={(e) => setData((d) => ({ ...d, hideNovelya: e.target.checked }))}
               className="h-4 w-4 rounded border-[hsl(var(--border))] accent-[hsl(var(--primary))]" />
-            <span className="text-sm">Novelya markasını gizle (footer &quot;Powered by&quot; kaldır)</span>
+            <span className="text-sm">{sL.hideNovelya}</span>
           </label>
         </div>
       </section>
@@ -216,9 +250,9 @@ export default function WhiteLabelPage() {
         <button onClick={handleSave} disabled={saving}
           className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          {saving ? "Kaydediliyor..." : "Kaydet"}
+          {saving ? sL.saving : sL.save}
         </button>
-        {saved && <span className="text-sm text-emerald-500 font-medium">Kaydedildi!</span>}
+        {saved && <span className="text-sm text-emerald-500 font-medium">{sL.savedMsg}</span>}
       </div>
     </div>
   );

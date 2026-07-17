@@ -2,6 +2,34 @@
 import { useState, useEffect, useCallback } from "react";
 import { Users, UserPlus, Trash2, ChevronDown, Loader2, Crown, Shield, Edit3, Eye } from "lucide-react";
 import type { BrandRole, GlobalRole } from "@prisma/client";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    roles: { OWNER: "Sahip", MANAGER: "Yönetici", EDITOR: "Editör", VIEWER: "İzleyici" },
+    roleDescs: { OWNER: "Tam yetki", MANAGER: "İçerik + üye yönetimi", EDITOR: "İçerik oluşturabilir", VIEWER: "Sadece görüntüleme" },
+    globalRoles: { SUPER_ADMIN: "Süper Admin", ADMIN: "Admin", CUSTOMER: "Müşteri", STAFF: "Personel" },
+    title: "Takım Yönetimi",
+    subtitle: "Marka üyelerini yönet, rol ve erişim izinlerini ayarla.",
+    brandIdPh: "Marka ID gir...", loadBtn: "Yükle",
+    brandRoles: "Marka Rolleri",
+    addMember: "Üye Ekle", emailPh: "ornek@email.com", add: "Ekle",
+    genericError: "Hata oluştu",
+    memberCount: "Üye", owner: "Sahip",
+  },
+  en: {
+    roles: { OWNER: "Owner", MANAGER: "Manager", EDITOR: "Editor", VIEWER: "Viewer" },
+    roleDescs: { OWNER: "Full access", MANAGER: "Content + member management", EDITOR: "Can create content", VIEWER: "View only" },
+    globalRoles: { SUPER_ADMIN: "Super Admin", ADMIN: "Admin", CUSTOMER: "Customer", STAFF: "Staff" },
+    title: "Team Management",
+    subtitle: "Manage brand members, set roles and access permissions.",
+    brandIdPh: "Enter brand ID...", loadBtn: "Load",
+    brandRoles: "Brand Roles",
+    addMember: "Add Member", emailPh: "you@example.com", add: "Add",
+    genericError: "Something went wrong",
+    memberCount: "Members", owner: "Owner",
+  },
+};
 
 interface Member {
   id: string;
@@ -45,6 +73,8 @@ function Avatar({ name, email, avatarUrl }: { name?: string | null; email: strin
 }
 
 export default function TeamPage() {
+  const { lang } = useLang();
+  const sL = L[lang];
   const [brandId, setBrandId] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [owner, setOwner] = useState<Member | null>(null);
@@ -83,7 +113,7 @@ export default function TeamPage() {
       });
       setInviteEmail("");
     } else {
-      setInviteError(data.error ?? "Hata oluştu");
+      setInviteError(data.error ?? sL.genericError);
     }
     setInviting(false);
   }
@@ -117,21 +147,21 @@ export default function TeamPage() {
       <div className="mb-8 flex items-center gap-3">
         <Users className="h-8 w-8 text-[hsl(var(--primary))]" />
         <div>
-          <h1 className="text-2xl font-bold">Takım Yönetimi</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">Marka üyelerini yönet, rol ve erişim izinlerini ayarla.</p>
+          <h1 className="text-2xl font-bold">{sL.title}</h1>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">{sL.subtitle}</p>
         </div>
       </div>
 
       {/* Marka ID */}
       {!loaded && (
         <div className="glass mb-8 flex gap-2 rounded-2xl p-5">
-          <input type="text" placeholder="Marka ID gir..." value={brandId}
+          <input type="text" placeholder={sL.brandIdPh} value={brandId}
             onChange={(e) => setBrandId(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && brandId.trim()) { setLoaded(true); load(); } }}
             className="flex-1 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary))] transition" />
           <button onClick={() => { if (brandId.trim()) { setLoaded(true); load(); } }}
             className="rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">
-            Yükle
+            {sL.loadBtn}
           </button>
         </div>
       )}
@@ -140,14 +170,14 @@ export default function TeamPage() {
         <div className="space-y-5">
           {/* Rol açıklamaları */}
           <div className="glass rounded-2xl p-5">
-            <p className="mb-3 text-sm font-semibold">Marka Rolleri</p>
+            <p className="mb-3 text-sm font-semibold">{sL.brandRoles}</p>
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
               {BRAND_ROLES.map((r) => (
                 <div key={r.value} className="rounded-xl bg-[hsl(var(--muted)/0.5)] p-3">
                   <div className={`mb-1 flex items-center gap-1.5 text-xs font-semibold ${r.color}`}>
-                    <r.icon className="h-3.5 w-3.5" /> {r.label}
+                    <r.icon className="h-3.5 w-3.5" /> {sL.roles[r.value]}
                   </div>
-                  <p className="text-xs text-[hsl(var(--muted-foreground))]">{r.desc}</p>
+                  <p className="text-xs text-[hsl(var(--muted-foreground))]">{sL.roleDescs[r.value]}</p>
                 </div>
               ))}
             </div>
@@ -156,22 +186,22 @@ export default function TeamPage() {
           {/* Davet formu */}
           <form onSubmit={invite} className="glass rounded-2xl p-5">
             <p className="mb-3 text-sm font-semibold flex items-center gap-2">
-              <UserPlus className="h-4 w-4 text-[hsl(var(--primary))]" /> Üye Ekle
+              <UserPlus className="h-4 w-4 text-[hsl(var(--primary))]" /> {sL.addMember}
             </p>
             <div className="flex gap-2">
-              <input type="email" required placeholder="ornek@email.com" value={inviteEmail}
+              <input type="email" required placeholder={sL.emailPh} value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 className="flex-1 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary))] transition" />
               <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as BrandRole)}
                 className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary))] transition">
                 {BRAND_ROLES.filter((r) => r.value !== "OWNER").map((r) => (
-                  <option key={r.value} value={r.value}>{r.label}</option>
+                  <option key={r.value} value={r.value}>{sL.roles[r.value]}</option>
                 ))}
               </select>
               <button type="submit" disabled={inviting}
                 className="flex items-center gap-1.5 rounded-xl bg-[hsl(var(--primary))] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
                 {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-                Ekle
+                {sL.add}
               </button>
             </div>
             {inviteError && <p className="mt-2 text-xs text-red-400">{inviteError}</p>}
@@ -185,7 +215,7 @@ export default function TeamPage() {
           ) : (
             <div className="glass rounded-2xl overflow-hidden">
               <div className="px-5 py-3 border-b border-[hsl(var(--border))]">
-                <p className="text-sm font-semibold">{allMembers.length} Üye</p>
+                <p className="text-sm font-semibold">{allMembers.length} {sL.memberCount}</p>
               </div>
               <div className="divide-y divide-[hsl(var(--border))]">
                 {allMembers.map((member) => (
@@ -196,14 +226,14 @@ export default function TeamPage() {
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium truncate">{member.name ?? member.email}</p>
                         {member.isOwner && (
-                          <span className="rounded-full bg-yellow-500/10 px-2 py-0.5 text-xs font-medium text-yellow-400">Sahip</span>
+                          <span className="rounded-full bg-yellow-500/10 px-2 py-0.5 text-xs font-medium text-yellow-400">{sL.owner}</span>
                         )}
                       </div>
                       <div className="mt-0.5 flex items-center gap-2">
                         <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">{member.email}</p>
                         <span className="text-xs text-[hsl(var(--muted-foreground))]">·</span>
                         <span className="text-xs text-[hsl(var(--muted-foreground))]">
-                          {GLOBAL_ROLE_LABELS[member.globalRole]}
+                          {sL.globalRoles[member.globalRole] ?? GLOBAL_ROLE_LABELS[member.globalRole]}
                         </span>
                       </div>
                     </div>
@@ -212,7 +242,7 @@ export default function TeamPage() {
                     {member.isOwner ? (
                       <div className="flex items-center gap-1.5 rounded-lg bg-yellow-500/10 px-3 py-1.5">
                         <Crown className="h-3.5 w-3.5 text-yellow-400" />
-                        <span className="text-xs font-medium text-yellow-400">Sahip</span>
+                        <span className="text-xs font-medium text-yellow-400">{sL.owner}</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
@@ -226,7 +256,7 @@ export default function TeamPage() {
                               className="appearance-none rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] pl-7 pr-7 py-1.5 text-xs font-medium outline-none focus:border-[hsl(var(--primary))] transition cursor-pointer"
                             >
                               {BRAND_ROLES.filter((r) => r.value !== "OWNER").map((r) => (
-                                <option key={r.value} value={r.value}>{r.label}</option>
+                                <option key={r.value} value={r.value}>{sL.roles[r.value]}</option>
                               ))}
                             </select>
                             <RoleIcon role={member.brandRole} />
