@@ -7,6 +7,68 @@ import {
   CheckCircle2, XCircle, MinusCircle,
 } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    selectBrand: "Önce bir marka seçin",
+    sentiment: { POSITIVE: "Olumlu", NEUTRAL: "Nötr", NEGATIVE: "Olumsuz" } as Record<string, string>,
+    reportFail: "Rapor oluşturulamadı",
+    analyzing: "AI yorumları analiz ediyor", extracting: "Temalar çıkarılıyor...", takesTime: "20–40 saniye sürebilir",
+    themeReport: "AI Tema Raporu",
+    themeReportDesc1: "Tüm yorumlarınızı tarayarak öne çıkan temaları",
+    themeReportDesc2: "ve yüzdelik dağılımları çıkarır.",
+    createReport: "Rapor Oluştur",
+    analyzed: "yorum analiz edildi", refresh: "Yenile",
+    overall: "Genel Değerlendirme",
+    strengths: "Güçlü Yönler", weaknesses: "Gelişim Alanları",
+    topThemes: "ÖNE ÇIKAN TEMALAR",
+    posLow: "olumlu", negLow: "olumsuz", neuLow: "nötr",
+    title: "Yorum Analizi", reviewsWord: "yorum",
+    tabs: { reviews: "Yorumlar", stats: "İstatistikler", rapor: "AI Raporu", qr: "QR Kodlar" },
+    all: "Tümü", manualAdd: "Manuel Ekle", aiAnalyze: "AI Analiz Et",
+    namePh: "İsim (opsiyonel)", reviewPh: "Yorum metni...", add: "Ekle",
+    noReviews: "Yorum bulunamadı", anonymous: "Anonim",
+    statTotal: "Toplam",
+    ratingDist: "Puan Dağılımı", avg: "Ort:",
+    topTopics: "Öne Çıkan Konular",
+    insight: "AI İçgörü Özeti", regenerate: "Yenile", create: "Oluştur",
+    unanalyzedMsg: (n: number) => `${n} yorum henüz analiz edilmedi. "AI Analiz Et" butonunu kullan.`,
+    clickToCreate: "Rapor oluşturmak için butona tıkla.",
+    qrLabelPh: "QR etiket (opsiyonel: Masa 1, Giriş...)",
+    createBtn: "Oluştur", noQr: "Henüz QR kodu yok.", qrCodeWord: "QR Kodu",
+    scans: "tarama", open: "Aç",
+  },
+  en: {
+    selectBrand: "Select a brand first",
+    sentiment: { POSITIVE: "Positive", NEUTRAL: "Neutral", NEGATIVE: "Negative" } as Record<string, string>,
+    reportFail: "Could not generate the report",
+    analyzing: "AI is analyzing your reviews", extracting: "Extracting themes...", takesTime: "May take 20–40 seconds",
+    themeReport: "AI Theme Report",
+    themeReportDesc1: "Scans all your reviews and extracts the top themes",
+    themeReportDesc2: "with percentage breakdowns.",
+    createReport: "Generate Report",
+    analyzed: "reviews analyzed", refresh: "Refresh",
+    overall: "Overall Assessment",
+    strengths: "Strengths", weaknesses: "Areas to Improve",
+    topThemes: "TOP THEMES",
+    posLow: "positive", negLow: "negative", neuLow: "neutral",
+    title: "Review Analysis", reviewsWord: "reviews",
+    tabs: { reviews: "Reviews", stats: "Statistics", rapor: "AI Report", qr: "QR Codes" },
+    all: "All", manualAdd: "Add Manually", aiAnalyze: "Analyze with AI",
+    namePh: "Name (optional)", reviewPh: "Review text...", add: "Add",
+    noReviews: "No reviews found", anonymous: "Anonymous",
+    statTotal: "Total",
+    ratingDist: "Rating Distribution", avg: "Avg:",
+    topTopics: "Top Topics",
+    insight: "AI Insight Summary", regenerate: "Refresh", create: "Generate",
+    unanalyzedMsg: (n: number) => `${n} reviews are not analyzed yet. Use the "Analyze with AI" button.`,
+    clickToCreate: "Click the button to generate a report.",
+    qrLabelPh: "QR label (optional: Table 1, Entrance...)",
+    createBtn: "Create", noQr: "No QR codes yet.", qrCodeWord: "QR Code",
+    scans: "scans", open: "Open",
+  },
+};
 
 type Sentiment = "POSITIVE" | "NEUTRAL" | "NEGATIVE" | null;
 
@@ -78,6 +140,8 @@ function SentimentIcon({ s }: { s?: Sentiment }) {
 
 // ── AI Tema Raporu Bileşeni ──
 function ThemeReport({ brandId, brandName }: { brandId: string; brandName: string }) {
+  const { lang } = useLang();
+  const sL = L[lang];
   const [report, setReport] = useState<ReviewReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -87,7 +151,7 @@ function ThemeReport({ brandId, brandName }: { brandId: string; brandName: strin
     setError("");
     const res = await fetch(`/api/review/${brandId}/report`, { method: "POST" });
     const data = await res.json();
-    if (!res.ok) setError(data.error ?? "Rapor oluşturulamadı");
+    if (!res.ok) setError(data.error ?? sL.reportFail);
     else setReport(data.report);
     setLoading(false);
   }
@@ -115,9 +179,9 @@ function ThemeReport({ brandId, brandName }: { brandId: string; brandName: strin
         <Sparkles className="h-8 w-8 text-[hsl(var(--primary))]" />
       </div>
       <div className="text-center">
-        <p className="font-semibold">AI yorumları analiz ediyor</p>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">{brandName} · Temalar çıkarılıyor...</p>
-        <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">20–40 saniye sürebilir</p>
+        <p className="font-semibold">{sL.analyzing}</p>
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">{brandName} · {sL.extracting}</p>
+        <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{sL.takesTime}</p>
       </div>
     </div>
   );
@@ -128,9 +192,9 @@ function ThemeReport({ brandId, brandName }: { brandId: string; brandName: strin
         <BarChart3 className="h-8 w-8 text-[hsl(var(--primary))]" />
       </div>
       <div>
-        <p className="text-lg font-bold">AI Tema Raporu</p>
+        <p className="text-lg font-bold">{sL.themeReport}</p>
         <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-          Tüm yorumlarınızı tarayarak öne çıkan temaları<br />ve yüzdelik dağılımları çıkarır.
+          {sL.themeReportDesc1}<br />{sL.themeReportDesc2}
         </p>
       </div>
       {error && (
@@ -143,7 +207,7 @@ function ThemeReport({ brandId, brandName }: { brandId: string; brandName: strin
         className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-7 py-3 font-semibold text-white transition hover:opacity-90"
       >
         <Sparkles className="h-4 w-4" />
-        Rapor Oluştur
+        {sL.createReport}
       </button>
     </div>
   );
@@ -153,16 +217,16 @@ function ThemeReport({ brandId, brandName }: { brandId: string; brandName: strin
       {/* Başlık + Yenile */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-lg font-bold">AI Tema Raporu</p>
+          <p className="text-lg font-bold">{sL.themeReport}</p>
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {report.totalAnalyzed} yorum analiz edildi
+            {report.totalAnalyzed} {sL.analyzed}
           </p>
         </div>
         <button
           onClick={generate}
           className="flex items-center gap-1.5 rounded-xl border border-[hsl(var(--border))] px-4 py-2 text-sm font-medium transition hover:bg-[hsl(var(--accent))]"
         >
-          <RefreshCw className="h-3.5 w-3.5" /> Yenile
+          <RefreshCw className="h-3.5 w-3.5" /> {sL.refresh}
         </button>
       </div>
 
@@ -170,13 +234,13 @@ function ThemeReport({ brandId, brandName }: { brandId: string; brandName: strin
       <div className="glass rounded-2xl p-6">
         <div className="mb-3 flex items-center gap-2">
           <FileText className="h-4 w-4 text-[hsl(var(--primary))]" />
-          <p className="font-semibold">Genel Değerlendirme</p>
+          <p className="font-semibold">{sL.overall}</p>
           <span className={`ml-auto rounded-full px-2.5 py-0.5 text-xs font-semibold ${
             report.overallSentiment === "POSITIVE" ? "bg-green-500/15 text-green-400"
             : report.overallSentiment === "NEGATIVE" ? "bg-red-500/15 text-red-400"
             : "bg-yellow-500/15 text-yellow-400"
           }`}>
-            {SENTIMENT_LABEL[report.overallSentiment]}
+            {sL.sentiment[report.overallSentiment]}
           </span>
         </div>
         <p className="text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">{report.summary}</p>
@@ -185,7 +249,7 @@ function ThemeReport({ brandId, brandName }: { brandId: string; brandName: strin
           <div className="rounded-xl bg-green-500/8 p-4">
             <div className="mb-2 flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-green-400" />
-              <p className="text-sm font-semibold text-green-400">Güçlü Yönler</p>
+              <p className="text-sm font-semibold text-green-400">{sL.strengths}</p>
             </div>
             <ul className="space-y-1">
               {report.strongPoints.map((p, i) => (
@@ -199,7 +263,7 @@ function ThemeReport({ brandId, brandName }: { brandId: string; brandName: strin
           <div className="rounded-xl bg-red-500/8 p-4">
             <div className="mb-2 flex items-center gap-2">
               <XCircle className="h-4 w-4 text-red-400" />
-              <p className="text-sm font-semibold text-red-400">Gelişim Alanları</p>
+              <p className="text-sm font-semibold text-red-400">{sL.weaknesses}</p>
             </div>
             <ul className="space-y-1">
               {report.weakPoints.map((p, i) => (
@@ -216,7 +280,7 @@ function ThemeReport({ brandId, brandName }: { brandId: string; brandName: strin
       {/* Tema kartları */}
       <div>
         <p className="mb-3 text-sm font-semibold text-[hsl(var(--muted-foreground))]">
-          ÖNE ÇIKAN TEMALAR
+          {sL.topThemes}
         </p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {report.themes.map((theme, i) => (
@@ -234,7 +298,7 @@ function ThemeReport({ brandId, brandName }: { brandId: string; brandName: strin
                   : theme.sentiment === "NEGATIVE" ? "bg-red-500/20 text-red-400"
                   : "bg-yellow-500/20 text-yellow-400"
                 }`}>
-                  {theme.sentiment === "POSITIVE" ? "olumlu" : theme.sentiment === "NEGATIVE" ? "olumsuz" : "nötr"}
+                  {theme.sentiment === "POSITIVE" ? sL.posLow : theme.sentiment === "NEGATIVE" ? sL.negLow : sL.neuLow}
                 </span>
               </div>
 
@@ -265,6 +329,8 @@ function ThemeReport({ brandId, brandName }: { brandId: string; brandName: strin
 
 export default function ReviewsPage() {
   const { activeBrand } = useBrand();
+  const { lang } = useLang();
+  const sL = L[lang];
   const brandId = activeBrand?.id ?? "";
 
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -353,15 +419,15 @@ export default function ReviewsPage() {
 
   if (!activeBrand) return (
     <div className="flex h-64 items-center justify-center text-[hsl(var(--muted-foreground))]">
-      Önce bir marka seçin
+      {sL.selectBrand}
     </div>
   );
 
   const TABS = [
-    { key: "reviews", label: "Yorumlar", icon: MessageSquare },
-    { key: "stats", label: "İstatistikler", icon: BarChart3 },
-    { key: "rapor", label: "AI Raporu", icon: Sparkles },
-    { key: "qr", label: "QR Kodlar", icon: QrCode },
+    { key: "reviews", label: sL.tabs.reviews, icon: MessageSquare },
+    { key: "stats", label: sL.tabs.stats, icon: BarChart3 },
+    { key: "rapor", label: sL.tabs.rapor, icon: Sparkles },
+    { key: "qr", label: sL.tabs.qr, icon: QrCode },
   ] as const;
 
   return (
@@ -372,9 +438,9 @@ export default function ReviewsPage() {
           <Star className="h-5 w-5 text-[hsl(var(--primary))]" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Yorum Analizi</h1>
+          <h1 className="text-2xl font-bold">{sL.title}</h1>
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {activeBrand.name} · {stats?.totalReviews ?? 0} yorum
+            {activeBrand.name} · {stats?.totalReviews ?? 0} {sL.reviewsWord}
           </p>
         </div>
       </div>
@@ -406,18 +472,18 @@ export default function ReviewsPage() {
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                   filter === f ? "bg-[hsl(var(--primary))] text-white" : "bg-[hsl(var(--muted))] hover:bg-[hsl(var(--border))]"
                 }`}>
-                {f === "ALL" ? "Tümü" : SENTIMENT_LABEL[f]}
+                {f === "ALL" ? sL.all : sL.sentiment[f]}
               </button>
             ))}
             <div className="ml-auto flex gap-2">
               <button onClick={() => setShowAddForm(!showAddForm)}
                 className="flex items-center gap-1.5 rounded-lg bg-[hsl(var(--muted))] px-3 py-1.5 text-xs font-medium transition hover:bg-[hsl(var(--border))]">
-                <Plus className="h-3.5 w-3.5" /> Manuel Ekle
+                <Plus className="h-3.5 w-3.5" /> {sL.manualAdd}
               </button>
               <button onClick={runAnalysis} disabled={analyzing}
                 className="flex items-center gap-1.5 rounded-lg bg-[hsl(var(--primary))] px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
                 {analyzing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                AI Analiz Et
+                {sL.aiAnalyze}
               </button>
             </div>
           </div>
@@ -425,7 +491,7 @@ export default function ReviewsPage() {
           {showAddForm && (
             <form onSubmit={addManualReview} className="glass space-y-3 rounded-2xl p-5">
               <div className="flex gap-3">
-                <input type="text" placeholder="İsim (opsiyonel)" value={newAuthor}
+                <input type="text" placeholder={sL.namePh} value={newAuthor}
                   onChange={(e) => setNewAuthor(e.target.value)}
                   className="flex-1 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition" />
                 <select value={newRating} onChange={(e) => setNewRating(Number(e.target.value))}
@@ -433,12 +499,12 @@ export default function ReviewsPage() {
                   {[1, 2, 3, 4, 5].map((r) => <option key={r} value={r}>{r} ★</option>)}
                 </select>
               </div>
-              <textarea required rows={3} placeholder="Yorum metni..." value={newText}
+              <textarea required rows={3} placeholder={sL.reviewPh} value={newText}
                 onChange={(e) => setNewText(e.target.value)}
                 className="w-full resize-none rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition" />
               <button type="submit" disabled={addingReview}
                 className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
-                {addingReview ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Ekle
+                {addingReview ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {sL.add}
               </button>
             </form>
           )}
@@ -448,7 +514,7 @@ export default function ReviewsPage() {
           ) : reviews.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
               <MessageSquare className="h-10 w-10 text-[hsl(var(--muted-foreground)/0.3)]" />
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">Yorum bulunamadı</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">{sL.noReviews}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -460,7 +526,7 @@ export default function ReviewsPage() {
                         {(review.authorName ?? "?").slice(0, 1).toUpperCase()}
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{review.authorName ?? "Anonim"}</p>
+                        <p className="text-sm font-medium">{review.authorName ?? sL.anonymous}</p>
                         <p className="text-[10px] text-[hsl(var(--muted-foreground))]">{SOURCE_LABEL[review.source]}</p>
                       </div>
                     </div>
@@ -468,7 +534,7 @@ export default function ReviewsPage() {
                       <StarRow rating={review.rating} />
                       {review.sentiment && (
                         <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${SENTIMENT_COLOR[review.sentiment]}`}>
-                          <SentimentIcon s={review.sentiment} /> {SENTIMENT_LABEL[review.sentiment]}
+                          <SentimentIcon s={review.sentiment} /> {sL.sentiment[review.sentiment]}
                         </span>
                       )}
                     </div>
@@ -496,10 +562,10 @@ export default function ReviewsPage() {
         <div className="space-y-5">
           <div className="grid grid-cols-4 gap-3">
             {[
-              { label: "Toplam", value: stats.totalReviews, cls: "" },
-              { label: "Olumlu", value: stats.sentiment.POSITIVE, cls: "text-green-400" },
-              { label: "Nötr", value: stats.sentiment.NEUTRAL, cls: "text-yellow-400" },
-              { label: "Olumsuz", value: stats.sentiment.NEGATIVE, cls: "text-red-400" },
+              { label: sL.statTotal, value: stats.totalReviews, cls: "" },
+              { label: sL.sentiment.POSITIVE, value: stats.sentiment.POSITIVE, cls: "text-green-400" },
+              { label: sL.sentiment.NEUTRAL, value: stats.sentiment.NEUTRAL, cls: "text-yellow-400" },
+              { label: sL.sentiment.NEGATIVE, value: stats.sentiment.NEGATIVE, cls: "text-red-400" },
             ].map((item) => (
               <div key={item.label} className="glass rounded-2xl p-4 text-center">
                 <p className={`text-2xl font-bold ${item.cls}`}>{item.value}</p>
@@ -510,7 +576,7 @@ export default function ReviewsPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="glass rounded-2xl p-5">
-              <p className="mb-3 text-sm font-semibold">Puan Dağılımı</p>
+              <p className="mb-3 text-sm font-semibold">{sL.ratingDist}</p>
               <div className="space-y-2">
                 {[...stats.ratingDist].reverse().map(({ rating, count }) => {
                   const max = Math.max(...stats.ratingDist.map((r) => r.count), 1);
@@ -526,12 +592,12 @@ export default function ReviewsPage() {
                 })}
               </div>
               <p className="mt-3 text-center text-sm">
-                Ort: <span className="font-bold text-amber-400">{stats.avgRating?.toFixed(1) ?? "—"}</span> / 5
+                {sL.avg} <span className="font-bold text-amber-400">{stats.avgRating?.toFixed(1) ?? "—"}</span> / 5
               </p>
             </div>
 
             <div className="glass rounded-2xl p-5">
-              <p className="mb-3 text-sm font-semibold">Öne Çıkan Konular</p>
+              <p className="mb-3 text-sm font-semibold">{sL.topTopics}</p>
               <div className="space-y-2">
                 {stats.topTopics.slice(0, 6).map(({ topic, count }) => {
                   const max = Math.max(...stats.topTopics.map((t) => t.count), 1);
@@ -551,11 +617,11 @@ export default function ReviewsPage() {
 
           <div className="glass rounded-2xl p-5">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-semibold">AI İçgörü Özeti</p>
+              <p className="text-sm font-semibold">{sL.insight}</p>
               <button onClick={getInsightReport} disabled={insightLoading}
                 className="flex items-center gap-1.5 rounded-lg bg-[hsl(var(--primary))] px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
                 {insightLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-                {stats.insightReport ? "Yenile" : "Oluştur"}
+                {stats.insightReport ? sL.regenerate : sL.create}
               </button>
             </div>
             {stats.insightReport ? (
@@ -563,8 +629,8 @@ export default function ReviewsPage() {
             ) : (
               <p className="text-sm text-[hsl(var(--muted-foreground))]">
                 {stats.unanalyzed > 0
-                  ? `${stats.unanalyzed} yorum henüz analiz edilmedi. "AI Analiz Et" butonunu kullan.`
-                  : "Rapor oluşturmak için butona tıkla."}
+                  ? sL.unanalyzedMsg(stats.unanalyzed)
+                  : sL.clickToCreate}
               </p>
             )}
           </div>
@@ -580,29 +646,29 @@ export default function ReviewsPage() {
       {tab === "qr" && (
         <div className="space-y-4">
           <div className="glass flex gap-2 rounded-2xl p-5">
-            <input type="text" placeholder="QR etiket (opsiyonel: Masa 1, Giriş...)" value={qrLabel}
+            <input type="text" placeholder={sL.qrLabelPh} value={qrLabel}
               onChange={(e) => setQrLabel(e.target.value)}
               className="flex-1 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary))] transition" />
             <button onClick={createQr} disabled={creatingQr}
               className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
-              {creatingQr ? <Loader2 className="h-4 w-4 animate-spin" /> : <QrCode className="h-4 w-4" />} Oluştur
+              {creatingQr ? <Loader2 className="h-4 w-4 animate-spin" /> : <QrCode className="h-4 w-4" />} {sL.createBtn}
             </button>
           </div>
           {qrCodes.length === 0 ? (
-            <p className="py-8 text-center text-sm text-[hsl(var(--muted-foreground))]">Henüz QR kodu yok.</p>
+            <p className="py-8 text-center text-sm text-[hsl(var(--muted-foreground))]">{sL.noQr}</p>
           ) : (
             <div className="space-y-2">
               {qrCodes.map((qr) => (
                 <div key={qr.id} className="glass flex items-center gap-4 rounded-xl px-5 py-4">
                   <QrCode className="h-8 w-8 text-[hsl(var(--primary))]" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium">{qr.label ?? "QR Kodu"}</p>
+                    <p className="text-sm font-medium">{qr.label ?? sL.qrCodeWord}</p>
                     <p className="text-xs text-[hsl(var(--muted-foreground))]">/qr/{qr.slug}</p>
                   </div>
-                  <span className="text-xs text-[hsl(var(--muted-foreground))]">{qr.scanCount} tarama</span>
+                  <span className="text-xs text-[hsl(var(--muted-foreground))]">{qr.scanCount} {sL.scans}</span>
                   <a href={`/qr/${qr.slug}`} target="_blank" rel="noreferrer"
                     className="rounded-lg bg-[hsl(var(--muted))] px-3 py-1.5 text-xs font-medium transition hover:bg-[hsl(var(--border))]">
-                    Aç
+                    {sL.open}
                   </a>
                 </div>
               ))}
