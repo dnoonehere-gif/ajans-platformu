@@ -465,7 +465,7 @@ export default function MenuPage() {
               </div>
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <label className="text-xs font-medium text-[hsl(var(--muted-foreground))]">Açıklama</label>
+                  <label className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.desc}</label>
                   <button type="button" onClick={generateAiDescription} disabled={aiDescLoading || !itemForm.name.trim()}
                     className="flex items-center gap-1 text-xs font-medium text-[hsl(var(--primary))] transition hover:opacity-80 disabled:opacity-40">
                     {aiDescLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}

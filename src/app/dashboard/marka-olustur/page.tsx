@@ -18,7 +18,7 @@ const L = {
     s2Title: "Logonuzu ekleyin", s2Desc: "PNG veya JPG, en az 200×200px önerilir",
     clickOrDrag: "Tıkla veya sürükle", removeLogo: "Logoyu kaldır",
     optionalNote: "Opsiyonel — daha sonra da ekleyebilirsiniz.",
-    s3Title: "Adresiniz nedir?", s3Desc: "Müşterilerinizin sizi bulabileceği yer",
+    s3Title: "Adresiniz nedir?", s3Desc: "Müşterilerinizin sizi bulabileceği yer", addressPh: "Atatürk Cad. No:12, Kadıköy / İstanbul",
     s4Title: "Telefon numaranız?", s4Desc: "Müşterileriniz sizi bu numaradan arayabilir",
     s5Title: "Instagram hesabınız?", s5Desc: "@ olmadan sadece kullanıcı adınızı girin",
     s6Title: "WhatsApp numaranız?", s6Desc: "Ülke kodu dahil girin",
@@ -34,7 +34,7 @@ const L = {
     s2Title: "Add your logo", s2Desc: "PNG or JPG, at least 200×200px recommended",
     clickOrDrag: "Click or drag", removeLogo: "Remove logo",
     optionalNote: "Optional — you can add it later.",
-    s3Title: "What is your address?", s3Desc: "Where customers can find you",
+    s3Title: "What is your address?", s3Desc: "Where customers can find you", addressPh: "123 Main St, Downtown / New York",
     s4Title: "Your phone number?", s4Desc: "Customers can call you at this number",
     s5Title: "Your Instagram handle?", s5Desc: "Enter your username without the @",
     s6Title: "Your WhatsApp number?", s6Desc: "Include the country code",
@@ -262,7 +262,7 @@ export default function MarkaOlusturPage() {
                 autoFocus
                 rows={3}
                 className={`${inputCls} h-28 resize-none py-3`}
-                placeholder="Atatürk Cad. No:12, Kadıköy / İstanbul"
+                placeholder={sL.addressPh}
                 value={form.address}
                 onChange={(e) => set("address", e.target.value)}
               />

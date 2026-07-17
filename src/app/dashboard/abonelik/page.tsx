@@ -30,7 +30,7 @@ const L = {
     chatbotFeat: "AI Chatbot", googleFeat: "Google Business", seoFeat: "SEO İçerik",
     support: { email: "E-posta destek", priority: "Öncelikli destek", dedicated: "Dedike hesap yöneticisi" },
     invoiceHistory: "Fatura Geçmişi",
-    planWord: "Planı", securePay: "Güvenli ödeme", openNewTab: "Yeni sekmede aç",
+    planWord: "Planı", securePay: "Güvenli ödeme", secureIframe: "Güvenli Ödeme", openNewTab: "Yeni sekmede aç",
     subCreated: "Aboneliğiniz oluşturuldu", paySoon: "Ödeme sistemi yakında aktive edilecek.",
     payFooter: "Ödeme tamamlandıktan sonra planınız otomatik olarak aktive olur. Bu pencereyi kapatabilirsiniz.",
   },
@@ -55,7 +55,7 @@ const L = {
     chatbotFeat: "AI Chatbot", googleFeat: "Google Business", seoFeat: "SEO Content",
     support: { email: "Email support", priority: "Priority support", dedicated: "Dedicated account manager" },
     invoiceHistory: "Invoice History",
-    planWord: "Plan", securePay: "Secure payment", openNewTab: "Open in new tab",
+    planWord: "Plan", securePay: "Secure payment", secureIframe: "Secure Payment", openNewTab: "Open in new tab",
     subCreated: "Your subscription has been created", paySoon: "Payments will be activated soon.",
     payFooter: "Once payment is complete your plan activates automatically. You can close this window.",
   },
@@ -463,7 +463,7 @@ export default function AbonelikPage() {
                 src={checkoutUrl}
                 className="w-full flex-1 border-0"
                 style={{ minHeight: "580px" }}
-                title="Güvenli Ödeme"
+                title={sL.secureIframe}
                 sandbox="allow-scripts allow-same-origin allow-forms allow-top-navigation allow-popups"
               />
             ) : (

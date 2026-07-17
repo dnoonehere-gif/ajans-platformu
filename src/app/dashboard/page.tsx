@@ -575,15 +575,15 @@ export default function DashboardPage() {
           {/* AI Performance */}
           {perf && (
             <div className="glass nv-card-hover rounded-2xl p-5">
-              <p className="mb-5 text-sm font-semibold">AI Performans Analizi</p>
+              <p className="mb-5 text-sm font-semibold">{t("dashboard.aiPerformance")}</p>
               <div className="flex flex-wrap items-start gap-8">
-                <ScoreRing value={perf.overallScore} label="Genel" color="#6366f1" />
-                <ScoreRing value={perf.reviewScore} label="Yorum" color="#22c55e" />
-                <ScoreRing value={perf.sentimentScore} label="Duygu" color="#f59e0b" />
-                <ScoreRing value={perf.engagementScore} label="Etkileşim" color="#0ea5e9" />
+                <ScoreRing value={perf.overallScore} label={t("dashboard.ringOverall")} color="#6366f1" />
+                <ScoreRing value={perf.reviewScore} label={t("dashboard.ringReview")} color="#22c55e" />
+                <ScoreRing value={perf.sentimentScore} label={t("dashboard.ringSentiment")} color="#f59e0b" />
+                <ScoreRing value={perf.engagementScore} label={t("dashboard.ringEngagement")} color="#0ea5e9" />
                 {data.latestSummary!.aiSuggestions.length > 0 && (
                   <div className="flex-1 min-w-[200px] space-y-2.5">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Öneriler</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{t("dashboard.suggestions")}</p>
                     {data.latestSummary!.aiSuggestions.map((s, i) => (
                       <div key={i} className="flex gap-2 text-sm">
                         <span className="mt-0.5 shrink-0 text-[hsl(var(--primary))]">→</span>
@@ -600,12 +600,12 @@ export default function DashboardPage() {
           {(briefing ?? data.latestSummary?.topComplaint) && (
             <div className="glass rounded-2xl p-5">
               <p className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                <Sparkles className="h-4 w-4 text-[hsl(var(--primary))]" /> AI Brifing
+                <Sparkles className="h-4 w-4 text-[hsl(var(--primary))]" /> {t("dashboard.aiBriefing")}
               </p>
               {data.latestSummary?.topComplaint && (
                 <div className="mb-3 flex items-center gap-2 rounded-xl bg-red-500/8 px-4 py-2.5">
                   <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
-                  <p className="text-sm text-red-400">En çok şikayet: <strong>{data.latestSummary.topComplaint}</strong></p>
+                  <p className="text-sm text-red-400">{t("dashboard.topComplaint")} <strong>{data.latestSummary.topComplaint}</strong></p>
                 </div>
               )}
               {briefing && <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed">{briefing}</p>}
