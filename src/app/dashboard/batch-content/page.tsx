@@ -3,6 +3,58 @@ import { useState } from "react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { Loader2, Sparkles, Plus, Trash2, Copy, Check, Layers, Download, Wand2, Edit3, Save } from "lucide-react";
 import type { ContentType } from "@prisma/client";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    genericError: "Bir hata oluştu", connFail: "Bağlantı hatası",
+    title: "Toplu İçerik Üretimi",
+    subtitle: "Tek seferde 20'ye kadar içerik üretin — şablonlarla hızlı başlayın",
+    templates: "Hazır Şablonlar", itemsWord: "içerik",
+    tplNames: ["1 Haftalık Instagram", "Lansman Paketi", "Blog + SEO", "Reklam Kampanyası"],
+    brandInfo: "Marka Bilgileri",
+    sector: "Sektör", sectorPh: "Kafe, restoran, güzellik salonu...",
+    desc: "Marka Açıklaması", descPh: "Markanızı kısaca tanımlayın",
+    contents: "İçerikler", add: "Ekle",
+    topicPh: "Konu (opsiyonel)", tonePh: "Ton",
+    generating: (n: number) => `Üretiliyor... (${n} içerik)`,
+    generate: (n: number) => `${n} İçerik Üret`,
+    results: "Sonuçlar",
+    copied: "Kopyalandı", copyAll: "Tümünü Kopyala", csv: "CSV İndir",
+    save: "Kaydet", edit: "Düzenle", copy: "Kopyala",
+    types: {
+      INSTAGRAM_POST: "Instagram Gönderi", REELS_IDEA: "Reels Senaryosu", STORY_IDEA: "Story Serisi",
+      FACEBOOK_POST: "Facebook Gönderi", LINKEDIN_POST: "LinkedIn Gönderi", BLOG_POST: "Blog Yazısı",
+      GOOGLE_ADS: "Google Reklam", META_ADS: "Meta Reklam", SEO_CONTENT: "SEO İçeriği",
+      HASHTAGS: "Hashtag Seti", CONTENT_PLAN: "İçerik Planı",
+    } as Record<string, string>,
+    csvHeader: "Tür,Başlık,İçerik",
+  },
+  en: {
+    genericError: "Something went wrong", connFail: "Connection error",
+    title: "Batch Content Generation",
+    subtitle: "Generate up to 20 pieces of content at once — start fast with templates",
+    templates: "Ready Templates", itemsWord: "items",
+    tplNames: ["1-Week Instagram", "Launch Pack", "Blog + SEO", "Ad Campaign"],
+    brandInfo: "Brand Details",
+    sector: "Industry", sectorPh: "Cafe, restaurant, beauty salon...",
+    desc: "Brand Description", descPh: "Describe your brand briefly",
+    contents: "Contents", add: "Add",
+    topicPh: "Topic (optional)", tonePh: "Tone",
+    generating: (n: number) => `Generating... (${n} items)`,
+    generate: (n: number) => `Generate ${n} Items`,
+    results: "Results",
+    copied: "Copied", copyAll: "Copy All", csv: "Download CSV",
+    save: "Save", edit: "Edit", copy: "Copy",
+    types: {
+      INSTAGRAM_POST: "Instagram Post", REELS_IDEA: "Reels Script", STORY_IDEA: "Story Series",
+      FACEBOOK_POST: "Facebook Post", LINKEDIN_POST: "LinkedIn Post", BLOG_POST: "Blog Article",
+      GOOGLE_ADS: "Google Ad", META_ADS: "Meta Ad", SEO_CONTENT: "SEO Content",
+      HASHTAGS: "Hashtag Set", CONTENT_PLAN: "Content Plan",
+    } as Record<string, string>,
+    csvHeader: "Type,Title,Content",
+  },
+};
 
 const TYPE_OPTIONS: { value: ContentType; label: string }[] = [
   { value: "INSTAGRAM_POST", label: "Instagram Gönderi" },
@@ -86,6 +138,9 @@ interface ResultItem {
 
 export default function BatchContentPage() {
   const { activeBrand } = useBrand();
+  const { lang } = useLang();
+  const sL = L[lang];
+  const typeLabel = (t: string) => sL.types[t] ?? t;
   const [sector, setSector] = useState("");
   const [description, setDescription] = useState("");
   const [items, setItems] = useState<BatchItem[]>([{ type: "INSTAGRAM_POST", topic: "", tone: "" }]);
@@ -126,10 +181,10 @@ export default function BatchContentPage() {
         body: JSON.stringify({ brandId: activeBrand.id, sector, description, items }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Bir hata oluştu"); }
+      if (!res.ok) { setError(data.error ?? sL.genericError); }
       else { setResults(data.results); }
     } catch {
-      setError("Bağlantı hatası");
+      setError(sL.connFail);
     }
     setGenerating(false);
   }
@@ -145,7 +200,7 @@ export default function BatchContentPage() {
     const text = results
       .filter((r) => r.body)
       .map((r) => {
-        const label = TYPE_OPTIONS.find((o) => o.value === r.type)?.label ?? r.type;
+        const label = typeLabel(r.type);
         return `--- ${label} ---\n${r.title ? r.title + "\n\n" : ""}${r.body}`;
       })
       .join("\n\n\n");
@@ -156,11 +211,11 @@ export default function BatchContentPage() {
 
   function downloadCsv() {
     if (!results) return;
-    const header = "Tür,Başlık,İçerik\n";
+    const header = sL.csvHeader + "\n";
     const rows = results
       .filter((r) => r.body)
       .map((r) => {
-        const label = TYPE_OPTIONS.find((o) => o.value === r.type)?.label ?? r.type;
+        const label = typeLabel(r.type);
         const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
         return `${esc(label)},${esc(r.title ?? "")},${esc(r.body ?? "")}`;
       })
@@ -194,9 +249,9 @@ export default function BatchContentPage() {
           <Layers className="h-5 w-5 text-violet-500" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Toplu İçerik Üretimi</h1>
+          <h1 className="text-xl font-bold">{sL.title}</h1>
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            Tek seferde 20&apos;ye kadar içerik üretin — şablonlarla hızlı başlayın
+            {sL.subtitle}
           </p>
         </div>
       </div>
@@ -209,16 +264,16 @@ export default function BatchContentPage() {
       <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
         <div className="mb-3 flex items-center gap-2">
           <Wand2 className="h-4 w-4 text-violet-500" />
-          <h2 className="font-semibold">Hazır Şablonlar</h2>
+          <h2 className="font-semibold">{sL.templates}</h2>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {TEMPLATES.map((tpl) => (
+          {TEMPLATES.map((tpl, ti) => (
             <button key={tpl.label} onClick={() => applyTemplate(tpl)}
               className="flex items-center gap-3 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-3 text-left transition hover:border-[hsl(var(--primary)/0.5)] hover:bg-[hsl(var(--accent))]">
               <span className="text-2xl">{tpl.icon}</span>
               <div>
-                <p className="text-sm font-semibold">{tpl.label}</p>
-                <p className="text-[11px] text-[hsl(var(--muted-foreground))]">{tpl.items.length} içerik</p>
+                <p className="text-sm font-semibold">{sL.tplNames[ti] ?? tpl.label}</p>
+                <p className="text-[11px] text-[hsl(var(--muted-foreground))]">{tpl.items.length} {sL.itemsWord}</p>
               </div>
             </button>
           ))}
@@ -227,16 +282,16 @@ export default function BatchContentPage() {
 
       {/* Genel bilgiler */}
       <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
-        <h2 className="mb-4 font-semibold">Marka Bilgileri</h2>
+        <h2 className="mb-4 font-semibold">{sL.brandInfo}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Sektör</label>
-            <input className={inp} placeholder="Kafe, restoran, güzellik salonu..." value={sector}
+            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.sector}</label>
+            <input className={inp} placeholder={sL.sectorPh} value={sector}
               onChange={(e) => setSector(e.target.value)} />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Marka Açıklaması</label>
-            <input className={inp} placeholder="Markanızı kısaca tanımlayın" value={description}
+            <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.desc}</label>
+            <input className={inp} placeholder={sL.descPh} value={description}
               onChange={(e) => setDescription(e.target.value)} />
           </div>
         </div>
@@ -245,10 +300,10 @@ export default function BatchContentPage() {
       {/* İçerik listesi */}
       <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold">İçerikler ({items.length}/20)</h2>
+          <h2 className="font-semibold">{sL.contents} ({items.length}/20)</h2>
           <button onClick={addItem} disabled={items.length >= 20}
             className="flex items-center gap-1.5 rounded-lg bg-[hsl(var(--primary))] px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
-            <Plus className="h-3.5 w-3.5" /> Ekle
+            <Plus className="h-3.5 w-3.5" /> {sL.add}
           </button>
         </div>
         <div className="space-y-3">
@@ -257,11 +312,11 @@ export default function BatchContentPage() {
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary)/0.1)] text-xs font-bold text-[hsl(var(--primary))]">{i + 1}</span>
               <select className={inp + " max-w-[180px]"} value={item.type}
                 onChange={(e) => updateItem(i, "type", e.target.value)}>
-                {TYPE_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                {TYPE_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{typeLabel(opt.value)}</option>)}
               </select>
-              <input className={inp} placeholder="Konu (opsiyonel)" value={item.topic}
+              <input className={inp} placeholder={sL.topicPh} value={item.topic}
                 onChange={(e) => updateItem(i, "topic", e.target.value)} />
-              <input className={inp + " max-w-[120px]"} placeholder="Ton" value={item.tone}
+              <input className={inp + " max-w-[120px]"} placeholder={sL.tonePh} value={item.tone}
                 onChange={(e) => updateItem(i, "tone", e.target.value)} />
               {items.length > 1 && (
                 <button onClick={() => removeItem(i)} className="text-red-400 transition hover:text-red-500">
@@ -277,23 +332,23 @@ export default function BatchContentPage() {
       <button onClick={handleGenerate} disabled={generating || !sector || !description}
         className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3.5 text-sm font-bold text-white shadow-lg transition hover:opacity-90 disabled:opacity-50">
         {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-        {generating ? `Üretiliyor... (${items.length} içerik)` : `${items.length} İçerik Üret`}
+        {generating ? sL.generating(items.length) : sL.generate(items.length)}
       </button>
 
       {/* Sonuçlar */}
       {results && (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Sonuçlar ({results.filter((r) => r.body).length}/{results.length})</h2>
+            <h2 className="font-semibold">{sL.results} ({results.filter((r) => r.body).length}/{results.length})</h2>
             <div className="flex items-center gap-2">
               <button onClick={copyAll}
                 className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] px-3 py-1.5 text-xs font-medium transition hover:bg-[hsl(var(--accent))]">
                 {copiedAll ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                {copiedAll ? "Kopyalandı" : "Tümünü Kopyala"}
+                {copiedAll ? sL.copied : sL.copyAll}
               </button>
               <button onClick={downloadCsv}
                 className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] px-3 py-1.5 text-xs font-medium transition hover:bg-[hsl(var(--accent))]">
-                <Download className="h-3.5 w-3.5" /> CSV İndir
+                <Download className="h-3.5 w-3.5" /> {sL.csv}
               </button>
             </div>
           </div>
@@ -301,19 +356,19 @@ export default function BatchContentPage() {
             <div key={r.index} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-semibold text-[hsl(var(--primary))]">
-                  {TYPE_OPTIONS.find((o) => o.value === r.type)?.label ?? r.type}
+                  {typeLabel(r.type)}
                 </span>
                 {r.body && (
                   <div className="flex items-center gap-2">
                     <button onClick={() => editingIdx === r.index ? saveEdit(r.index) : startEdit(r.index, r.body!)}
                       className="flex items-center gap-1 text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">
                       {editingIdx === r.index ? <Save className="h-3.5 w-3.5 text-emerald-500" /> : <Edit3 className="h-3.5 w-3.5" />}
-                      {editingIdx === r.index ? "Kaydet" : "Düzenle"}
+                      {editingIdx === r.index ? sL.save : sL.edit}
                     </button>
                     <button onClick={() => copyContent(r.index, r)}
                       className="flex items-center gap-1 text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">
                       {copied === r.index ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                      {copied === r.index ? "Kopyalandı" : "Kopyala"}
+                      {copied === r.index ? sL.copied : sL.copy}
                     </button>
                   </div>
                 )}
