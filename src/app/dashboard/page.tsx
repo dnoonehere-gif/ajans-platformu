@@ -67,20 +67,47 @@ function ScoreRing({ value, label, color }: { value: number; label: string; colo
   );
 }
 
+const ONBOARDING_L = {
+  tr: {
+    steps: [
+      "Markanı oluştur",
+      "AI chatbot'unu kur",
+      "Bilgi tabanını doldur (SSS, saatler, fiyatlar)",
+      "Google işletmeni bağla",
+      "Web siteni yayınla",
+      "İlk yorumunu topla (QR kod)",
+    ],
+    hide: "Gizle",
+  },
+  en: {
+    steps: [
+      "Create your brand",
+      "Set up your AI chatbot",
+      "Fill the knowledge base (FAQ, hours, prices)",
+      "Connect your Google Business",
+      "Publish your website",
+      "Collect your first review (QR code)",
+    ],
+    hide: "Hide",
+  },
+};
+
 function OnboardingCard({ setup, brandId }: { setup: Setup; brandId: string }) {
   const [dismissed, setDismissed] = useState(false);
+  const { t, lang } = useLang();
+  const oL = ONBOARDING_L[lang];
 
   useEffect(() => {
     setDismissed(localStorage.getItem(`nv-onboarding-${brandId}`) === "1");
   }, [brandId]);
 
   const steps = [
-    { done: setup.hasBrand, label: "Markanı oluştur", href: "/dashboard/marka-olustur" },
-    { done: setup.hasChatbot, label: "AI chatbot'unu kur", href: "/dashboard/chatbot" },
-    { done: setup.hasKnowledge, label: "Bilgi tabanını doldur (SSS, saatler, fiyatlar)", href: "/dashboard/chatbot" },
-    { done: setup.hasGoogle, label: "Google işletmeni bağla", href: "/dashboard/google" },
-    { done: setup.websitePublished, label: "Web siteni yayınla", href: "/dashboard/website" },
-    { done: setup.hasReviews, label: "İlk yorumunu topla (QR kod)", href: "/dashboard/qr" },
+    { done: setup.hasBrand, label: oL.steps[0], href: "/dashboard/marka-olustur" },
+    { done: setup.hasChatbot, label: oL.steps[1], href: "/dashboard/chatbot" },
+    { done: setup.hasKnowledge, label: oL.steps[2], href: "/dashboard/chatbot" },
+    { done: setup.hasGoogle, label: oL.steps[3], href: "/dashboard/google" },
+    { done: setup.websitePublished, label: oL.steps[4], href: "/dashboard/website" },
+    { done: setup.hasReviews, label: oL.steps[5], href: "/dashboard/qr" },
   ];
   const doneCount = steps.filter((s) => s.done).length;
   const allDone = doneCount === steps.length;
@@ -99,13 +126,13 @@ function OnboardingCard({ setup, brandId }: { setup: Setup; brandId: string }) {
         <div>
           <p className="flex items-center gap-2 font-bold">
             <Sparkles className="h-4 w-4 text-[hsl(var(--primary))]" />
-            Kurulum Rehberi
+            {t("dashboard.setupGuide")}
           </p>
           <p className="mt-0.5 text-xs text-[hsl(var(--muted-foreground))]">
-            {doneCount}/{steps.length} adım tamamlandı — platformdan tam verim almak için kalan adımları bitirin
+            {doneCount}/{steps.length} {t("dashboard.setupProgress")}
           </p>
         </div>
-        <button onClick={dismiss} title="Gizle"
+        <button onClick={dismiss} title={oL.hide}
           className="rounded-lg p-1.5 text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))]">
           <Minus className="h-4 w-4" />
         </button>
