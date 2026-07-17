@@ -1,10 +1,84 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Loader2, Save, User, Lock, ShieldCheck, ShieldOff, CheckCircle2, AlertCircle, Smartphone } from "lucide-react";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    title: "Ayarlar", subtitle: "Hesap bilgilerinizi ve güvenlik ayarlarınızı yönetin",
+    tabs: { profil: "Profil", sifre: "Şifre", guvenlik: "Güvenlik" },
+    profileSaved: "Profil güncellendi.", genericError: "Hata oluştu.",
+    pwMismatch: "Şifreler eşleşmiyor.", pwShort: "Şifre en az 8 karakter olmalı.",
+    pwSaved: "Şifre güncellendi.", errShort: "Hata.",
+    name: "Ad Soyad", namePh: "Adınız Soyadınız",
+    emailReadonly: "E-posta (değiştirilemez)",
+    save: "Kaydet",
+    pwFields: { current: "Mevcut Şifre", next: "Yeni Şifre", confirm: "Yeni Şifre (Tekrar)" },
+    updatePw: "Şifreyi Güncelle",
+    twoFaOn: "İki faktörlü doğrulama aktif edildi!", twoFaOff: "2FA devre dışı bırakıldı.",
+    twoFaTitle: "İki Faktörlü Doğrulama (2FA)",
+    active: "AKTİF", passive: "PASİF",
+    twoFaDesc: "Google Authenticator veya benzer bir uygulama ile hesabınızı ekstra güvence altına alın.",
+    enable2fa: "2FA Aktif Et", disable2fa: "2FA Devre Dışı Bırak",
+    step1: "Adım 1 — QR kodu okutun",
+    step1Desc: "Google Authenticator, Authy veya benzer bir uygulamayla aşağıdaki QR kodu tarayın.",
+    manualCode: "Manuel giriş kodu",
+    scanned: "Kodu Okuttum, Devam Et →",
+    step2: "Adım 2 — Kodu doğrulayın",
+    step2Desc: "Uygulamanızın gösterdiği 6 haneli kodu girin.",
+    verify: "Doğrula & Aktif Et", cancel: "İptal",
+    disableTitle: "2FA'yı devre dışı bırak",
+    disableDesc: "Onaylamak için uygulamanızdaki mevcut 6 haneli kodu girin.",
+    disableBtn: "Devre Dışı Bırak",
+    tipsTitle: "Güvenlik İpuçları",
+    tips: [
+      "En az 12 karakterli, büyük/küçük harf ve rakam içeren şifre kullanın.",
+      "Şifrenizi hiçbir platformda tekrar kullanmayın.",
+      "2FA için yedek kodlarınızı güvenli bir yerde saklayın.",
+      "Şüpheli giriş denemleri için audit loglarını kontrol edin.",
+    ],
+  },
+  en: {
+    title: "Settings", subtitle: "Manage your account details and security settings",
+    tabs: { profil: "Profile", sifre: "Password", guvenlik: "Security" },
+    profileSaved: "Profile updated.", genericError: "Something went wrong.",
+    pwMismatch: "Passwords do not match.", pwShort: "Password must be at least 8 characters.",
+    pwSaved: "Password updated.", errShort: "Error.",
+    name: "Full Name", namePh: "Your full name",
+    emailReadonly: "Email (cannot be changed)",
+    save: "Save",
+    pwFields: { current: "Current Password", next: "New Password", confirm: "New Password (Repeat)" },
+    updatePw: "Update Password",
+    twoFaOn: "Two-factor authentication enabled!", twoFaOff: "2FA disabled.",
+    twoFaTitle: "Two-Factor Authentication (2FA)",
+    active: "ACTIVE", passive: "INACTIVE",
+    twoFaDesc: "Secure your account with Google Authenticator or a similar app.",
+    enable2fa: "Enable 2FA", disable2fa: "Disable 2FA",
+    step1: "Step 1 — Scan the QR code",
+    step1Desc: "Scan the QR code below with Google Authenticator, Authy or a similar app.",
+    manualCode: "Manual entry code",
+    scanned: "Scanned, Continue →",
+    step2: "Step 2 — Verify the code",
+    step2Desc: "Enter the 6-digit code shown in your app.",
+    verify: "Verify & Enable", cancel: "Cancel",
+    disableTitle: "Disable 2FA",
+    disableDesc: "Enter the current 6-digit code from your app to confirm.",
+    disableBtn: "Disable",
+    tipsTitle: "Security Tips",
+    tips: [
+      "Use a password of at least 12 characters with upper/lowercase letters and numbers.",
+      "Never reuse your password on other platforms.",
+      "Store your 2FA backup codes somewhere safe.",
+      "Check the audit logs for suspicious sign-in attempts.",
+    ],
+  },
+};
 
 type Tab = "profil" | "sifre" | "guvenlik";
 
 export default function AyarlarPage() {
+  const { lang } = useLang();
+  const sL = L[lang];
   const [tab, setTab] = useState<Tab>("profil");
   const [profil, setProfil] = useState({ name: "", email: "" });
   const [sifre, setSifre] = useState({ current: "", next: "", confirm: "" });
@@ -37,14 +111,14 @@ export default function AyarlarPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: profil.name }),
     });
-    setMsg(res.ok ? { type: "ok", text: "Profil güncellendi." } : { type: "err", text: "Hata oluştu." });
+    setMsg(res.ok ? { type: "ok", text: sL.profileSaved } : { type: "err", text: sL.genericError });
     setSaving(false);
   }
 
   async function savePassword(e: React.FormEvent) {
     e.preventDefault();
-    if (sifre.next !== sifre.confirm) { setMsg({ type: "err", text: "Şifreler eşleşmiyor." }); return; }
-    if (sifre.next.length < 8) { setMsg({ type: "err", text: "Şifre en az 8 karakter olmalı." }); return; }
+    if (sifre.next !== sifre.confirm) { setMsg({ type: "err", text: sL.pwMismatch }); return; }
+    if (sifre.next.length < 8) { setMsg({ type: "err", text: sL.pwShort }); return; }
     setSaving(true); setMsg(null);
     const res = await fetch("/api/user/password", {
       method: "PATCH",
@@ -52,7 +126,7 @@ export default function AyarlarPage() {
       body: JSON.stringify({ currentPassword: sifre.current, newPassword: sifre.next }),
     });
     const data = await res.json();
-    setMsg(res.ok ? { type: "ok", text: "Şifre güncellendi." } : { type: "err", text: data.error ?? "Hata." });
+    setMsg(res.ok ? { type: "ok", text: sL.pwSaved } : { type: "err", text: data.error ?? sL.errShort });
     if (res.ok) setSifre({ current: "", next: "", confirm: "" });
     setSaving(false);
   }
@@ -81,7 +155,7 @@ export default function AyarlarPage() {
     setTwoFaEnabled(true);
     setSetupStep("idle");
     setTotpInput("");
-    setTwoFaMsg({ type: "ok", text: "İki faktörlü doğrulama aktif edildi!" });
+    setTwoFaMsg({ type: "ok", text: sL.twoFaOn });
     setTwoFaLoading(false);
   }
 
@@ -98,23 +172,23 @@ export default function AyarlarPage() {
     setTwoFaEnabled(false);
     setSetupStep("idle");
     setTotpInput("");
-    setTwoFaMsg({ type: "ok", text: "2FA devre dışı bırakıldı." });
+    setTwoFaMsg({ type: "ok", text: sL.twoFaOff });
     setTwoFaLoading(false);
   }
 
   const inputCls = "flex h-11 w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)]";
 
   const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { key: "profil", label: "Profil", icon: User },
-    { key: "sifre", label: "Şifre", icon: Lock },
-    { key: "guvenlik", label: "Güvenlik", icon: ShieldCheck },
+    { key: "profil", label: sL.tabs.profil, icon: User },
+    { key: "sifre", label: sL.tabs.sifre, icon: Lock },
+    { key: "guvenlik", label: sL.tabs.guvenlik, icon: ShieldCheck },
   ];
 
   return (
     <div className="mx-auto max-w-2xl p-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">Ayarlar</h1>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">Hesap bilgilerinizi ve güvenlik ayarlarınızı yönetin</p>
+        <h1 className="text-2xl font-bold">{sL.title}</h1>
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">{sL.subtitle}</p>
       </div>
 
       {/* Sekmeler */}
@@ -138,17 +212,17 @@ export default function AyarlarPage() {
       {tab === "profil" && (
         <form onSubmit={saveProfile} className="glass rounded-2xl p-6 space-y-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Ad Soyad</label>
-            <input className={inputCls} placeholder="Adınız Soyadınız" value={profil.name}
+            <label className="text-sm font-medium">{sL.name}</label>
+            <input className={inputCls} placeholder={sL.namePh} value={profil.name}
               onChange={(e) => setProfil((p) => ({ ...p, name: e.target.value }))} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-[hsl(var(--muted-foreground))]">E-posta (değiştirilemez)</label>
+            <label className="text-sm font-medium text-[hsl(var(--muted-foreground))]">{sL.emailReadonly}</label>
             <input className={`${inputCls} opacity-50 cursor-not-allowed`} disabled value={profil.email} readOnly />
           </div>
           <button type="submit" disabled={saving}
             className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Kaydet
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {sL.save}
           </button>
         </form>
       )}
@@ -157,9 +231,9 @@ export default function AyarlarPage() {
       {tab === "sifre" && (
         <form onSubmit={savePassword} className="glass rounded-2xl p-6 space-y-4">
           {[
-            { label: "Mevcut Şifre", key: "current" },
-            { label: "Yeni Şifre", key: "next" },
-            { label: "Yeni Şifre (Tekrar)", key: "confirm" },
+            { label: sL.pwFields.current, key: "current" },
+            { label: sL.pwFields.next, key: "next" },
+            { label: sL.pwFields.confirm, key: "confirm" },
           ].map((f) => (
             <div key={f.key} className="space-y-1.5">
               <label className="text-sm font-medium">{f.label}</label>
@@ -170,7 +244,7 @@ export default function AyarlarPage() {
           ))}
           <button type="submit" disabled={saving}
             className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />} Şifreyi Güncelle
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />} {sL.updatePw}
           </button>
         </form>
       )}
@@ -193,27 +267,27 @@ export default function AyarlarPage() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold">İki Faktörlü Doğrulama (2FA)</h3>
+                  <h3 className="font-semibold">{sL.twoFaTitle}</h3>
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${twoFaEnabled ? "bg-green-500/10 text-green-400" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}>
-                    {twoFaEnabled ? "AKTİF" : "PASİF"}
+                    {twoFaEnabled ? sL.active : sL.passive}
                   </span>
                 </div>
                 <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-                  Google Authenticator veya benzer bir uygulama ile hesabınızı ekstra güvence altına alın.
+                  {sL.twoFaDesc}
                 </p>
 
                 {!twoFaEnabled && setupStep === "idle" && (
                   <button onClick={start2faSetup} disabled={twoFaLoading}
                     className="mt-4 flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
                     {twoFaLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
-                    2FA Aktif Et
+                    {sL.enable2fa}
                   </button>
                 )}
 
                 {twoFaEnabled && setupStep === "idle" && (
                   <button onClick={() => { setSetupStep("disable"); setTotpInput(""); }}
                     className="mt-4 flex items-center gap-2 rounded-xl border border-red-500/30 px-4 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-500/10">
-                    <ShieldOff className="h-4 w-4" /> 2FA Devre Dışı Bırak
+                    <ShieldOff className="h-4 w-4" /> {sL.disable2fa}
                   </button>
                 )}
               </div>
@@ -222,9 +296,9 @@ export default function AyarlarPage() {
             {/* QR Adımı */}
             {setupStep === "qr" && (
               <div className="mt-6 space-y-4 border-t border-[hsl(var(--border))] pt-6">
-                <p className="text-sm font-semibold">Adım 1 — QR kodu okutun</p>
+                <p className="text-sm font-semibold">{sL.step1}</p>
                 <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                  Google Authenticator, Authy veya benzer bir uygulamayla aşağıdaki QR kodu tarayın.
+                  {sL.step1Desc}
                 </p>
                 {qrCode && (
                   <div className="flex justify-center">
@@ -232,12 +306,12 @@ export default function AyarlarPage() {
                   </div>
                 )}
                 <div className="rounded-xl bg-[hsl(var(--muted)/0.5)] p-3">
-                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Manuel giriş kodu</p>
+                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{sL.manualCode}</p>
                   <p className="break-all font-mono text-xs">{secret}</p>
                 </div>
                 <button onClick={() => setSetupStep("verify")}
                   className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
-                  Kodu Okuttum, Devam Et →
+                  {sL.scanned}
                 </button>
               </div>
             )}
@@ -245,8 +319,8 @@ export default function AyarlarPage() {
             {/* Doğrulama Adımı */}
             {setupStep === "verify" && (
               <div className="mt-6 space-y-4 border-t border-[hsl(var(--border))] pt-6">
-                <p className="text-sm font-semibold">Adım 2 — Kodu doğrulayın</p>
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">Uygulamanızın gösterdiği 6 haneli kodu girin.</p>
+                <p className="text-sm font-semibold">{sL.step2}</p>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">{sL.step2Desc}</p>
                 <input
                   type="text" inputMode="numeric" maxLength={6} placeholder="000000"
                   value={totpInput} onChange={(e) => setTotpInput(e.target.value.replace(/\D/g, ""))}
@@ -256,11 +330,11 @@ export default function AyarlarPage() {
                   <button onClick={verify2fa} disabled={twoFaLoading || totpInput.length !== 6}
                     className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
                     {twoFaLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                    Doğrula & Aktif Et
+                    {sL.verify}
                   </button>
                   <button onClick={() => { setSetupStep("idle"); setTotpInput(""); }}
                     className="rounded-xl border border-[hsl(var(--border))] px-4 py-2 text-sm transition hover:bg-[hsl(var(--accent))]">
-                    İptal
+                    {sL.cancel}
                   </button>
                 </div>
               </div>
@@ -269,8 +343,8 @@ export default function AyarlarPage() {
             {/* Devre dışı bırakma onayı */}
             {setupStep === "disable" && (
               <div className="mt-6 space-y-4 border-t border-red-500/20 pt-6">
-                <p className="text-sm font-semibold text-red-400">2FA'yı devre dışı bırak</p>
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">Onaylamak için uygulamanızdaki mevcut 6 haneli kodu girin.</p>
+                <p className="text-sm font-semibold text-red-400">{sL.disableTitle}</p>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">{sL.disableDesc}</p>
                 <input
                   type="text" inputMode="numeric" maxLength={6} placeholder="000000"
                   value={totpInput} onChange={(e) => setTotpInput(e.target.value.replace(/\D/g, ""))}
@@ -280,11 +354,11 @@ export default function AyarlarPage() {
                   <button onClick={disable2fa} disabled={twoFaLoading || totpInput.length !== 6}
                     className="flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
                     {twoFaLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldOff className="h-4 w-4" />}
-                    Devre Dışı Bırak
+                    {sL.disableBtn}
                   </button>
                   <button onClick={() => { setSetupStep("idle"); setTotpInput(""); }}
                     className="rounded-xl border border-[hsl(var(--border))] px-4 py-2 text-sm transition hover:bg-[hsl(var(--accent))]">
-                    İptal
+                    {sL.cancel}
                   </button>
                 </div>
               </div>
@@ -293,14 +367,9 @@ export default function AyarlarPage() {
 
           {/* Güvenlik ipuçları */}
           <div className="glass rounded-2xl p-5">
-            <p className="mb-3 text-sm font-semibold">Güvenlik İpuçları</p>
+            <p className="mb-3 text-sm font-semibold">{sL.tipsTitle}</p>
             <ul className="space-y-2 text-sm text-[hsl(var(--muted-foreground))]">
-              {[
-                "En az 12 karakterli, büyük/küçük harf ve rakam içeren şifre kullanın.",
-                "Şifrenizi hiçbir platformda tekrar kullanmayın.",
-                "2FA için yedek kodlarınızı güvenli bir yerde saklayın.",
-                "Şüpheli giriş denemleri için audit loglarını kontrol edin.",
-              ].map((tip) => (
+              {sL.tips.map((tip) => (
                 <li key={tip} className="flex items-start gap-2">
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-green-400" />
                   {tip}
