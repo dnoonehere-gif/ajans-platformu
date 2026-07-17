@@ -7,6 +7,78 @@ import {
 } from "lucide-react";
 import type { ContentType } from "@prisma/client";
 import { useBrand } from "@/components/dashboard/brand-provider";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    copied: "Kopyalandı", copy: "Kopyala",
+    typeLabels: {
+      INSTAGRAM_POST: "Gönderi", REELS_IDEA: "Reels", STORY_IDEA: "Story", HASHTAGS: "Hashtag",
+      FACEBOOK_POST: "Gönderi", META_ADS: "Reklam", LINKEDIN_POST: "Gönderi",
+      GOOGLE_ADS: "Arama Reklamı", SEO_CONTENT: "SEO İçeriği", BLOG_POST: "Blog Yazısı",
+    } as Record<string, string>,
+    typeDescs: {
+      INSTAGRAM_POST: "Akış için metin", REELS_IDEA: "Video senaryosu", STORY_IDEA: "5 story serisi", HASHTAGS: "Niş + geniş set",
+      FACEBOOK_POST: "Topluluk odaklı", META_ADS: "FB/IG reklam metni", LINKEDIN_POST: "Profesyonel içerik",
+      GOOGLE_ADS: "Başlık + açıklama", SEO_CONTENT: "Meta + sayfa metni", BLOG_POST: "SEO uyumlu makale",
+    } as Record<string, string>,
+    tones: ["Samimi", "Profesyonel", "Eğlenceli", "Kurumsal", "İkna Edici", "Bilgilendirici"],
+    hashtagCats: ["Niş (hedefli)", "Orta", "Geniş", "Marka"],
+    hook: "🎣 Hook (İlk 3 saniye)", scenario: "🎬 Senaryo",
+    adPreview: "Reklam Önizleme", mainText: "Ana Metin", targetAudience: "🎯 Hedef Kitle:",
+    metaTitle: "Meta Başlık", metaDesc: "Meta Açıklama", pageContent: "Sayfa İçeriği", lsi: "LSI Anahtar Kelimeler",
+    keywords: "Anahtar Kelimeler",
+    week: "Hafta", days: "gün", day: "Gün",
+    selectBrand: "Önce bir marka seçin",
+    title: "İçerik Üreticisi", subtitle: "AI destekli içerik",
+    itemsWord: "içerik",
+    tabGenerate: "İçerik Üret", tabLibrary: "Kütüphane", tabPlan: "30 Günlük Plan",
+    topicLabel: "Konu", optional: "(opsiyonel)",
+    topicPh: "Yeni ürün lansmanı, Yaz kampanyası, Müşteri hikayesi...",
+    toneLabel: "Ton", tonePh: "Veya kendiniz yazın...",
+    genericError: "Hata oluştu",
+    generatingBtn: "Üretiliyor...", generateBtn: "Üret", generated: "Üretildi!",
+    searchPh: "İçerik ara...", all: "Tümü",
+    noMatch: "Eşleşen içerik yok", noContent: "Henüz içerik yok", firstContent: "İlk içeriği üret →",
+    planTitle: "30 Günlük İçerik Takvimi",
+    planDesc: (b: string) => `${b} için Instagram, Facebook, LinkedIn ve Blog içeriklerini kapsayan tam aylık takvim.`,
+    planGenerating: "Plan Oluşturuluyor...", planGenerate: "30 Günlük Plan Oluştur",
+  },
+  en: {
+    copied: "Copied", copy: "Copy",
+    typeLabels: {
+      INSTAGRAM_POST: "Post", REELS_IDEA: "Reels", STORY_IDEA: "Story", HASHTAGS: "Hashtags",
+      FACEBOOK_POST: "Post", META_ADS: "Ad", LINKEDIN_POST: "Post",
+      GOOGLE_ADS: "Search Ad", SEO_CONTENT: "SEO Content", BLOG_POST: "Blog Article",
+    } as Record<string, string>,
+    typeDescs: {
+      INSTAGRAM_POST: "Feed caption", REELS_IDEA: "Video script", STORY_IDEA: "5-story series", HASHTAGS: "Niche + broad set",
+      FACEBOOK_POST: "Community focused", META_ADS: "FB/IG ad copy", LINKEDIN_POST: "Professional content",
+      GOOGLE_ADS: "Headline + description", SEO_CONTENT: "Meta + page copy", BLOG_POST: "SEO-friendly article",
+    } as Record<string, string>,
+    tones: ["Friendly", "Professional", "Fun", "Corporate", "Persuasive", "Informative"],
+    hashtagCats: ["Niche (targeted)", "Medium", "Broad", "Branded"],
+    hook: "🎣 Hook (First 3 seconds)", scenario: "🎬 Script",
+    adPreview: "Ad Preview", mainText: "Primary Text", targetAudience: "🎯 Target Audience:",
+    metaTitle: "Meta Title", metaDesc: "Meta Description", pageContent: "Page Content", lsi: "LSI Keywords",
+    keywords: "Keywords",
+    week: "Week", days: "days", day: "Day",
+    selectBrand: "Select a brand first",
+    title: "Content Generator", subtitle: "AI-powered content",
+    itemsWord: "items",
+    tabGenerate: "Generate", tabLibrary: "Library", tabPlan: "30-Day Plan",
+    topicLabel: "Topic", optional: "(optional)",
+    topicPh: "New product launch, Summer campaign, Customer story...",
+    toneLabel: "Tone", tonePh: "Or write your own...",
+    genericError: "Something went wrong",
+    generatingBtn: "Generating...", generateBtn: "Generate", generated: "Generated!",
+    searchPh: "Search content...", all: "All",
+    noMatch: "No matching content", noContent: "No content yet", firstContent: "Generate your first content →",
+    planTitle: "30-Day Content Calendar",
+    planDesc: (b: string) => `A full monthly calendar for ${b} covering Instagram, Facebook, LinkedIn and Blog content.`,
+    planGenerating: "Creating Plan...", planGenerate: "Create 30-Day Plan",
+  },
+};
 
 // ─── Platform grupları ───────────────────────────────────────────
 const PLATFORM_GROUPS = [
@@ -70,34 +142,40 @@ interface ContentPlanWeek { week: number; days: ContentPlanDay[]; }
 
 // ─── Yardımcı bileşenler ─────────────────────────────────────────
 function CopyBtn({ text }: { text: string }) {
+  const { lang } = useLang();
+  const sL = L[lang];
   const [copied, setCopied] = useState(false);
   return (
     <button
       onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
       className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))]"
     >
-      {copied ? <><Check className="h-3.5 w-3.5 text-green-400" /> Kopyalandı</> : <><Copy className="h-3.5 w-3.5" /> Kopyala</>}
+      {copied ? <><Check className="h-3.5 w-3.5 text-green-400" /> {sL.copied}</> : <><Copy className="h-3.5 w-3.5" /> {sL.copy}</>}
     </button>
   );
 }
 
 function PlatformBadge({ type }: { type: ContentType }) {
+  const { lang } = useLang();
+  const sL = L[lang];
   const group = PLATFORM_GROUPS.find((g) => g.types.some((t) => t.value === type));
   const typeInfo = ALL_TYPES.find((t) => t.value === type);
   if (!group) return null;
   return (
     <span className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${group.color} px-2 py-0.5 text-[10px] font-semibold text-white`}>
-      {typeInfo?.icon} {group.label} · {typeInfo?.label}
+      {typeInfo?.icon} {group.label} · {sL.typeLabels[type] ?? typeInfo?.label}
     </span>
   );
 }
 
 function HashtagsView({ meta }: { meta: Record<string, unknown> }) {
+  const { lang } = useLang();
+  const sL = L[lang];
   const { niche = [], medium = [], broad = [], branded = [] } = meta as Record<string, string[]>;
   const all = [...(niche as string[]), ...(medium as string[]), ...(broad as string[]), ...(branded as string[])];
   return (
     <div className="mt-3 space-y-3">
-      {([["Niş (hedefli)", niche], ["Orta", medium], ["Geniş", broad], ["Marka", branded]] as [string, string[]][]).map(([label, tags]) => (
+      {([[sL.hashtagCats[0], niche], [sL.hashtagCats[1], medium], [sL.hashtagCats[2], broad], [sL.hashtagCats[3], branded]] as [string, string[]][]).map(([label, tags]) => (
         <div key={label}>
           <p className="mb-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))]">{label}</p>
           <div className="flex flex-wrap gap-1.5">
@@ -116,15 +194,17 @@ function HashtagsView({ meta }: { meta: Record<string, unknown> }) {
 }
 
 function ReelsView({ meta }: { meta: Record<string, unknown> }) {
+  const { lang } = useLang();
+  const sL = L[lang];
   const { hook, script, cta, music, duration } = meta as { hook: string; script: string[]; cta: string; music: string; duration: string };
   return (
     <div className="mt-3 space-y-3 text-sm">
       <div className="rounded-xl bg-[hsl(var(--primary)/0.08)] p-3">
-        <p className="mb-1 text-xs font-semibold text-[hsl(var(--primary))]">🎣 Hook (İlk 3 saniye)</p>
+        <p className="mb-1 text-xs font-semibold text-[hsl(var(--primary))]">{sL.hook}</p>
         <p>{hook}</p>
       </div>
       <div>
-        <p className="mb-2 text-xs font-semibold text-[hsl(var(--muted-foreground))]">🎬 Senaryo</p>
+        <p className="mb-2 text-xs font-semibold text-[hsl(var(--muted-foreground))]">{sL.scenario}</p>
         <div className="space-y-1.5">
           {(script ?? []).map((s, i) => (
             <div key={i} className="flex gap-2">
@@ -162,6 +242,8 @@ function StoryView({ meta }: { meta: Record<string, unknown> }) {
 }
 
 function GoogleAdsView({ meta }: { meta: Record<string, unknown> }) {
+  const { lang } = useLang();
+  const sL = L[lang];
   const { headlines = [], descriptions = [], displayUrl = "", keywords = [] } = meta as {
     headlines: string[]; descriptions: string[]; displayUrl: string; keywords: string[];
   };
@@ -177,7 +259,7 @@ function GoogleAdsView({ meta }: { meta: Record<string, unknown> }) {
         </div>
       </div>
       <div>
-        <p className="mb-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))]">Anahtar Kelimeler</p>
+        <p className="mb-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))]">{sL.keywords}</p>
         <div className="flex flex-wrap gap-1.5">
           {keywords.map((k) => <span key={k} className="rounded-lg bg-green-500/10 px-2.5 py-0.5 text-xs text-green-500">{k}</span>)}
         </div>
@@ -187,13 +269,15 @@ function GoogleAdsView({ meta }: { meta: Record<string, unknown> }) {
 }
 
 function MetaAdsView({ meta }: { meta: Record<string, unknown> }) {
+  const { lang } = useLang();
+  const sL = L[lang];
   const { primaryText = "", headline = "", description = "", cta = "", targetAudience = "" } = meta as Record<string, string>;
   return (
     <div className="mt-3 space-y-3 text-sm">
       <div className="rounded-xl border border-[hsl(var(--border))] overflow-hidden">
-        <div className="bg-[hsl(var(--muted)/0.5)] px-4 py-2 text-xs text-[hsl(var(--muted-foreground))]">Reklam Önizleme</div>
+        <div className="bg-[hsl(var(--muted)/0.5)] px-4 py-2 text-xs text-[hsl(var(--muted-foreground))]">{sL.adPreview}</div>
         <div className="space-y-2 p-4">
-          <p className="text-xs text-[hsl(var(--muted-foreground))]">Ana Metin</p>
+          <p className="text-xs text-[hsl(var(--muted-foreground))]">{sL.mainText}</p>
           <p>{primaryText}</p>
           <div className="rounded-lg border border-[hsl(var(--border))] p-2.5">
             <p className="font-semibold">{headline}</p>
@@ -202,12 +286,14 @@ function MetaAdsView({ meta }: { meta: Record<string, unknown> }) {
           <span className="inline-block rounded-lg bg-[hsl(var(--primary))] px-3 py-1 text-xs font-semibold text-white">{cta}</span>
         </div>
       </div>
-      <p className="text-xs text-[hsl(var(--muted-foreground))]">🎯 Hedef Kitle: {targetAudience}</p>
+      <p className="text-xs text-[hsl(var(--muted-foreground))]">{sL.targetAudience} {targetAudience}</p>
     </div>
   );
 }
 
 function SeoView({ meta }: { meta: Record<string, unknown> }) {
+  const { lang } = useLang();
+  const sL = L[lang];
   const { metaTitle = "", metaDescription = "", h1 = "", content = "", lsiKeywords = [] } = meta as {
     metaTitle: string; metaDescription: string; h1: string; content: string; lsiKeywords: string[];
   };
@@ -215,11 +301,11 @@ function SeoView({ meta }: { meta: Record<string, unknown> }) {
     <div className="mt-3 space-y-3 text-sm">
       <div className="rounded-xl border border-[hsl(var(--border))] p-3 space-y-2">
         <div>
-          <p className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Meta Başlık ({metaTitle.length}/60)</p>
+          <p className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">{sL.metaTitle} ({metaTitle.length}/60)</p>
           <p className="font-semibold text-blue-500">{metaTitle}</p>
         </div>
         <div>
-          <p className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">Meta Açıklama ({metaDescription.length}/155)</p>
+          <p className="text-xs font-semibold text-[hsl(var(--muted-foreground))]">{sL.metaDesc} ({metaDescription.length}/155)</p>
           <p className="text-xs text-[hsl(var(--muted-foreground))]">{metaDescription}</p>
         </div>
         <div>
@@ -228,11 +314,11 @@ function SeoView({ meta }: { meta: Record<string, unknown> }) {
         </div>
       </div>
       <div>
-        <p className="mb-1 text-xs font-semibold text-[hsl(var(--muted-foreground))]">Sayfa İçeriği</p>
+        <p className="mb-1 text-xs font-semibold text-[hsl(var(--muted-foreground))]">{sL.pageContent}</p>
         <p className="whitespace-pre-wrap text-xs leading-relaxed">{content}</p>
       </div>
       <div>
-        <p className="mb-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))]">LSI Anahtar Kelimeler</p>
+        <p className="mb-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))]">{sL.lsi}</p>
         <div className="flex flex-wrap gap-1.5">
           {lsiKeywords.map((k) => <span key={k} className="rounded-lg bg-teal-500/10 px-2.5 py-0.5 text-xs text-teal-500">{k}</span>)}
         </div>
@@ -242,6 +328,8 @@ function SeoView({ meta }: { meta: Record<string, unknown> }) {
 }
 
 function ContentPlanView({ meta }: { meta: Record<string, unknown> }) {
+  const { lang } = useLang();
+  const sL = L[lang];
   const [openWeek, setOpenWeek] = useState(1);
   const weeks = (meta.weeks as ContentPlanWeek[]) ?? [];
   const group = (t: string) => PLATFORM_GROUPS.find((g) => g.types.some((x) => x.value === t));
@@ -253,9 +341,9 @@ function ContentPlanView({ meta }: { meta: Record<string, unknown> }) {
         <div key={week.week} className="overflow-hidden rounded-xl border border-[hsl(var(--border))]">
           <button onClick={() => setOpenWeek(openWeek === week.week ? 0 : week.week)}
             className="flex w-full items-center justify-between bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm font-semibold">
-            <span>Hafta {week.week}</span>
+            <span>{sL.week} {week.week}</span>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-normal text-[hsl(var(--muted-foreground))]">{week.days?.length ?? 0} gün</span>
+              <span className="text-xs font-normal text-[hsl(var(--muted-foreground))]">{week.days?.length ?? 0} {sL.days}</span>
               {openWeek === week.week ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </div>
           </button>
@@ -268,7 +356,7 @@ function ContentPlanView({ meta }: { meta: Record<string, unknown> }) {
                   <div key={day.day} className="flex items-start gap-3 px-4 py-3">
                     <div className="w-16 shrink-0 text-center">
                       <p className="text-xs font-semibold">{day.date}</p>
-                      <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Gün {day.day}</p>
+                      <p className="text-[10px] text-[hsl(var(--muted-foreground))]">{sL.day} {day.day}</p>
                     </div>
                     <div className="flex-1 min-w-0">
                       {g && (
@@ -348,6 +436,8 @@ type Tab = "generate" | "library" | "plan";
 
 export default function ContentPage() {
   const { activeBrand } = useBrand();
+  const { lang } = useLang();
+  const sL = L[lang];
   const brandId = activeBrand?.id ?? "";
 
   const [items, setItems] = useState<ContentItem[]>([]);
@@ -404,7 +494,7 @@ export default function ContentPage() {
       setItems((p) => [data.item, ...p]);
       setLastGenerated(data.item);
     } else {
-      setGenError(data.error ?? "Hata oluştu");
+      setGenError(data.error ?? sL.genericError);
     }
     setGenerating(false);
   }
@@ -443,7 +533,7 @@ export default function ContentPage() {
   const primaryColor = activeBrand?.primaryColor ?? "#6366f1";
 
   if (!activeBrand) return (
-    <div className="flex h-64 items-center justify-center text-[hsl(var(--muted-foreground))]">Önce bir marka seçin</div>
+    <div className="flex h-64 items-center justify-center text-[hsl(var(--muted-foreground))]">{sL.selectBrand}</div>
   );
 
   return (
@@ -455,19 +545,19 @@ export default function ContentPage() {
             <Sparkles className="h-5 w-5" style={{ color: primaryColor }} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">İçerik Üreticisi</h1>
-            <p className="text-sm text-[hsl(var(--muted-foreground))]">{activeBrand.name} · AI destekli içerik</p>
+            <h1 className="text-2xl font-bold">{sL.title}</h1>
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">{activeBrand.name} · {sL.subtitle}</p>
           </div>
         </div>
-        <span className="rounded-full bg-[hsl(var(--muted))] px-3 py-1 text-xs font-medium">{items.length} içerik</span>
+        <span className="rounded-full bg-[hsl(var(--muted))] px-3 py-1 text-xs font-medium">{items.length} {sL.itemsWord}</span>
       </div>
 
       {/* Tabs */}
       <div className="mb-6 flex gap-1 rounded-xl bg-[hsl(var(--muted)/0.5)] p-1">
         {([
-          { key: "generate", label: "İçerik Üret" },
-          { key: "library", label: `Kütüphane (${items.length})` },
-          { key: "plan", label: "30 Günlük Plan" },
+          { key: "generate", label: sL.tabGenerate },
+          { key: "library", label: `${sL.tabLibrary} (${items.length})` },
+          { key: "plan", label: sL.tabPlan },
         ] as { key: Tab; label: string }[]).map((t) => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${tab === t.key ? "bg-[hsl(var(--background))] shadow-sm" : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"}`}>
@@ -494,8 +584,8 @@ export default function ContentPage() {
                     <button key={t.value} type="button" onClick={() => setSelectedType(t.value)}
                       className={`rounded-xl border p-3 text-left transition ${selectedType === t.value ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.08)] ring-1 ring-[hsl(var(--primary)/0.3)]" : "border-[hsl(var(--border))] hover:border-[hsl(var(--primary)/0.4)]"}`}>
                       <span className="mb-1 block text-xl">{t.icon}</span>
-                      <p className="text-xs font-semibold">{t.label}</p>
-                      <p className="text-[10px] text-[hsl(var(--muted-foreground))]">{t.desc}</p>
+                      <p className="text-xs font-semibold">{sL.typeLabels[t.value] ?? t.label}</p>
+                      <p className="text-[10px] text-[hsl(var(--muted-foreground))]">{sL.typeDescs[t.value] ?? t.desc}</p>
                     </button>
                   ))}
                 </div>
@@ -511,16 +601,16 @@ export default function ContentPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium">Konu <span className="text-[hsl(var(--muted-foreground))]">(opsiyonel)</span></label>
+                <label className="mb-1.5 block text-sm font-medium">{sL.topicLabel} <span className="text-[hsl(var(--muted-foreground))]">{sL.optional}</span></label>
                 <input value={topic} onChange={(e) => setTopic(e.target.value)}
-                  placeholder="Yeni ürün lansmanı, Yaz kampanyası, Müşteri hikayesi..."
+                  placeholder={sL.topicPh}
                   className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm outline-none transition focus:border-[hsl(var(--primary))]" />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium">Ton <span className="text-[hsl(var(--muted-foreground))]">(opsiyonel)</span></label>
+                <label className="mb-1.5 block text-sm font-medium">{sL.toneLabel} <span className="text-[hsl(var(--muted-foreground))]">{sL.optional}</span></label>
                 <div className="mb-2 flex flex-wrap gap-1.5">
-                  {TONE_PRESETS.map((t) => (
+                  {sL.tones.map((t) => (
                     <button key={t} type="button" onClick={() => setTone(tone === t ? "" : t)}
                       className={`rounded-lg px-2.5 py-1 text-xs transition ${tone === t ? "text-white" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))]"}`}
                       style={tone === t ? { background: primaryColor } : {}}>
@@ -529,7 +619,7 @@ export default function ContentPage() {
                   ))}
                 </div>
                 <input value={tone} onChange={(e) => setTone(e.target.value)}
-                  placeholder="Veya kendiniz yazın..."
+                  placeholder={sL.tonePh}
                   className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2 text-sm outline-none transition focus:border-[hsl(var(--primary))]" />
               </div>
 
@@ -538,13 +628,13 @@ export default function ContentPage() {
               <button type="submit" disabled={generating}
                 className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
                 style={{ background: primaryColor }}>
-                {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> Üretiliyor...</> : <><Sparkles className="h-4 w-4" /> Üret</>}
+                {generating ? <><Loader2 className="h-4 w-4 animate-spin" /> {sL.generatingBtn}</> : <><Sparkles className="h-4 w-4" /> {sL.generateBtn}</>}
               </button>
 
               {lastGenerated && (
                 <div className="rounded-xl border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.04)] p-4">
                   <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold" style={{ color: primaryColor }}>
-                    <Check className="h-3.5 w-3.5" /> Üretildi!
+                    <Check className="h-3.5 w-3.5" /> {sL.generated}
                   </p>
                   {lastGenerated.meta && Object.keys(lastGenerated.meta).length > 0 ? (
                     <MetaView meta={lastGenerated.meta} type={lastGenerated.type} />
@@ -566,7 +656,7 @@ export default function ContentPage() {
             <div className="relative min-w-[200px] flex-1">
               <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[hsl(var(--muted-foreground))]" />
               <input value={libSearch} onChange={(e) => setLibSearch(e.target.value)}
-                placeholder="İçerik ara..."
+                placeholder={sL.searchPh}
                 className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] py-2 pl-9 pr-4 text-sm outline-none focus:border-[hsl(var(--primary))] transition" />
               {libSearch && <button onClick={() => setLibSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2"><X className="h-3.5 w-3.5 text-[hsl(var(--muted-foreground))]" /></button>}
             </div>
@@ -574,13 +664,13 @@ export default function ContentPage() {
               <button onClick={() => setFilterType("ALL")}
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${filterType === "ALL" ? "text-white" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}
                 style={filterType === "ALL" ? { background: primaryColor } : {}}>
-                Tümü
+                {sL.all}
               </button>
               {PLATFORM_GROUPS.map((g) => g.types.map((t) => items.some((i) => i.type === t.value) && (
                 <button key={t.value} onClick={() => setFilterType(t.value)}
                   className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${filterType === t.value ? "text-white" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}
                   style={filterType === t.value ? { background: primaryColor } : {}}>
-                  {t.icon} {t.label}
+                  {t.icon} {sL.typeLabels[t.value] ?? t.label}
                 </button>
               )))}
             </div>
@@ -589,9 +679,9 @@ export default function ContentPage() {
           {filteredItems.length === 0 ? (
             <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-[hsl(var(--border))] py-16 text-center">
               <Sparkles className="h-10 w-10 text-[hsl(var(--muted-foreground)/0.3)]" />
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">{libSearch || filterType !== "ALL" ? "Eşleşen içerik yok" : "Henüz içerik yok"}</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">{libSearch || filterType !== "ALL" ? sL.noMatch : sL.noContent}</p>
               {!libSearch && filterType === "ALL" && (
-                <button onClick={() => setTab("generate")} className="text-sm font-medium" style={{ color: primaryColor }}>İlk içeriği üret →</button>
+                <button onClick={() => setTab("generate")} className="text-sm font-medium" style={{ color: primaryColor }}>{sL.firstContent}</button>
               )}
             </div>
           ) : (
@@ -608,15 +698,15 @@ export default function ContentPage() {
           <form onSubmit={generatePlan} className="glass rounded-2xl p-6 space-y-4">
             <div className="flex items-center gap-2 mb-1">
               <Calendar className="h-5 w-5" style={{ color: primaryColor }} />
-              <p className="font-semibold">30 Günlük İçerik Takvimi</p>
+              <p className="font-semibold">{sL.planTitle}</p>
             </div>
             <p className="text-xs text-[hsl(var(--muted-foreground))]">
-              {activeBrand.name} için Instagram, Facebook, LinkedIn ve Blog içeriklerini kapsayan tam aylık takvim.
+              {sL.planDesc(activeBrand.name)}
             </p>
             <div>
-              <label className="mb-1.5 block text-sm font-medium">Ton <span className="text-[hsl(var(--muted-foreground))]">(opsiyonel)</span></label>
+              <label className="mb-1.5 block text-sm font-medium">{sL.toneLabel} <span className="text-[hsl(var(--muted-foreground))]">{sL.optional}</span></label>
               <div className="flex flex-wrap gap-1.5">
-                {TONE_PRESETS.map((t) => (
+                {sL.tones.map((t) => (
                   <button key={t} type="button" onClick={() => setPlanTone(planTone === t ? "" : t)}
                     className={`rounded-lg px-2.5 py-1 text-xs transition ${planTone === t ? "text-white" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))]"}`}
                     style={planTone === t ? { background: primaryColor } : {}}>
@@ -628,7 +718,7 @@ export default function ContentPage() {
             <button type="submit" disabled={planGenerating}
               className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
               style={{ background: primaryColor }}>
-              {planGenerating ? <><Loader2 className="h-4 w-4 animate-spin" /> Plan Oluşturuluyor...</> : <><Calendar className="h-4 w-4" /> 30 Günlük Plan Oluştur</>}
+              {planGenerating ? <><Loader2 className="h-4 w-4 animate-spin" /> {sL.planGenerating}</> : <><Calendar className="h-4 w-4" /> {sL.planGenerate}</>}
             </button>
           </form>
 
