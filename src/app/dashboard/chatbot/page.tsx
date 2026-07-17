@@ -8,6 +8,118 @@ import {
 } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { ChatWidget } from "@/components/chatbot/chat-widget";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    selectBrand: "Önce bir marka seçin",
+    setupNeeded: "Kurulum gerekli",
+    active: "Aktif", passive: "Pasif",
+    stats: { conv: "Konuşma", knowledge: "Bilgi Girişi", avgMsg: "Ort. Mesaj" },
+    tabs: { settings: "Ayarlar", knowledge: "Bilgi Tabanı", conversations: "Konuşmalar", reservations: "Rezervasyonlar", embed: "Entegrasyon" },
+    botName: "Bot Adı", botNamePh: "Asistan, Yardımcı, Mia...",
+    sysPrompt: "Sistem Talimatı",
+    sysPromptDesc: "Botun kişiliğini, tonunu ve davranışını özelleştir. Marka bilgi tabanı otomatik eklenir.",
+    botStatus: "Chatbot Durumu",
+    statusOn: "Aktif — ziyaretçiler chatbot'u kullanabilir",
+    statusOff: "Pasif — chatbot devre dışı",
+    resTitle: "Chatbot ile Rezervasyon",
+    resOn: "Aktif — müşteriler chatbot üzerinden rezervasyon yapabilir",
+    resOff: "Pasif — rezervasyon özelliği kapalı",
+    resDesc: "Açıldığında chatbot otomatik olarak müşteriden ad, tarih, saat ve kişi bilgisi toplar",
+    save: "Kaydet", create: "Chatbot Oluştur",
+    createFirst: "{sL.createFirst}",
+    addKnowledge: "Yeni Bilgi Ekle", category: "Kategori", question: "Soru (opsiyonel)",
+    questionPh: "Çalışma saatleriniz nedir?",
+    contentPh: "Hafta içi 09:00 – 22:00, Cumartesi-Pazar 10:00 – 23:00 arası açığız.",
+    add: "Ekle",
+    bulkImport: "Toplu İçe Aktar", showOptions: "Seçenekleri göster", closeOptions: "Kapat",
+    uploadFile: "Dosya Yükle", sampleFaq: "Örnek SSS", sampleFaqDesc: "6 hazır soru-cevap",
+    importing: "İçe aktarılıyor...",
+    importOk: "bilgi başarıyla eklendi",
+    importFailParse: "Dosyadan bilgi çıkarılamadı. Format kontrolü yapın.",
+    importFail: "İçe aktarma başarısız", fileFail: "Dosya okunamadı", connFail: "Bağlantı hatası",
+    searchPh: "Bilgi ara...", all: "Tümü",
+    noMatch: "Eşleşen kayıt yok", noKnowledge: "Henüz bilgi eklenmedi",
+    convStats: { conv: "Konuşma", msg: "Mesaj", avg: "Ort. Mesaj/Konuşma" },
+    noConv: "Henüz konuşma yok",
+    noConvDesc: "Chatbot'u sitenize ekleyin, konuşmalar burada görünür",
+    convFallback: "Konuşma", msgCount: "mesaj",
+    resOffTitle: "Rezervasyon özelliği kapalı",
+    resOffDesc: 'Ayarlar sekmesinden "Chatbot ile Rezervasyon" özelliğini aktif edin',
+    noRes: "Henüz rezervasyon yok",
+    noResDesc: "Müşteriler chatbot üzerinden rezervasyon yaptığında burada görünür",
+    resTotal: "Toplam", resPending: "Bekleyen", resConfirmed: "Onaylı",
+    stConfirmed: "Onaylandı", stCancelled: "İptal", stWaiting: "Bekliyor",
+    people: "kişi", cancelReason: "İptal sebebi:",
+    confirm: "Onayla", cancel: "İptal",
+    cancelPrompt: "İptal sebebi (müşteriye iletilecek, boş bırakabilirsiniz):",
+    directLink: "Direkt Bağlantı",
+    directLinkDesc: "WhatsApp, sosyal medya veya QR kod olarak paylaşın.",
+    copied: "Kopyalandı", copy: "Kopyala",
+    iframeTitle: "iFrame ile Göm", iframeDesc: "Web sitenizin HTML'ine yapıştırın.",
+    floatTitle: "Yüzen Buton", recommended: "Tavsiye",
+    floatDesc: "Sağ alt köşede sohbet balonu. </body> etiketinden önce yapıştırın.",
+    preview: "Canlı Önizleme", reset: "Sıfırla",
+    botPassive: "Chatbot pasif", botNotSetup: "Chatbot kurulmadı",
+    activateHint: "Ayarlar sekmesinden aktif hale getirin",
+    setupHint: "Ayarlar sekmesinden chatbot oluşturun",
+  },
+  en: {
+    selectBrand: "Select a brand first",
+    setupNeeded: "Setup required",
+    active: "Active", passive: "Inactive",
+    stats: { conv: "Conversations", knowledge: "Knowledge Entries", avgMsg: "Avg. Messages" },
+    tabs: { settings: "Settings", knowledge: "Knowledge Base", conversations: "Conversations", reservations: "Reservations", embed: "Integration" },
+    botName: "Bot Name", botNamePh: "Assistant, Helper, Mia...",
+    sysPrompt: "System Prompt",
+    sysPromptDesc: "Customize the bot's personality, tone and behavior. The brand knowledge base is added automatically.",
+    botStatus: "Chatbot Status",
+    statusOn: "Active — visitors can use the chatbot",
+    statusOff: "Inactive — chatbot is disabled",
+    resTitle: "Reservations via Chatbot",
+    resOn: "Active — customers can book through the chatbot",
+    resOff: "Inactive — reservation feature is off",
+    resDesc: "When enabled, the chatbot automatically collects name, date, time and party size",
+    save: "Save", create: "Create Chatbot",
+    createFirst: "Create a chatbot from the Settings tab first.",
+    addKnowledge: "Add New Knowledge", category: "Category", question: "Question (optional)",
+    questionPh: "What are your opening hours?",
+    contentPh: "Open weekdays 09:00 – 22:00, weekends 10:00 – 23:00.",
+    add: "Add",
+    bulkImport: "Bulk Import", showOptions: "Show options", closeOptions: "Close",
+    uploadFile: "Upload File", sampleFaq: "Sample FAQ", sampleFaqDesc: "6 ready Q&A pairs",
+    importing: "Importing...",
+    importOk: "entries imported successfully",
+    importFailParse: "Could not extract entries from the file. Check the format.",
+    importFail: "Import failed", fileFail: "Could not read the file", connFail: "Connection error",
+    searchPh: "Search knowledge...", all: "All",
+    noMatch: "No matching entries", noKnowledge: "No knowledge added yet",
+    convStats: { conv: "Conversations", msg: "Messages", avg: "Avg. Msg/Conversation" },
+    noConv: "No conversations yet",
+    noConvDesc: "Add the chatbot to your site; conversations will appear here",
+    convFallback: "Conversation", msgCount: "messages",
+    resOffTitle: "Reservation feature is off",
+    resOffDesc: 'Enable "Reservations via Chatbot" from the Settings tab',
+    noRes: "No reservations yet",
+    noResDesc: "Reservations made through the chatbot will appear here",
+    resTotal: "Total", resPending: "Pending", resConfirmed: "Confirmed",
+    stConfirmed: "Confirmed", stCancelled: "Cancelled", stWaiting: "Pending",
+    people: "people", cancelReason: "Cancellation reason:",
+    confirm: "Confirm", cancel: "Cancel",
+    cancelPrompt: "Cancellation reason (sent to the customer, can be left empty):",
+    directLink: "Direct Link",
+    directLinkDesc: "Share on WhatsApp, social media or as a QR code.",
+    copied: "Copied", copy: "Copy",
+    iframeTitle: "Embed with iFrame", iframeDesc: "Paste into your website's HTML.",
+    floatTitle: "Floating Button", recommended: "Recommended",
+    floatDesc: "A chat bubble in the bottom-right corner. Paste before the </body> tag.",
+    preview: "Live Preview", reset: "Reset",
+    botPassive: "Chatbot inactive", botNotSetup: "Chatbot not set up",
+    activateHint: "Activate it from the Settings tab",
+    setupHint: "Create a chatbot from the Settings tab",
+  },
+};
 
 const CATEGORIES = ["sss", "ürün", "hizmet", "menü", "saat", "adres", "kampanya", "fiyat", "iletişim", "diğer"];
 const CAT_COLORS: Record<string, string> = {
@@ -49,6 +161,8 @@ type Tab = "settings" | "knowledge" | "conversations" | "embed" | "reservations"
 
 export default function ChatbotPage() {
   const { activeBrand } = useBrand();
+  const { lang } = useLang();
+  const sL = L[lang];
   const brandId = activeBrand?.id ?? "";
 
   const [chatbot, setChatbot] = useState<Chatbot | null>(null);
@@ -233,7 +347,7 @@ export default function ChatbotPage() {
       }
 
       if (entries.length === 0) {
-        setImportResult({ count: 0, error: "Dosyadan bilgi çıkarılamadı. Format kontrolü yapın." });
+        setImportResult({ count: 0, error: sL.importFailParse });
         setImportLoading(false);
         return;
       }
@@ -251,10 +365,10 @@ export default function ChatbotPage() {
         setImportResult({ count: data.count });
         await loadChatbot();
       } else {
-        setImportResult({ count: 0, error: data.error ?? "İçe aktarma başarısız" });
+        setImportResult({ count: 0, error: data.error ?? sL.importFail });
       }
     } catch {
-      setImportResult({ count: 0, error: "Dosya okunamadı" });
+      setImportResult({ count: 0, error: sL.fileFail });
     }
     setImportLoading(false);
   }
@@ -284,10 +398,10 @@ export default function ChatbotPage() {
         setImportResult({ count: data.count });
         await loadChatbot();
       } else {
-        setImportResult({ count: 0, error: data.error ?? "Başarısız" });
+        setImportResult({ count: 0, error: data.error ?? sL.importFail });
       }
     } catch {
-      setImportResult({ count: 0, error: "Bağlantı hatası" });
+      setImportResult({ count: 0, error: sL.connFail });
     }
     setImportLoading(false);
   }
@@ -311,7 +425,7 @@ export default function ChatbotPage() {
 
   if (!activeBrand) return (
     <div className="flex h-64 items-center justify-center text-[hsl(var(--muted-foreground))]">
-      Önce bir marka seçin
+      {sL.selectBrand}
     </div>
   );
 
@@ -334,7 +448,7 @@ export default function ChatbotPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold">AI Chatbot</h1>
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">{activeBrand.name} · {chatbot ? chatbot.name : "Kurulum gerekli"}</p>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">{activeBrand.name} · {chatbot ? chatbot.name : sL.setupNeeded}</p>
               </div>
             </div>
             {chatbot && (
@@ -342,7 +456,7 @@ export default function ChatbotPage() {
                 chatbot.isActive ? "bg-green-500/10 text-green-400" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
               }`}>
                 <span className={`h-1.5 w-1.5 rounded-full ${chatbot.isActive ? "bg-green-400" : "bg-[hsl(var(--muted-foreground))]"}`} />
-                {chatbot.isActive ? "Aktif" : "Pasif"}
+                {chatbot.isActive ? sL.active : sL.passive}
               </span>
             )}
           </div>
@@ -351,9 +465,9 @@ export default function ChatbotPage() {
           {chatbot && (
             <div className="grid grid-cols-3 gap-3">
               {[
-                { label: "Konuşma", value: conversations.length || chatbot.id ? "—" : "0", icon: MessageSquare, color: "text-blue-400" },
-                { label: "Bilgi Girişi", value: chatbot.knowledgeBase.length, icon: BookOpen, color: "text-teal-400" },
-                { label: "Ort. Mesaj", value: avgMessages || "—", icon: ZapIcon, color: "text-purple-400" },
+                { label: sL.stats.conv, value: conversations.length || chatbot.id ? "—" : "0", icon: MessageSquare, color: "text-blue-400" },
+                { label: sL.stats.knowledge, value: chatbot.knowledgeBase.length, icon: BookOpen, color: "text-teal-400" },
+                { label: sL.stats.avgMsg, value: avgMessages || "—", icon: ZapIcon, color: "text-purple-400" },
               ].map((s) => (
                 <div key={s.label} className="glass rounded-xl p-4">
                   <s.icon className={`mb-1.5 h-4 w-4 ${s.color}`} />
@@ -367,11 +481,11 @@ export default function ChatbotPage() {
           {/* Tabs */}
           <div className="flex gap-1 rounded-xl bg-[hsl(var(--muted)/0.5)] p-1">
             {([
-              { key: "settings", label: "Ayarlar", icon: Settings },
-              { key: "knowledge", label: "Bilgi Tabanı", icon: BookOpen },
-              { key: "conversations", label: "Konuşmalar", icon: MessageSquare },
-              { key: "reservations", label: "Rezervasyonlar", icon: CalendarCheck },
-              { key: "embed", label: "Entegrasyon", icon: Code2 },
+              { key: "settings", label: sL.tabs.settings, icon: Settings },
+              { key: "knowledge", label: sL.tabs.knowledge, icon: BookOpen },
+              { key: "conversations", label: sL.tabs.conversations, icon: MessageSquare },
+              { key: "reservations", label: sL.tabs.reservations, icon: CalendarCheck },
+              { key: "embed", label: sL.tabs.embed, icon: Code2 },
             ] as { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[]).map((t) => (
               <button
                 key={t.key}
@@ -395,19 +509,19 @@ export default function ChatbotPage() {
               {tab === "settings" && (
                 <form onSubmit={saveSettings} className="glass space-y-5 rounded-2xl p-6">
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium">Bot Adı</label>
+                    <label className="mb-1.5 block text-sm font-medium">{sL.botName}</label>
                     <input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Asistan, Yardımcı, Mia..."
+                      placeholder={sL.botNamePh}
                       className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm outline-none transition focus:border-[hsl(var(--primary))]"
                     />
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-sm font-medium">Sistem Talimatı</label>
+                    <label className="mb-1 block text-sm font-medium">{sL.sysPrompt}</label>
                     <p className="mb-2 text-xs text-[hsl(var(--muted-foreground))]">
-                      Botun kişiliğini, tonunu ve davranışını özelleştir. Marka bilgi tabanı otomatik eklenir.
+                      {sL.sysPromptDesc}
                     </p>
                     <textarea
                       rows={5}
@@ -419,7 +533,7 @@ export default function ChatbotPage() {
                   </div>
 
                   <div>
-                    <label className="mb-3 block text-sm font-medium">Chatbot Durumu</label>
+                    <label className="mb-3 block text-sm font-medium">{sL.botStatus}</label>
                     <button
                       type="button"
                       onClick={() => setIsActive(!isActive)}
@@ -430,12 +544,12 @@ export default function ChatbotPage() {
                       <div className={`relative h-5 w-9 rounded-full transition ${isActive ? "bg-green-500" : "bg-[hsl(var(--muted))]"}`}>
                         <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${isActive ? "left-[18px]" : "left-0.5"}`} />
                       </div>
-                      <span className="text-sm font-medium">{isActive ? "Aktif — ziyaretçiler chatbot'u kullanabilir" : "Pasif — chatbot devre dışı"}</span>
+                      <span className="text-sm font-medium">{isActive ? sL.statusOn : sL.statusOff}</span>
                     </button>
                   </div>
 
                   <div>
-                    <label className="mb-3 block text-sm font-medium">Chatbot ile Rezervasyon</label>
+                    <label className="mb-3 block text-sm font-medium">{sL.resTitle}</label>
                     <button
                       type="button"
                       onClick={() => setReservationEnabled(!reservationEnabled)}
@@ -447,8 +561,8 @@ export default function ChatbotPage() {
                         <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${reservationEnabled ? "left-[18px]" : "left-0.5"}`} />
                       </div>
                       <div>
-                        <span className="text-sm font-medium">{reservationEnabled ? "Aktif — müşteriler chatbot üzerinden rezervasyon yapabilir" : "Pasif — rezervasyon özelliği kapalı"}</span>
-                        <p className="text-xs text-[hsl(var(--muted-foreground))]">Açıldığında chatbot otomatik olarak müşteriden ad, tarih, saat ve kişi bilgisi toplar</p>
+                        <span className="text-sm font-medium">{reservationEnabled ? sL.resOn : sL.resOff}</span>
+                        <p className="text-xs text-[hsl(var(--muted-foreground))]">{sL.resDesc}</p>
                       </div>
                     </button>
                   </div>
@@ -460,7 +574,7 @@ export default function ChatbotPage() {
                     style={{ background: primaryColor }}
                   >
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    {chatbot ? "Kaydet" : "Chatbot Oluştur"}
+                    {chatbot ? sL.save : sL.create}
                   </button>
                 </form>
               )}
@@ -475,10 +589,10 @@ export default function ChatbotPage() {
                   ) : (
                     <>
                       <form onSubmit={addKnowledge} className="glass rounded-2xl p-5 space-y-3">
-                        <p className="text-sm font-semibold">Yeni Bilgi Ekle</p>
+                        <p className="text-sm font-semibold">{sL.addKnowledge}</p>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="mb-1 block text-xs text-[hsl(var(--muted-foreground))]">Kategori</label>
+                            <label className="mb-1 block text-xs text-[hsl(var(--muted-foreground))]">{sL.category}</label>
                             <select
                               value={kCategory}
                               onChange={(e) => setKCategory(e.target.value)}
@@ -488,11 +602,11 @@ export default function ChatbotPage() {
                             </select>
                           </div>
                           <div>
-                            <label className="mb-1 block text-xs text-[hsl(var(--muted-foreground))]">Soru (opsiyonel)</label>
+                            <label className="mb-1 block text-xs text-[hsl(var(--muted-foreground))]">{sL.question}</label>
                             <input
                               value={kQuestion}
                               onChange={(e) => setKQuestion(e.target.value)}
-                              placeholder="Çalışma saatleriniz nedir?"
+                              placeholder={sL.questionPh}
                               className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition"
                             />
                           </div>
@@ -502,7 +616,7 @@ export default function ChatbotPage() {
                           required
                           value={kContent}
                           onChange={(e) => setKContent(e.target.value)}
-                          placeholder="Hafta içi 09:00 – 22:00, Cumartesi-Pazar 10:00 – 23:00 arası açığız."
+                          placeholder={sL.contentPh}
                           className="w-full resize-none rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary))] transition placeholder:text-[hsl(var(--muted-foreground))]"
                         />
                         <button
@@ -512,19 +626,19 @@ export default function ChatbotPage() {
                           style={{ background: primaryColor }}
                         >
                           {kLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                          Ekle
+                          {sL.add}
                         </button>
                       </form>
 
                       {/* Import Section */}
                       <div className="glass rounded-2xl p-5">
                         <div className="flex items-center justify-between mb-3">
-                          <p className="text-sm font-semibold">Toplu İçe Aktar</p>
+                          <p className="text-sm font-semibold">{sL.bulkImport}</p>
                           <button
                             onClick={() => setImportMode(!importMode)}
                             className="text-xs text-[hsl(var(--primary))] hover:underline"
                           >
-                            {importMode ? "Kapat" : "Seçenekleri göster"}
+                            {importMode ? sL.closeOptions : sL.showOptions}
                           </button>
                         </div>
 
@@ -534,7 +648,7 @@ export default function ChatbotPage() {
                               {/* File Upload */}
                               <label className="group flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-[hsl(var(--border))] p-4 transition hover:border-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.03)]">
                                 <Upload className="h-6 w-6 text-[hsl(var(--muted-foreground))] group-hover:text-[hsl(var(--primary))]" />
-                                <span className="text-xs font-medium text-center">Dosya Yükle</span>
+                                <span className="text-xs font-medium text-center">{sL.uploadFile}</span>
                                 <span className="text-[10px] text-[hsl(var(--muted-foreground))]">CSV, JSON, TXT</span>
                                 <input
                                   type="file"
@@ -552,8 +666,8 @@ export default function ChatbotPage() {
                                 className="flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-[hsl(var(--border))] p-4 transition hover:border-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/0.03)] disabled:opacity-50"
                               >
                                 <FileText className="h-6 w-6 text-[hsl(var(--muted-foreground))]" />
-                                <span className="text-xs font-medium">Örnek SSS</span>
-                                <span className="text-[10px] text-[hsl(var(--muted-foreground))]">6 hazır soru-cevap</span>
+                                <span className="text-xs font-medium">{sL.sampleFaq}</span>
+                                <span className="text-[10px] text-[hsl(var(--muted-foreground))]">{sL.sampleFaqDesc}</span>
                               </button>
 
                               {/* Format Info */}
@@ -569,7 +683,7 @@ export default function ChatbotPage() {
 
                             {importLoading && (
                               <div className="flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))]">
-                                <Loader2 className="h-4 w-4 animate-spin" /> İçe aktarılıyor...
+                                <Loader2 className="h-4 w-4 animate-spin" /> {sL.importing}
                               </div>
                             )}
 
@@ -580,7 +694,7 @@ export default function ChatbotPage() {
                                 {importResult.error ? (
                                   <><AlertCircle className="h-4 w-4 shrink-0" /> {importResult.error}</>
                                 ) : (
-                                  <><Check className="h-4 w-4 shrink-0" /> {importResult.count} bilgi başarıyla eklendi</>
+                                  <><Check className="h-4 w-4 shrink-0" /> {importResult.count} {sL.importOk}</>
                                 )}
                               </div>
                             )}
@@ -595,7 +709,7 @@ export default function ChatbotPage() {
                             <input
                               value={kSearch}
                               onChange={(e) => setKSearch(e.target.value)}
-                              placeholder="Bilgi ara..."
+                              placeholder={sL.searchPh}
                               className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] py-2 pl-9 pr-4 text-sm outline-none focus:border-[hsl(var(--primary))] transition"
                             />
                             {kSearch && (
@@ -610,7 +724,7 @@ export default function ChatbotPage() {
                               className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${kCatFilter === "all" ? "text-white" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))]"}`}
                               style={kCatFilter === "all" ? { background: primaryColor } : {}}
                             >
-                              Tümü ({chatbot.knowledgeBase.length})
+                              {sL.all} ({chatbot.knowledgeBase.length})
                             </button>
                             {CATEGORIES.filter((c) => chatbot.knowledgeBase.some((k) => k.category === c)).map((c) => (
                               <button
@@ -629,7 +743,7 @@ export default function ChatbotPage() {
                           <div className="flex flex-col items-center gap-2 py-10 text-center">
                             <BookOpen className="h-8 w-8 text-[hsl(var(--muted-foreground)/0.3)]" />
                             <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                              {kSearch || kCatFilter !== "all" ? "Eşleşen kayıt yok" : "Henüz bilgi eklenmedi"}
+                              {kSearch || kCatFilter !== "all" ? sL.noMatch : sL.noKnowledge}
                             </p>
                           </div>
                         )}
@@ -665,17 +779,17 @@ export default function ChatbotPage() {
                     <div className="flex gap-6 rounded-xl border border-[hsl(var(--border))] px-5 py-3">
                       <div>
                         <span className="text-lg font-bold">{conversations.length}</span>
-                        <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">Konuşma</span>
+                        <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">{sL.convStats.conv}</span>
                       </div>
                       <div className="w-px bg-[hsl(var(--border))]" />
                       <div>
                         <span className="text-lg font-bold">{totalMessages}</span>
-                        <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">Mesaj</span>
+                        <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">{sL.convStats.msg}</span>
                       </div>
                       <div className="w-px bg-[hsl(var(--border))]" />
                       <div>
                         <span className="text-lg font-bold">{avgMessages}</span>
-                        <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">Ort. Mesaj/Konuşma</span>
+                        <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">{sL.convStats.avg}</span>
                       </div>
                     </div>
                   )}
@@ -687,8 +801,8 @@ export default function ChatbotPage() {
                   ) : conversations.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 py-16 text-center">
                       <MessageSquare className="h-10 w-10 text-[hsl(var(--muted-foreground)/0.3)]" />
-                      <p className="text-sm font-semibold">Henüz konuşma yok</p>
-                      <p className="text-xs text-[hsl(var(--muted-foreground))]">Chatbot'u sitenize ekleyin, konuşmalar burada görünür</p>
+                      <p className="text-sm font-semibold">{sL.noConv}</p>
+                      <p className="text-xs text-[hsl(var(--muted-foreground))]">{sL.noConvDesc}</p>
                     </div>
                   ) : (
                     conversations.map((conv) => {
@@ -704,8 +818,8 @@ export default function ChatbotPage() {
                               <MessageSquare className="h-4 w-4" style={{ color: primaryColor }} />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="truncate text-sm font-medium">{firstMsg?.content ?? "Konuşma"}</p>
-                              <p className="text-xs text-[hsl(var(--muted-foreground))]">{date} · {conv.messages.length} mesaj</p>
+                              <p className="truncate text-sm font-medium">{firstMsg?.content ?? sL.convFallback}</p>
+                              <p className="text-xs text-[hsl(var(--muted-foreground))]">{date} · {conv.messages.length} {sL.msgCount}</p>
                             </div>
                             {openConv === conv.id ? <ChevronUp className="h-4 w-4 shrink-0 text-[hsl(var(--muted-foreground))]" /> : <ChevronDown className="h-4 w-4 shrink-0 text-[hsl(var(--muted-foreground))]" />}
                           </button>
@@ -742,38 +856,38 @@ export default function ChatbotPage() {
                   ) : !chatbot?.reservationEnabled ? (
                     <div className="flex flex-col items-center gap-3 py-16 text-center">
                       <CalendarCheck className="h-10 w-10 text-[hsl(var(--muted-foreground)/0.3)]" />
-                      <p className="text-sm font-semibold">Rezervasyon özelliği kapalı</p>
-                      <p className="text-xs text-[hsl(var(--muted-foreground))]">Ayarlar sekmesinden "Chatbot ile Rezervasyon" özelliğini aktif edin</p>
+                      <p className="text-sm font-semibold">{sL.resOffTitle}</p>
+                      <p className="text-xs text-[hsl(var(--muted-foreground))]">{sL.resOffDesc}</p>
                     </div>
                   ) : reservations.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 py-16 text-center">
                       <CalendarCheck className="h-10 w-10 text-[hsl(var(--muted-foreground)/0.3)]" />
-                      <p className="text-sm font-semibold">Henüz rezervasyon yok</p>
-                      <p className="text-xs text-[hsl(var(--muted-foreground))]">Müşteriler chatbot üzerinden rezervasyon yaptığında burada görünür</p>
+                      <p className="text-sm font-semibold">{sL.noRes}</p>
+                      <p className="text-xs text-[hsl(var(--muted-foreground))]">{sL.noResDesc}</p>
                     </div>
                   ) : (
                     <>
                       <div className="flex gap-6 rounded-xl border border-[hsl(var(--border))] px-5 py-3">
                         <div>
                           <span className="text-lg font-bold">{reservations.length}</span>
-                          <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">Toplam</span>
+                          <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">{sL.resTotal}</span>
                         </div>
                         <div className="w-px bg-[hsl(var(--border))]" />
                         <div>
                           <span className="text-lg font-bold text-amber-500">{reservations.filter((r) => r.status === "PENDING").length}</span>
-                          <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">Bekleyen</span>
+                          <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">{sL.resPending}</span>
                         </div>
                         <div className="w-px bg-[hsl(var(--border))]" />
                         <div>
                           <span className="text-lg font-bold text-emerald-500">{reservations.filter((r) => r.status === "CONFIRMED").length}</span>
-                          <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">Onaylı</span>
+                          <span className="ml-1.5 text-xs text-[hsl(var(--muted-foreground))]">{sL.resConfirmed}</span>
                         </div>
                       </div>
 
                       {reservations.map((res) => {
                         const dateStr = new Date(res.date).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
                         const statusCls = res.status === "CONFIRMED" ? "bg-emerald-500/10 text-emerald-500" : res.status === "CANCELLED" ? "bg-red-500/10 text-red-500" : "bg-amber-500/10 text-amber-500";
-                        const statusLabel = res.status === "CONFIRMED" ? "Onaylandı" : res.status === "CANCELLED" ? "İptal" : "Bekliyor";
+                        const statusLabel = res.status === "CONFIRMED" ? sL.stConfirmed : res.status === "CANCELLED" ? sL.stCancelled : sL.stWaiting;
                         return (
                           <div key={res.id} className="glass rounded-xl p-4">
                             <div className="flex items-start justify-between gap-3">
@@ -786,13 +900,13 @@ export default function ChatbotPage() {
                                 <div className="mt-1.5 flex flex-wrap gap-3 text-xs text-[hsl(var(--muted-foreground))]">
                                   <span>📅 {dateStr}</span>
                                   <span>🕐 {res.time}</span>
-                                  <span>👥 {res.partySize} kişi</span>
+                                  <span>👥 {res.partySize} {sL.people}</span>
                                   {res.phone && <span>📞 {res.phone}</span>}
                                   {res.email && <span>✉️ {res.email}</span>}
                                 </div>
                                 {res.notes && <p className="mt-1.5 text-xs text-[hsl(var(--muted-foreground))] italic">"{res.notes}"</p>}
                                 {res.status === "CANCELLED" && res.cancelReason && (
-                                  <p className="mt-1.5 text-xs text-red-400">İptal sebebi: {res.cancelReason}</p>
+                                  <p className="mt-1.5 text-xs text-red-400">{sL.cancelReason} {res.cancelReason}</p>
                                 )}
                               </div>
                               {(res.status === "PENDING" || res.status === "CONFIRMED") && (
@@ -805,19 +919,19 @@ export default function ChatbotPage() {
                                       }}
                                       className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-500 transition hover:bg-emerald-500/20"
                                     >
-                                      Onayla
+                                      {sL.confirm}
                                     </button>
                                   )}
                                   <button
                                     onClick={async () => {
-                                      const reason = prompt("İptal sebebi (müşteriye iletilecek, boş bırakabilirsiniz):");
+                                      const reason = prompt(sL.cancelPrompt);
                                       if (reason === null) return; // vazgeçti
                                       await fetch("/api/reservations", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: res.id, status: "CANCELLED", cancelReason: reason.trim() || null }) });
                                       setReservations((prev) => prev.map((r) => r.id === res.id ? { ...r, status: "CANCELLED", cancelReason: reason.trim() || null } : r));
                                     }}
                                     className="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-500 transition hover:bg-red-500/20"
                                   >
-                                    İptal
+                                    {sL.cancel}
                                   </button>
                                 </div>
                               )}
@@ -841,9 +955,9 @@ export default function ChatbotPage() {
                     <>
                       {/* Direkt link */}
                       <div className="glass rounded-2xl p-5 space-y-3">
-                        <p className="text-sm font-semibold">Direkt Bağlantı</p>
+                        <p className="text-sm font-semibold">{sL.directLink}</p>
                         <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                          WhatsApp, sosyal medya veya QR kod olarak paylaşın.
+                          {sL.directLinkDesc}
                         </p>
                         <div className="flex items-center gap-2 rounded-xl bg-[hsl(var(--muted)/0.5)] px-4 py-3">
                           <code className="flex-1 truncate text-xs">{origin}/chat/{brandSlug}</code>
@@ -851,22 +965,22 @@ export default function ChatbotPage() {
                             onClick={() => copyText(`${origin}/chat/${brandId}`, "link")}
                             className="shrink-0 flex items-center gap-1 rounded-lg border border-[hsl(var(--border))] px-2.5 py-1.5 text-xs transition hover:bg-[hsl(var(--accent))]"
                           >
-                            {copied === "link" ? <><Check className="h-3 w-3 text-green-400" /> Kopyalandı</> : <><Copy className="h-3 w-3" /> Kopyala</>}
+                            {copied === "link" ? <><Check className="h-3 w-3 text-green-400" /> {sL.copied}</> : <><Copy className="h-3 w-3" /> {sL.copy}</>}
                           </button>
                         </div>
                       </div>
 
                       {/* iFrame */}
                       <div className="glass rounded-2xl p-5 space-y-3">
-                        <p className="text-sm font-semibold">iFrame ile Göm</p>
-                        <p className="text-xs text-[hsl(var(--muted-foreground))]">Web sitenizin HTML'ine yapıştırın.</p>
+                        <p className="text-sm font-semibold">{sL.iframeTitle}</p>
+                        <p className="text-xs text-[hsl(var(--muted-foreground))]">{sL.iframeDesc}</p>
                         <div className="relative rounded-xl bg-[hsl(var(--muted)/0.5)] p-4">
                           <pre className="overflow-x-auto text-xs leading-relaxed">{embedIframe}</pre>
                           <button
                             onClick={() => copyText(embedIframe, "iframe")}
                             className="absolute right-3 top-3 flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2.5 py-1.5 text-xs font-medium transition hover:bg-[hsl(var(--accent))]"
                           >
-                            {copied === "iframe" ? <><Check className="h-3 w-3 text-green-400" /> Kopyalandı</> : <><Copy className="h-3 w-3" /> Kopyala</>}
+                            {copied === "iframe" ? <><Check className="h-3 w-3 text-green-400" /> {sL.copied}</> : <><Copy className="h-3 w-3" /> {sL.copy}</>}
                           </button>
                         </div>
                       </div>
@@ -874,11 +988,11 @@ export default function ChatbotPage() {
                       {/* Floating script */}
                       <div className="glass rounded-2xl p-5 space-y-3">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold">Yüzen Buton</p>
-                          <span className="rounded-full bg-[hsl(var(--primary)/0.15)] px-2 py-0.5 text-[10px] font-semibold text-[hsl(var(--primary))]">Tavsiye</span>
+                          <p className="text-sm font-semibold">{sL.floatTitle}</p>
+                          <span className="rounded-full bg-[hsl(var(--primary)/0.15)] px-2 py-0.5 text-[10px] font-semibold text-[hsl(var(--primary))]">{sL.recommended}</span>
                         </div>
                         <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                          Sağ alt köşede sohbet balonu. &lt;/body&gt; etiketinden önce yapıştırın.
+                          {sL.floatDesc}
                         </p>
                         <div className="relative rounded-xl bg-[hsl(var(--muted)/0.5)] p-4">
                           <pre className="overflow-x-auto whitespace-pre-wrap text-xs leading-relaxed">{embedScript}</pre>
@@ -886,7 +1000,7 @@ export default function ChatbotPage() {
                             onClick={() => copyText(embedScript, "script")}
                             className="absolute right-3 top-3 flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2.5 py-1.5 text-xs font-medium transition hover:bg-[hsl(var(--accent))]"
                           >
-                            {copied === "script" ? <><Check className="h-3 w-3 text-green-400" /> Kopyalandı</> : <><Copy className="h-3 w-3" /> Kopyala</>}
+                            {copied === "script" ? <><Check className="h-3 w-3 text-green-400" /> {sL.copied}</> : <><Copy className="h-3 w-3" /> {sL.copy}</>}
                           </button>
                         </div>
                       </div>
@@ -902,12 +1016,12 @@ export default function ChatbotPage() {
       {/* Sağ Panel — Live Preview */}
       <div className="hidden xl:flex xl:w-[400px] xl:flex-col xl:border-l xl:border-[hsl(var(--border))]">
         <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-5 py-3">
-          <p className="text-sm font-semibold">Canlı Önizleme</p>
+          <p className="text-sm font-semibold">{sL.preview}</p>
           <button
             onClick={() => setPreviewKey((k) => k + 1)}
             className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] px-2.5 py-1.5 text-xs text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))]"
           >
-            <Sparkles className="h-3 w-3" /> Sıfırla
+            <Sparkles className="h-3 w-3" /> {sL.reset}
           </button>
         </div>
         <div className="flex flex-1 flex-col overflow-hidden">
@@ -924,9 +1038,9 @@ export default function ChatbotPage() {
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: `${primaryColor}15` }}>
                 <Bot className="h-8 w-8" style={{ color: primaryColor }} />
               </div>
-              <p className="text-sm font-semibold">{chatbot ? "Chatbot pasif" : "Chatbot kurulmadı"}</p>
+              <p className="text-sm font-semibold">{chatbot ? sL.botPassive : sL.botNotSetup}</p>
               <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                {chatbot ? "Ayarlar sekmesinden aktif hale getirin" : "Ayarlar sekmesinden chatbot oluşturun"}
+                {chatbot ? sL.activateHint : sL.setupHint}
               </p>
             </div>
           )}

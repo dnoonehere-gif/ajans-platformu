@@ -2,6 +2,38 @@
 import { useEffect, useState } from "react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { Loader2, Plus, Trash2, UserPlus, Phone, Mail, Building, DollarSign, MessageSquare, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    stages: { NEW: "Yeni", CONTACTED: "İletişime Geçildi", QUALIFIED: "Nitelikli", PROPOSAL: "Teklif", WON: "Kazanıldı", LOST: "Kaybedildi" },
+    loadFail: "Veriler yüklenemedi", connFail: "Sunucuya bağlanılamadı",
+    added: "eklendi", deleted: "silindi", noteSaved: "Not kaydedildi",
+    deleteConfirm: (name: string) => `${name} adlı müşteri adayını silmek istediğinize emin misiniz?`,
+    title: "CRM & Pipeline",
+    summary: (n: number, pipe: string, won: string) => `${n} müşteri adayı · Pipeline: ${pipe}₺ · Kazanılan: ${won}₺`,
+    activity: "Aktivite", newLead: "Yeni Aday",
+    recentActivities: "Son Aktiviteler",
+    formTitle: "Yeni Müşteri Adayı",
+    ph: { name: "Ad Soyad *", email: "E-posta", phone: "Telefon", company: "Şirket", source: "Kaynak (web, referans...)", value: "Tahmini değer (₺)" },
+    addBtn: "Ekle",
+    notePh: "Not ekle...", noteSave: "Kaydet", noteCancel: "İptal", addNote: "Not ekle",
+  },
+  en: {
+    stages: { NEW: "New", CONTACTED: "Contacted", QUALIFIED: "Qualified", PROPOSAL: "Proposal", WON: "Won", LOST: "Lost" },
+    loadFail: "Failed to load data", connFail: "Could not reach the server",
+    added: "added", deleted: "deleted", noteSaved: "Note saved",
+    deleteConfirm: (name: string) => `Are you sure you want to delete the lead "${name}"?`,
+    title: "CRM & Pipeline",
+    summary: (n: number, pipe: string, won: string) => `${n} leads · Pipeline: ${pipe}₺ · Won: ${won}₺`,
+    activity: "Activity", newLead: "New Lead",
+    recentActivities: "Recent Activities",
+    formTitle: "New Lead",
+    ph: { name: "Full name *", email: "Email", phone: "Phone", company: "Company", source: "Source (web, referral...)", value: "Estimated value (₺)" },
+    addBtn: "Add",
+    notePh: "Add a note...", noteSave: "Save", noteCancel: "Cancel", addNote: "Add note",
+  },
+};
 
 const STAGES = [
   { value: "NEW", label: "Yeni", color: "border-blue-500/30 bg-blue-500/5", dot: "bg-blue-500" },
@@ -35,6 +67,9 @@ interface Activity {
 
 export default function CrmPage() {
   const { activeBrand } = useBrand();
+  const { lang } = useLang();
+  const sL = L[lang];
+  const stageLabel = (v: string) => sL.stages[v as keyof typeof sL.stages] ?? v;
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -54,11 +89,11 @@ export default function CrmPage() {
     fetch(`/api/crm?brandId=${activeBrand.id}`)
       .then(async (r) => {
         const d = await r.json();
-        if (!r.ok) { setError(d.error ?? "Veriler yüklenemedi"); return; }
+        if (!r.ok) { setError(d.error ?? sL.loadFail); return; }
         setLeads(d.leads ?? []);
         setError("");
       })
-      .catch(() => setError("Sunucuya bağlanılamadı"))
+      .catch(() => setError(sL.connFail))
       .finally(() => setLoading(false));
   }, [activeBrand?.id]);
 
@@ -89,7 +124,7 @@ export default function CrmPage() {
         setLeads([data.lead, ...leads]);
         setForm({ name: "", email: "", phone: "", company: "", source: "", value: "" });
         setShowForm(false);
-        showToast(`${data.lead.name} eklendi`);
+        showToast(`${data.lead.name} ${sL.added}`);
       }
     } catch { /* ignore */ }
     setCreating(false);
@@ -110,7 +145,7 @@ export default function CrmPage() {
     if (res.ok) {
       setActivities((prev) => [{ leadName: lead.name, from: oldStage, to: newStage, time: new Date() }, ...prev.slice(0, 19)]);
       const wonLost = newStage === "WON" ? " 🎉" : newStage === "LOST" ? " ⚠️" : "";
-      showToast(`${lead.name}: ${STAGE_LABELS[oldStage]} → ${STAGE_LABELS[newStage]}${wonLost}`);
+      showToast(`${lead.name}: ${stageLabel(oldStage)} → ${stageLabel(newStage)}${wonLost}`);
     } else {
       setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, stage: oldStage } : l)));
     }
@@ -124,15 +159,15 @@ export default function CrmPage() {
     });
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, notes: notesDraft || null } : l)));
     setEditingNotes(null);
-    showToast("Not kaydedildi");
+    showToast(sL.noteSaved);
   }
 
   async function handleDelete(id: string) {
     const lead = leads.find((l) => l.id === id);
-    if (!lead || !confirm(`${lead.name} adlı müşteri adayını silmek istediğinize emin misiniz?`)) return;
+    if (!lead || !confirm(sL.deleteConfirm(lead.name))) return;
     await fetch(`/api/crm?id=${id}`, { method: "DELETE" });
     setLeads((prev) => prev.filter((l) => l.id !== id));
-    showToast(`${lead.name} silindi`);
+    showToast(`${lead.name} ${sL.deleted}`);
   }
 
   const inp = "w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2.5 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)]";
@@ -158,9 +193,9 @@ export default function CrmPage() {
             <UserPlus className="h-5 w-5 text-indigo-500" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">CRM & Pipeline</h1>
+            <h1 className="text-xl font-bold">{sL.title}</h1>
             <p className="text-sm text-[hsl(var(--muted-foreground))]">
-              {leads.length} müşteri adayı · Pipeline: {pipelineValue.toLocaleString("tr-TR")}₺ · Kazanılan: {totalValue.toLocaleString("tr-TR")}₺
+              {sL.summary(leads.length, pipelineValue.toLocaleString("tr-TR"), totalValue.toLocaleString("tr-TR"))}
             </p>
           </div>
         </div>
@@ -169,12 +204,12 @@ export default function CrmPage() {
             <button onClick={() => setShowActivities(!showActivities)}
               className="flex items-center gap-1.5 rounded-xl border border-[hsl(var(--border))] px-3 py-2 text-xs font-medium transition hover:bg-[hsl(var(--accent))]">
               {showActivities ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-              Aktivite ({activities.length})
+              {sL.activity} ({activities.length})
             </button>
           )}
           <button onClick={() => setShowForm(!showForm)}
             className="flex items-center gap-1.5 rounded-xl bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
-            <Plus className="h-4 w-4" /> Yeni Aday
+            <Plus className="h-4 w-4" /> {sL.newLead}
           </button>
         </div>
       </div>
@@ -184,12 +219,12 @@ export default function CrmPage() {
       {/* Aktivite geçmişi */}
       {showActivities && activities.length > 0 && (
         <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
-          <h3 className="mb-3 text-sm font-semibold">Son Aktiviteler</h3>
+          <h3 className="mb-3 text-sm font-semibold">{sL.recentActivities}</h3>
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {activities.map((a, i) => (
               <div key={i} className="flex items-center gap-2 text-xs text-[hsl(var(--muted-foreground))]">
                 <span className="font-medium text-[hsl(var(--foreground))]">{a.leadName}</span>
-                <span>{STAGE_LABELS[a.from]} → {STAGE_LABELS[a.to]}</span>
+                <span>{stageLabel(a.from)} → {stageLabel(a.to)}</span>
                 <span className="ml-auto">{a.time.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}</span>
               </div>
             ))}
@@ -199,19 +234,19 @@ export default function CrmPage() {
 
       {showForm && (
         <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
-          <h2 className="mb-4 font-semibold">Yeni Müşteri Adayı</h2>
+          <h2 className="mb-4 font-semibold">{sL.formTitle}</h2>
           <div className="grid gap-4 sm:grid-cols-3">
-            <input className={inp} placeholder="Ad Soyad *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            <input className={inp} placeholder="E-posta" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            <input className={inp} placeholder="Telefon" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-            <input className={inp} placeholder="Şirket" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
-            <input className={inp} placeholder="Kaynak (web, referans...)" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} />
-            <input className={inp} placeholder="Tahmini değer (₺)" type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} />
+            <input className={inp} placeholder={sL.ph.name} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <input className={inp} placeholder={sL.ph.email} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <input className={inp} placeholder={sL.ph.phone} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+            <input className={inp} placeholder={sL.ph.company} value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
+            <input className={inp} placeholder={sL.ph.source} value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} />
+            <input className={inp} placeholder={sL.ph.value} type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} />
           </div>
           <button onClick={handleCreate} disabled={creating || !form.name}
             className="mt-4 flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60">
             {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-            Ekle
+            {sL.addBtn}
           </button>
         </section>
       )}
@@ -224,7 +259,7 @@ export default function CrmPage() {
             <div key={stage.value} className={`rounded-2xl border p-3 ${stage.color}`}>
               <div className="mb-3 flex items-center gap-2">
                 <div className={`h-2.5 w-2.5 rounded-full ${stage.dot}`} />
-                <span className="text-xs font-bold">{stage.label}</span>
+                <span className="text-xs font-bold">{stageLabel(stage.value)}</span>
                 <span className="ml-auto text-xs text-[hsl(var(--muted-foreground))]">{stageLeads.length}</span>
               </div>
               <div className="space-y-2">
@@ -244,23 +279,23 @@ export default function CrmPage() {
                     {/* Not */}
                     {editingNotes === lead.id ? (
                       <div className="mt-2">
-                        <textarea className={inp + " h-16 resize-none text-[11px]"} value={notesDraft} onChange={(e) => setNotesDraft(e.target.value)} placeholder="Not ekle..." />
+                        <textarea className={inp + " h-16 resize-none text-[11px]"} value={notesDraft} onChange={(e) => setNotesDraft(e.target.value)} placeholder={sL.notePh} />
                         <div className="mt-1 flex gap-1">
-                          <button onClick={() => saveNotes(lead.id)} className="rounded bg-[hsl(var(--primary))] px-2 py-0.5 text-[10px] font-semibold text-white">Kaydet</button>
-                          <button onClick={() => setEditingNotes(null)} className="rounded bg-[hsl(var(--accent))] px-2 py-0.5 text-[10px]">İptal</button>
+                          <button onClick={() => saveNotes(lead.id)} className="rounded bg-[hsl(var(--primary))] px-2 py-0.5 text-[10px] font-semibold text-white">{sL.noteSave}</button>
+                          <button onClick={() => setEditingNotes(null)} className="rounded bg-[hsl(var(--accent))] px-2 py-0.5 text-[10px]">{sL.noteCancel}</button>
                         </div>
                       </div>
                     ) : (
                       <button onClick={() => { setEditingNotes(lead.id); setNotesDraft(lead.notes ?? ""); }}
                         className="mt-2 flex items-center gap-1 text-[10px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition">
                         <MessageSquare className="h-3 w-3" />
-                        {lead.notes ? lead.notes.slice(0, 30) + (lead.notes.length > 30 ? "..." : "") : "Not ekle"}
+                        {lead.notes ? lead.notes.slice(0, 30) + (lead.notes.length > 30 ? "..." : "") : sL.addNote}
                       </button>
                     )}
 
                     <select className="mt-2 w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1 text-[11px]"
                       value={lead.stage} onChange={(e) => moveStage(lead.id, e.target.value)}>
-                      {STAGES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                      {STAGES.map((s) => <option key={s.value} value={s.value}>{stageLabel(s.value)}</option>)}
                     </select>
                   </div>
                 ))}
