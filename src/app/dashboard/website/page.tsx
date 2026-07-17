@@ -4,6 +4,52 @@ import { useRouter } from "next/navigation";
 import { Globe, Sparkles, Loader2, ChevronRight, ChevronLeft, Check, Palette, Phone, Building2, ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { useBrand } from "@/components/dashboard/brand-provider";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    steps: ["Sektör", "Renk", "Logo", "İletişim"],
+    sectors: ["Restoran & Kafe", "Güzellik & Kuaför", "Hukuk Bürosu", "Muhasebe & Mali Müşavir", "Sağlık & Klinik", "Diş Hekimi", "Eğitim & Kurs", "İnşaat & Tadilat", "Gayrimenkul", "Otomotiv & Servis", "Tekstil & Giyim", "E-ticaret", "Spor & Fitness", "Otel & Konaklama", "Teknoloji & Yazılım", "Hediyelik & Çiçek", "Temizlik Hizmetleri", "Diğer"],
+    genericError: "Bir hata oluştu", connFail: "Bağlantı hatası",
+    generatingTitle: "Yapay zekâ sitenizi oluşturuyor",
+    takesTime: "15–30 saniye sürebilir",
+    title: "AI Website Builder",
+    subtitle: "Birkaç adımda kurumsal siteniz hazır",
+    s1Title: "Sektörünüz nedir?", s1Desc: "AI sitenizi sektörünüze özel içerikle oluşturur",
+    customSectorPh: "Sektörünüzü yazın...",
+    next: "İleri", back: "Geri",
+    s2Title: "Marka renginiz nedir?", s2Desc: "Seçtiğiniz renk sitenizin ana rengini belirler",
+    custom: "Özel:",
+    s3Title: "Logo (opsiyonel)", s3Desc: "Mevcut logonuzu kullanabilir veya yeni bir logo yükleyebilirsiniz",
+    noLogo: "Logo yok", changeLogo: "Logoyu Değiştir", uploadLogo: "Logo Yükle", removeLogo: "Logoyu kaldır",
+    s4Title: "İletişim bilgileri", s4Desc: "Sitenizde görünmesini istediğiniz telefon numarası",
+    phone: "Telefon",
+    summary: "Özet", brand: "Marka", sector: "Sektör", logo: "Logo",
+    yes: "Var", no: "Yok", mainColor: "Ana Renk",
+    generate: "AI ile Oluştur",
+  },
+  en: {
+    steps: ["Industry", "Color", "Logo", "Contact"],
+    sectors: ["Restaurant & Cafe", "Beauty & Salon", "Law Firm", "Accounting", "Health & Clinic", "Dentist", "Education & Courses", "Construction & Renovation", "Real Estate", "Automotive & Service", "Textile & Fashion", "E-commerce", "Sports & Fitness", "Hotel & Lodging", "Technology & Software", "Gifts & Flowers", "Cleaning Services", "Other"],
+    genericError: "Something went wrong", connFail: "Connection error",
+    generatingTitle: "AI is building your website",
+    takesTime: "May take 15–30 seconds",
+    title: "AI Website Builder",
+    subtitle: "Your business website ready in a few steps",
+    s1Title: "What is your industry?", s1Desc: "AI builds your site with industry-specific content",
+    customSectorPh: "Type your industry...",
+    next: "Next", back: "Back",
+    s2Title: "What is your brand color?", s2Desc: "The color you pick becomes your site's primary color",
+    custom: "Custom:",
+    s3Title: "Logo (optional)", s3Desc: "Use your existing logo or upload a new one",
+    noLogo: "No logo", changeLogo: "Change Logo", uploadLogo: "Upload Logo", removeLogo: "Remove logo",
+    s4Title: "Contact details", s4Desc: "The phone number to display on your site",
+    phone: "Phone",
+    summary: "Summary", brand: "Brand", sector: "Industry", logo: "Logo",
+    yes: "Yes", no: "No", mainColor: "Primary Color",
+    generate: "Generate with AI",
+  },
+};
 
 const SECTORS = [
   "Restoran & Kafe",
@@ -54,6 +100,8 @@ const inputCls =
 export default function WebsitePage() {
   const router = useRouter();
   const { activeBrand } = useBrand();
+  const { lang } = useLang();
+  const sL = L[lang];
 
   const [checking, setChecking] = useState(true);
   const [step, setStep] = useState(1);
@@ -127,14 +175,14 @@ export default function WebsitePage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "Bir hata oluştu");
+        setError(data.error ?? sL.genericError);
         setGenerating(false);
         return;
       }
 
       router.push(`/dashboard/website/editor/${data.website.id}`);
     } catch {
-      setError("Bağlantı hatası");
+      setError(sL.connFail);
       setGenerating(false);
     }
   }
@@ -155,12 +203,12 @@ export default function WebsitePage() {
           <Sparkles className="h-8 w-8 text-[hsl(var(--primary))]" />
         </div>
         <div className="text-center">
-          <p className="text-xl font-bold">Yapay zekâ sitenizi oluşturuyor</p>
+          <p className="text-xl font-bold">{sL.generatingTitle}</p>
           <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
             <span className="font-semibold text-[hsl(var(--foreground))]">{activeBrand.name}</span> ·{" "}
             {effectiveSector}
           </p>
-          <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">15–30 saniye sürebilir</p>
+          <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">{sL.takesTime}</p>
         </div>
       </div>
     );
@@ -176,7 +224,7 @@ export default function WebsitePage() {
         <div>
           <h1 className="text-xl font-bold">AI Website Builder</h1>
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {activeBrand.name} · Birkaç adımda kurumsal siteniz hazır
+            {activeBrand.name} · {sL.subtitle}
           </p>
         </div>
       </div>
@@ -202,7 +250,7 @@ export default function WebsitePage() {
                 step >= s.id ? "text-[hsl(var(--foreground))]" : "text-[hsl(var(--muted-foreground))]"
               }`}
             >
-              {s.label}
+              {sL.steps[i]}
             </span>
             {i < STEPS.length - 1 && (
               <div
@@ -219,13 +267,13 @@ export default function WebsitePage() {
       {step === 1 && (
         <div className="glass rounded-3xl p-8">
           <div className="mb-6">
-            <h2 className="text-lg font-bold">Sektörünüz nedir?</h2>
+            <h2 className="text-lg font-bold">{sL.s1Title}</h2>
             <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-              AI sitenizi sektörünüze özel içerikle oluşturur
+              {sL.s1Desc}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {SECTORS.map((s) => (
+            {SECTORS.map((s, si) => (
               <button
                 key={s}
                 onClick={() => setSector(s)}
@@ -235,7 +283,7 @@ export default function WebsitePage() {
                     : "border-[hsl(var(--border))] hover:border-[hsl(var(--primary)/0.4)] hover:bg-[hsl(var(--accent))]"
                 }`}
               >
-                {s}
+                {sL.sectors[si] ?? s}
               </button>
             ))}
           </div>
@@ -243,7 +291,7 @@ export default function WebsitePage() {
             <div className="mt-4">
               <input
                 className={inputCls}
-                placeholder="Sektörünüzü yazın..."
+                placeholder={sL.customSectorPh}
                 value={customSector}
                 onChange={(e) => setCustomSector(e.target.value)}
                 autoFocus
@@ -256,7 +304,7 @@ export default function WebsitePage() {
               disabled={!sector || (sector === "Diğer" && !customSector.trim())}
               className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
             >
-              İleri <ChevronRight className="h-4 w-4" />
+              {sL.next} <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -266,9 +314,9 @@ export default function WebsitePage() {
       {step === 2 && (
         <div className="glass rounded-3xl p-8">
           <div className="mb-6">
-            <h2 className="text-lg font-bold">Marka renginiz nedir?</h2>
+            <h2 className="text-lg font-bold">{sL.s2Title}</h2>
             <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-              Seçtiğiniz renk sitenizin ana rengini belirler
+              {sL.s2Desc}
             </p>
           </div>
           <div className="grid grid-cols-4 gap-3 sm:grid-cols-6">
@@ -291,7 +339,7 @@ export default function WebsitePage() {
             ))}
           </div>
           <div className="mt-4 flex items-center gap-3">
-            <label className="text-sm font-medium text-[hsl(var(--muted-foreground))]">Özel:</label>
+            <label className="text-sm font-medium text-[hsl(var(--muted-foreground))]">{sL.custom}</label>
             <input
               type="color"
               value={customColor || primaryColor}
@@ -309,13 +357,13 @@ export default function WebsitePage() {
               onClick={() => setStep(1)}
               className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] px-5 py-2.5 text-sm transition hover:bg-[hsl(var(--accent))]"
             >
-              <ChevronLeft className="h-4 w-4" /> Geri
+              <ChevronLeft className="h-4 w-4" /> {sL.back}
             </button>
             <button
               onClick={() => setStep(3)}
               className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
             >
-              İleri <ChevronRight className="h-4 w-4" />
+              {sL.next} <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -325,9 +373,9 @@ export default function WebsitePage() {
       {step === 3 && (
         <div className="glass rounded-3xl p-8">
           <div className="mb-6">
-            <h2 className="text-lg font-bold">Logo (opsiyonel)</h2>
+            <h2 className="text-lg font-bold">{sL.s3Title}</h2>
             <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-              Mevcut logonuzu kullanabilir veya yeni bir logo yükleyebilirsiniz
+              {sL.s3Desc}
             </p>
           </div>
           <div className="flex flex-col items-center gap-5">
@@ -347,12 +395,12 @@ export default function WebsitePage() {
               ) : (
                 <div className="text-center">
                   <ImageIcon className="mx-auto h-8 w-8 text-[hsl(var(--muted-foreground)/0.4)]" />
-                  <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">Logo yok</p>
+                  <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{sL.noLogo}</p>
                 </div>
               )}
             </div>
             <label className="cursor-pointer rounded-xl border border-[hsl(var(--border))] px-5 py-2.5 text-sm font-medium transition hover:bg-[hsl(var(--accent))]">
-              {logoPreview ? "Logoyu Değiştir" : "Logo Yükle"}
+              {logoPreview ? sL.changeLogo : sL.uploadLogo}
               <input type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
             </label>
             {logoPreview && (
@@ -360,7 +408,7 @@ export default function WebsitePage() {
                 onClick={() => { setLogoFile(null); setLogoPreview(null); }}
                 className="text-xs text-red-400 hover:underline"
               >
-                Logoyu kaldır
+                {sL.removeLogo}
               </button>
             )}
           </div>
@@ -369,13 +417,13 @@ export default function WebsitePage() {
               onClick={() => setStep(2)}
               className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] px-5 py-2.5 text-sm transition hover:bg-[hsl(var(--accent))]"
             >
-              <ChevronLeft className="h-4 w-4" /> Geri
+              <ChevronLeft className="h-4 w-4" /> {sL.back}
             </button>
             <button
               onClick={() => setStep(4)}
               className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
             >
-              İleri <ChevronRight className="h-4 w-4" />
+              {sL.next} <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -385,13 +433,13 @@ export default function WebsitePage() {
       {step === 4 && (
         <div className="glass rounded-3xl p-8">
           <div className="mb-6">
-            <h2 className="text-lg font-bold">İletişim bilgileri</h2>
+            <h2 className="text-lg font-bold">{sL.s4Title}</h2>
             <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
-              Sitenizde görünmesini istediğiniz telefon numarası
+              {sL.s4Desc}
             </p>
           </div>
           <div className="mb-6">
-            <label className="mb-1.5 block text-sm font-medium">Telefon</label>
+            <label className="mb-1.5 block text-sm font-medium">{sL.phone}</label>
             <input
               className={inputCls}
               placeholder="0212 xxx xx xx"
@@ -403,13 +451,13 @@ export default function WebsitePage() {
           {/* Özet */}
           <div className="mb-6 space-y-3 rounded-2xl bg-[hsl(var(--accent)/0.5)] p-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-              Özet
+              {sL.summary}
             </p>
             {[
-              { k: "Marka", v: activeBrand.name },
-              { k: "Sektör", v: effectiveSector },
-              { k: "Logo", v: logoPreview ? "Var" : "Yok" },
-              ...(phone ? [{ k: "Telefon", v: phone }] : []),
+              { k: sL.brand, v: activeBrand.name },
+              { k: sL.sector, v: effectiveSector },
+              { k: sL.logo, v: logoPreview ? sL.yes : sL.no },
+              ...(phone ? [{ k: sL.phone, v: phone }] : []),
             ].map(({ k, v }) => (
               <div key={k} className="flex items-center justify-between text-sm">
                 <span className="text-[hsl(var(--muted-foreground))]">{k}</span>
@@ -417,7 +465,7 @@ export default function WebsitePage() {
               </div>
             ))}
             <div className="flex items-center justify-between text-sm">
-              <span className="text-[hsl(var(--muted-foreground))]">Ana Renk</span>
+              <span className="text-[hsl(var(--muted-foreground))]">{sL.mainColor}</span>
               <div className="flex items-center gap-2">
                 <div
                   className="h-4 w-4 rounded-full border border-[hsl(var(--border))]"
@@ -437,7 +485,7 @@ export default function WebsitePage() {
               onClick={() => setStep(3)}
               className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] px-5 py-2.5 text-sm transition hover:bg-[hsl(var(--accent))]"
             >
-              <ChevronLeft className="h-4 w-4" /> Geri
+              <ChevronLeft className="h-4 w-4" /> {sL.back}
             </button>
             <button
               onClick={handleGenerate}
@@ -449,7 +497,7 @@ export default function WebsitePage() {
               ) : (
                 <Sparkles className="h-4 w-4" />
               )}
-              AI ile Oluştur
+              {sL.generate}
             </button>
           </div>
         </div>
