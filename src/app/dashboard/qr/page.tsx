@@ -6,6 +6,46 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useBrand } from "@/components/dashboard/brand-provider";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    selectBrand: "Önce bir marka seçin",
+    title: "QR Geri Bildirim",
+    subtitle: "QR okut, müşteri yorum bıraksın",
+    newQr: "Yeni QR Kodu",
+    labelPh: "Masa 1, Giriş, Kasa...",
+    create: "Oluştur",
+    noQr: "Henüz QR kodu yok",
+    active: "Aktif", passive: "Pasif",
+    scans: "tarama",
+    selectHint: "Bir QR kodu seçin veya oluşturun",
+    deactivate: "Pasife Al", activate: "Aktife Al",
+    deleteConfirm: "Bu QR kodu silmek istediğinizden emin misiniz?",
+    linkTitle: "Geri Bildirim Linki",
+    copiedBtn: "Kopyalandı!", copyBtn: "Linki Kopyala", download: "QR İndir",
+    howTitle: "Nasıl Kullanılır?",
+    howDesc: "QR kodu indirip masalara, fişlere veya kapıya yapıştırın. Müşteri telefonu ile okuttuğunda yorum sayfasına gider. Yorumlar otomatik olarak Yorum Analizi sayfanıza düşer.",
+  },
+  en: {
+    selectBrand: "Select a brand first",
+    title: "QR Feedback",
+    subtitle: "Customer scans the QR, leaves a review",
+    newQr: "New QR Code",
+    labelPh: "Table 1, Entrance, Register...",
+    create: "Create",
+    noQr: "No QR codes yet",
+    active: "Active", passive: "Inactive",
+    scans: "scans",
+    selectHint: "Select or create a QR code",
+    deactivate: "Deactivate", activate: "Activate",
+    deleteConfirm: "Are you sure you want to delete this QR code?",
+    linkTitle: "Feedback Link",
+    copiedBtn: "Copied!", copyBtn: "Copy Link", download: "Download QR",
+    howTitle: "How to Use",
+    howDesc: "Download the QR code and stick it on tables, receipts or the door. When a customer scans it with their phone, they land on the review page. Reviews automatically appear on your Review Analysis page.",
+  },
+};
 
 interface QrCodeItem {
   id: string;
@@ -27,6 +67,8 @@ function feedbackUrl(slug: string) {
 
 export default function QrPage() {
   const { activeBrand } = useBrand();
+  const { lang } = useLang();
+  const sL = L[lang];
   const [codes, setCodes] = useState<QrCodeItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [label, setLabel] = useState("");
@@ -78,7 +120,7 @@ export default function QrPage() {
   }
 
   async function deleteCode(id: string) {
-    if (!confirm("Bu QR kodu silmek istediğinizden emin misiniz?")) return;
+    if (!confirm(sL.deleteConfirm)) return;
     setDeleting(id);
     await fetch("/api/qr/delete", {
       method: "DELETE",
@@ -106,7 +148,7 @@ export default function QrPage() {
 
   if (!activeBrand) return (
     <div className="flex h-64 items-center justify-center text-[hsl(var(--muted-foreground))]">
-      Önce bir marka seçin
+      {sL.selectBrand}
     </div>
   );
 
@@ -117,9 +159,9 @@ export default function QrPage() {
           <QrCode className="h-5 w-5 text-[hsl(var(--primary))]" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">QR Geri Bildirim</h1>
+          <h1 className="text-2xl font-bold">{sL.title}</h1>
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            {activeBrand.name} · QR okut, müşteri yorum bıraksın
+            {activeBrand.name} · {sL.subtitle}
           </p>
         </div>
       </div>
@@ -129,12 +171,12 @@ export default function QrPage() {
         <div className="space-y-4 lg:col-span-1">
           {/* Yeni */}
           <div className="glass rounded-2xl p-5">
-            <p className="mb-3 text-sm font-semibold">Yeni QR Kodu</p>
+            <p className="mb-3 text-sm font-semibold">{sL.newQr}</p>
             <input
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && createCode()}
-              placeholder="Masa 1, Giriş, Kasa..."
+              placeholder={sL.labelPh}
               className="mb-3 w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm outline-none transition focus:border-[hsl(var(--primary))] placeholder:text-[hsl(var(--muted-foreground))]"
             />
             <button
@@ -143,7 +185,7 @@ export default function QrPage() {
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-[hsl(var(--primary))] py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
             >
               {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-              Oluştur
+              {sL.create}
             </button>
           </div>
 
@@ -155,7 +197,7 @@ export default function QrPage() {
           ) : codes.length === 0 ? (
             <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-[hsl(var(--border))] py-10 text-center">
               <QrCode className="h-10 w-10 text-[hsl(var(--muted-foreground)/0.3)]" />
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">Henüz QR kodu yok</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">{sL.noQr}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -172,11 +214,11 @@ export default function QrPage() {
                     <span className={`ml-2 shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
                       code.isActive ? "bg-green-500/15 text-green-400" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
                     }`}>
-                      {code.isActive ? "Aktif" : "Pasif"}
+                      {code.isActive ? sL.active : sL.passive}
                     </span>
                   </div>
                   <div className="mt-1 flex items-center gap-1 text-xs text-[hsl(var(--muted-foreground))]">
-                    <ScanLine className="h-3 w-3" /> {code.scanCount} tarama
+                    <ScanLine className="h-3 w-3" /> {code.scanCount} {sL.scans}
                   </div>
                 </button>
               ))}
@@ -189,7 +231,7 @@ export default function QrPage() {
           {!selected ? (
             <div className="flex h-full min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-[hsl(var(--border))] text-center">
               <QrCode className="h-12 w-12 text-[hsl(var(--muted-foreground)/0.3)]" />
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">Bir QR kodu seçin veya oluşturun</p>
+              <p className="text-sm text-[hsl(var(--muted-foreground))]">{sL.selectHint}</p>
             </div>
           ) : (
             <div className="glass space-y-6 rounded-2xl p-6">
@@ -198,7 +240,7 @@ export default function QrPage() {
                 <div>
                   <p className="text-lg font-bold">{selected.label ?? `QR ${selected.slug}`}</p>
                   <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                    {selected.scanCount} tarama · {selected.isActive ? "Aktif" : "Pasif"}
+                    {selected.scanCount} {sL.scans} · {selected.isActive ? sL.active : sL.passive}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -214,7 +256,7 @@ export default function QrPage() {
                     ) : (
                       <ToggleLeft className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
                     )}
-                    {selected.isActive ? "Pasife Al" : "Aktife Al"}
+                    {selected.isActive ? sL.deactivate : sL.activate}
                   </button>
                   <button
                     onClick={() => deleteCode(selected.id)}
@@ -244,7 +286,7 @@ export default function QrPage() {
               {/* Link */}
               <div>
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                  Geri Bildirim Linki
+                  {sL.linkTitle}
                 </p>
                 <div className="flex items-center gap-2 rounded-xl bg-[hsl(var(--muted)/0.5)] px-4 py-3">
                   <p className="flex-1 truncate font-mono text-sm">/qr/{selected.slug}</p>
@@ -266,26 +308,24 @@ export default function QrPage() {
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[hsl(var(--border))] py-2.5 text-sm font-medium transition hover:bg-[hsl(var(--accent))]"
                 >
                   {copied === selected.slug ? (
-                    <><Check className="h-4 w-4 text-green-400" /> Kopyalandı!</>
+                    <><Check className="h-4 w-4 text-green-400" /> {sL.copiedBtn}</>
                   ) : (
-                    <><Copy className="h-4 w-4" /> Linki Kopyala</>
+                    <><Copy className="h-4 w-4" /> {sL.copyBtn}</>
                   )}
                 </button>
                 <button
                   onClick={() => downloadQr(selected.slug, selected.label ?? "")}
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[hsl(var(--primary))] py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
                 >
-                  <Download className="h-4 w-4" /> QR İndir
+                  <Download className="h-4 w-4" /> {sL.download}
                 </button>
               </div>
 
               {/* İpucu */}
               <div className="rounded-xl bg-[hsl(var(--primary)/0.06)] p-4">
-                <p className="mb-1 text-xs font-semibold text-[hsl(var(--primary))]">Nasıl Kullanılır?</p>
+                <p className="mb-1 text-xs font-semibold text-[hsl(var(--primary))]">{sL.howTitle}</p>
                 <p className="text-xs leading-relaxed text-[hsl(var(--muted-foreground))]">
-                  QR kodu indirip masalara, fişlere veya kapıya yapıştırın.
-                  Müşteri telefonu ile okuttuğunda yorum sayfasına gider.
-                  Yorumlar otomatik olarak Yorum Analizi sayfanıza düşer.
+                  {sL.howDesc}
                 </p>
               </div>
             </div>

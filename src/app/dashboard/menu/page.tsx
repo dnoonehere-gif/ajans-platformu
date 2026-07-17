@@ -7,6 +7,62 @@ import {
   UtensilsCrossed, Star, X, Sparkles, ImageIcon,
 } from "lucide-react";
 import QRCode from "qrcode";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    selectBrand: "Önce bir marka seçin",
+    title: "Menü Yöneticisi",
+    subtitle: "Dijital menünüzü oluşturun ve yayınlayın",
+    published: "Yayında", publish: "Yayınla",
+    settings: "Menü Ayarları",
+    menuTitle: "Menü Başlığı", desc: "Açıklama", currency: "Para Birimi", theme: "Tema",
+    themes: { modern: "Modern", classic: "Klasik", minimal: "Minimal" },
+    qrTitle: "QR Kod & Link", qrDownload: "QR İndir", viewMenu: "Menüyü Görüntüle",
+    newCategory: "Yeni Kategori",
+    catNamePh: "Kategori adı (örn: Ana Yemekler)", catDescPh: "Açıklama (opsiyonel)",
+    save: "Kaydet", cancel: "İptal", addCategory: "Kategori Ekle",
+    items: "ürün", addItem: "Ürün Ekle",
+    noCategory: "Henüz kategori yok",
+    noCategoryDesc: "Başlamak için bir kategori ekleyin (örn: Başlangıçlar, Ana Yemekler, İçecekler)",
+    deleteCatConfirm: "Bu kategori ve tüm ürünleri silinecek. Emin misiniz?",
+    editItem: "Ürünü Düzenle", addItemModal: "Ürün Ekle",
+    itemName: "Ürün Adı *", itemNamePh: "örn: Margherita Pizza",
+    itemDescPh: "İçerikler, pişirme yöntemi...",
+    aiWrite: "AI ile yaz",
+    imageUrl: "Görsel URL (opsiyonel)", imageUrlPh: "https://... ürün fotoğrafı linki",
+    price: "Fiyat", allergens: "Alerjen / Etiket",
+    popular: "Popüler ürün olarak işaretle",
+    inStock: "Stokta / mevcut", outOfStock: "Mevcut değil (menüde soluk görünür)",
+    unavailable: "Mevcut değil",
+  },
+  en: {
+    selectBrand: "Select a brand first",
+    title: "Menu Manager",
+    subtitle: "Create and publish your digital menu",
+    published: "Live", publish: "Publish",
+    settings: "Menu Settings",
+    menuTitle: "Menu Title", desc: "Description", currency: "Currency", theme: "Theme",
+    themes: { modern: "Modern", classic: "Classic", minimal: "Minimal" },
+    qrTitle: "QR Code & Link", qrDownload: "Download QR", viewMenu: "View Menu",
+    newCategory: "New Category",
+    catNamePh: "Category name (e.g. Main Courses)", catDescPh: "Description (optional)",
+    save: "Save", cancel: "Cancel", addCategory: "Add Category",
+    items: "items", addItem: "Add Item",
+    noCategory: "No categories yet",
+    noCategoryDesc: "Add a category to get started (e.g. Starters, Mains, Drinks)",
+    deleteCatConfirm: "This category and all its items will be deleted. Are you sure?",
+    editItem: "Edit Item", addItemModal: "Add Item",
+    itemName: "Item Name *", itemNamePh: "e.g. Margherita Pizza",
+    itemDescPh: "Ingredients, cooking method...",
+    aiWrite: "Write with AI",
+    imageUrl: "Image URL (optional)", imageUrlPh: "https://... product photo link",
+    price: "Price", allergens: "Allergens / Tags",
+    popular: "Mark as popular item",
+    inStock: "In stock / available", outOfStock: "Unavailable (shown dimmed on the menu)",
+    unavailable: "Unavailable",
+  },
+};
 
 interface MenuItem {
   id: string; name: string; description?: string | null; price?: number | null;
@@ -29,6 +85,8 @@ const inp = "w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--
 
 export default function MenuPage() {
   const { activeBrand } = useBrand();
+  const { lang } = useLang();
+  const sL = L[lang];
   const brandId = activeBrand?.id ?? "";
   const brandSlug = activeBrand?.slug ?? "";
 
@@ -95,7 +153,7 @@ export default function MenuPage() {
   }
 
   async function deleteCategory(id: string) {
-    if (!confirm("Bu kategori ve tüm ürünleri silinecek. Emin misiniz?")) return;
+    if (!confirm(sL.deleteCatConfirm)) return;
     await fetch(`/api/menu/${brandId}/categories/${id}`, { method: "DELETE" });
     setMenu(prev => prev ? { ...prev, categories: prev.categories.filter(c => c.id !== id) } : prev);
   }
@@ -182,7 +240,7 @@ export default function MenuPage() {
   }
 
   if (!activeBrand) return (
-    <div className="flex h-64 items-center justify-center text-[hsl(var(--muted-foreground))]">Önce bir marka seçin</div>
+    <div className="flex h-64 items-center justify-center text-[hsl(var(--muted-foreground))]">{sL.selectBrand}</div>
   );
 
   const menuUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/menu/${brandSlug}`;
@@ -193,15 +251,15 @@ export default function MenuPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <UtensilsCrossed className="h-6 w-6 text-[hsl(var(--primary))]" />
-            Menü Yöneticisi
+            {sL.title}
           </h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">Dijital menünüzü oluşturun ve yayınlayın</p>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">{sL.subtitle}</p>
         </div>
         {menu && (
           <button onClick={() => saveSettings({ isPublished: !menu.isPublished })} disabled={saving}
             className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${menu.isPublished ? "bg-green-500/10 text-green-500 hover:bg-green-500/20" : "bg-[hsl(var(--primary))] text-white hover:opacity-90"}`}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : menu.isPublished ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-            {menu.isPublished ? "Yayında" : "Yayınla"}
+            {menu.isPublished ? sL.published : sL.publish}
           </button>
         )}
       </div>
@@ -216,31 +274,31 @@ export default function MenuPage() {
 
             {/* Genel Ayarlar */}
             <div className="glass rounded-2xl p-5 space-y-4">
-              <h2 className="font-bold">Menü Ayarları</h2>
+              <h2 className="font-bold">{sL.settings}</h2>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Menü Başlığı</label>
+                <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.menuTitle}</label>
                 <input className={inp} defaultValue={menu?.title ?? "Menümüz"} id="menu-title"
                   onBlur={e => saveSettings({ title: e.target.value })} />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Açıklama</label>
+                <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.desc}</label>
                 <textarea className={`${inp} resize-none`} rows={2} defaultValue={menu?.description ?? ""}
                   onBlur={e => saveSettings({ description: e.target.value || null })} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Para Birimi</label>
+                  <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.currency}</label>
                   <select className={inp} defaultValue={menu?.currency ?? "₺"}
                     onChange={e => saveSettings({ currency: e.target.value })}>
                     {["₺", "$", "€", "£"].map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Tema</label>
+                  <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.theme}</label>
                   <select className={inp} defaultValue={menu?.theme ?? "modern"}
                     onChange={e => saveSettings({ theme: e.target.value })}>
-                    {THEMES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+                    {THEMES.map(t => <option key={t.id} value={t.id}>{sL.themes[t.id as keyof typeof sL.themes] ?? t.label}</option>)}
                   </select>
                 </div>
               </div>
@@ -250,7 +308,7 @@ export default function MenuPage() {
             <div className="glass rounded-2xl p-5 space-y-4">
               <h2 className="font-bold flex items-center gap-2">
                 <QrCode className="h-4 w-4 text-[hsl(var(--primary))]" />
-                QR Kod & Link
+                {sL.qrTitle}
               </h2>
 
               {qrUrl && (
@@ -271,14 +329,14 @@ export default function MenuPage() {
               {qrUrl && (
                 <a href={qrUrl} download={`menu-qr-${brandSlug}.png`}
                   className="flex w-full items-center justify-center gap-2 rounded-xl border border-[hsl(var(--border))] py-2.5 text-sm font-semibold transition hover:bg-[hsl(var(--accent))]">
-                  <QrCode className="h-4 w-4" /> QR İndir
+                  <QrCode className="h-4 w-4" /> {sL.qrDownload}
                 </a>
               )}
 
               {menu?.isPublished && (
                 <a href={menuUrl} target="_blank" rel="noopener noreferrer"
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-[hsl(var(--primary))] py-2.5 text-sm font-semibold text-white transition hover:opacity-90">
-                  <Eye className="h-4 w-4" /> Menüyü Görüntüle
+                  <Eye className="h-4 w-4" /> {sL.viewMenu}
                 </a>
               )}
             </div>
@@ -290,26 +348,26 @@ export default function MenuPage() {
             {/* Kategori ekle */}
             {addingCat ? (
               <div className="glass rounded-2xl p-5 space-y-3">
-                <h3 className="font-semibold">Yeni Kategori</h3>
+                <h3 className="font-semibold">{sL.newCategory}</h3>
                 <div className="flex gap-2">
                   <input className={`${inp} w-16`} placeholder="🍕" value={catEmoji} onChange={e => setCatEmoji(e.target.value)} maxLength={2} />
-                  <input className={inp} placeholder="Kategori adı (örn: Ana Yemekler)" value={catName} onChange={e => setCatName(e.target.value)} autoFocus />
+                  <input className={inp} placeholder={sL.catNamePh} value={catName} onChange={e => setCatName(e.target.value)} autoFocus />
                 </div>
-                <input className={inp} placeholder="Açıklama (opsiyonel)" value={catDesc} onChange={e => setCatDesc(e.target.value)} />
+                <input className={inp} placeholder={sL.catDescPh} value={catDesc} onChange={e => setCatDesc(e.target.value)} />
                 <div className="flex gap-2">
                   <button onClick={addCategory} disabled={!catName.trim()}
                     className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white disabled:opacity-40">
-                    <Save className="h-3.5 w-3.5" /> Kaydet
+                    <Save className="h-3.5 w-3.5" /> {sL.save}
                   </button>
                   <button onClick={() => setAddingCat(false)} className="rounded-xl border border-[hsl(var(--border))] px-4 py-2 text-sm transition hover:bg-[hsl(var(--accent))]">
-                    İptal
+                    {sL.cancel}
                   </button>
                 </div>
               </div>
             ) : (
               <button onClick={() => setAddingCat(true)}
                 className="glass flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-semibold text-[hsl(var(--primary))] transition hover:bg-[hsl(var(--primary)/0.08)] border-2 border-dashed border-[hsl(var(--primary)/0.3)]">
-                <Plus className="h-4 w-4" /> Kategori Ekle
+                <Plus className="h-4 w-4" /> {sL.addCategory}
               </button>
             )}
 
@@ -323,7 +381,7 @@ export default function MenuPage() {
                     <p className="font-bold">{cat.name}</p>
                     {cat.description && <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">{cat.description}</p>}
                   </div>
-                  <span className="text-xs text-[hsl(var(--muted-foreground))]">{cat.items.length} ürün</span>
+                  <span className="text-xs text-[hsl(var(--muted-foreground))]">{cat.items.length} {sL.items}</span>
                   <button onClick={() => setOpenCats(prev => { const n = new Set(prev); n.has(cat.id) ? n.delete(cat.id) : n.add(cat.id); return n; })}
                     className="rounded-lg p-1.5 transition hover:bg-[hsl(var(--accent))]">
                     {openCats.has(cat.id) ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -351,7 +409,7 @@ export default function MenuPage() {
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-semibold">{item.name}</p>
                             {item.isPopular && <Star className="h-3 w-3 text-amber-400 fill-amber-400" />}
-                            {!item.isAvailable && <span className="text-[10px] text-red-400 font-medium">Mevcut değil</span>}
+                            {!item.isAvailable && <span className="text-[10px] text-red-400 font-medium">{sL.unavailable}</span>}
                           </div>
                           {item.description && <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">{item.description}</p>}
                         </div>
@@ -371,7 +429,7 @@ export default function MenuPage() {
 
                     <button onClick={() => openItemForm(cat.id)}
                       className="flex w-full items-center justify-center gap-2 py-3 text-sm text-[hsl(var(--primary))] transition hover:bg-[hsl(var(--primary)/0.05)]">
-                      <Plus className="h-3.5 w-3.5" /> Ürün Ekle
+                      <Plus className="h-3.5 w-3.5" /> {sL.addItem}
                     </button>
                   </div>
                 )}
@@ -381,8 +439,8 @@ export default function MenuPage() {
             {(!menu || menu.categories.length === 0) && !addingCat && (
               <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
                 <UtensilsCrossed className="h-12 w-12 text-[hsl(var(--muted-foreground)/0.3)]" />
-                <p className="font-semibold">Henüz kategori yok</p>
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">Başlamak için bir kategori ekleyin (örn: Başlangıçlar, Ana Yemekler, İçecekler)</p>
+                <p className="font-semibold">{sL.noCategory}</p>
+                <p className="text-sm text-[hsl(var(--muted-foreground))]">{sL.noCategoryDesc}</p>
               </div>
             )}
           </div>
@@ -394,7 +452,7 @@ export default function MenuPage() {
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="glass w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold">{editingItem.item ? "Ürünü Düzenle" : "Ürün Ekle"}</h3>
+              <h3 className="font-bold">{editingItem.item ? sL.editItem : sL.addItemModal}</h3>
               <button onClick={() => setEditingItem(null)} className="rounded-xl p-2 transition hover:bg-[hsl(var(--accent))]">
                 <X className="h-4 w-4" />
               </button>
@@ -402,8 +460,8 @@ export default function MenuPage() {
 
             <div className="space-y-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Ürün Adı *</label>
-                <input className={inp} value={itemForm.name} onChange={e => setItemForm(f => ({ ...f, name: e.target.value }))} placeholder="örn: Margherita Pizza" autoFocus />
+                <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.itemName}</label>
+                <input className={inp} value={itemForm.name} onChange={e => setItemForm(f => ({ ...f, name: e.target.value }))} placeholder={sL.itemNamePh} autoFocus />
               </div>
               <div>
                 <div className="mb-1 flex items-center justify-between">
@@ -411,18 +469,18 @@ export default function MenuPage() {
                   <button type="button" onClick={generateAiDescription} disabled={aiDescLoading || !itemForm.name.trim()}
                     className="flex items-center gap-1 text-xs font-medium text-[hsl(var(--primary))] transition hover:opacity-80 disabled:opacity-40">
                     {aiDescLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-                    AI ile yaz
+                    {sL.aiWrite}
                   </button>
                 </div>
                 <textarea className={`${inp} resize-none`} rows={2} value={itemForm.description}
                   onChange={e => setItemForm(f => ({ ...f, description: e.target.value }))}
-                  placeholder="İçerikler, pişirme yöntemi..." />
+                  placeholder={sL.itemDescPh} />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Görsel URL (opsiyonel)</label>
+                <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.imageUrl}</label>
                 <input className={inp} type="url" value={itemForm.imageUrl}
                   onChange={e => setItemForm(f => ({ ...f, imageUrl: e.target.value }))}
-                  placeholder="https://... ürün fotoğrafı linki" />
+                  placeholder={sL.imageUrlPh} />
                 {itemForm.imageUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={itemForm.imageUrl} alt="" className="mt-2 h-20 w-20 rounded-xl object-cover border border-[hsl(var(--border))]"
@@ -430,13 +488,13 @@ export default function MenuPage() {
                 )}
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Fiyat ({menu?.currency ?? "₺"})</label>
+                <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.price} ({menu?.currency ?? "₺"})</label>
                 <input className={inp} type="number" step="0.50" min="0" value={itemForm.price}
                   onChange={e => setItemForm(f => ({ ...f, price: e.target.value }))} placeholder="0.00" />
               </div>
 
               <div>
-                <label className="mb-2 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Alerjen / Etiket</label>
+                <label className="mb-2 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.allergens}</label>
                 <div className="flex flex-wrap gap-1.5">
                   {ALLERGENS.map(a => (
                     <button key={a} type="button"
@@ -453,7 +511,7 @@ export default function MenuPage() {
                   onClick={() => setItemForm(f => ({ ...f, isPopular: !f.isPopular }))}>
                   <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${itemForm.isPopular ? "left-4" : "left-0.5"}`} />
                 </div>
-                <span className="text-sm">Popüler ürün olarak işaretle</span>
+                <span className="text-sm">{sL.popular}</span>
               </label>
 
               <label className="flex items-center gap-3 cursor-pointer">
@@ -461,18 +519,18 @@ export default function MenuPage() {
                   onClick={() => setItemForm(f => ({ ...f, isAvailable: !f.isAvailable }))}>
                   <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${itemForm.isAvailable ? "left-4" : "left-0.5"}`} />
                 </div>
-                <span className="text-sm">{itemForm.isAvailable ? "Stokta / mevcut" : "Mevcut değil (menüde soluk görünür)"}</span>
+                <span className="text-sm">{itemForm.isAvailable ? sL.inStock : sL.outOfStock}</span>
               </label>
             </div>
 
             <div className="flex gap-3 pt-2">
               <button onClick={saveItem} disabled={!itemForm.name.trim()}
                 className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[hsl(var(--primary))] py-3 text-sm font-semibold text-white disabled:opacity-40">
-                <Save className="h-4 w-4" /> Kaydet
+                <Save className="h-4 w-4" /> {sL.save}
               </button>
               <button onClick={() => setEditingItem(null)}
                 className="rounded-xl border border-[hsl(var(--border))] px-5 py-3 text-sm transition hover:bg-[hsl(var(--accent))]">
-                İptal
+                {sL.cancel}
               </button>
             </div>
           </div>
