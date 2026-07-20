@@ -40,19 +40,31 @@ export async function GET() {
 // Bu yüzden yaygın şemalar denenir ve hangisinin tuttuğu döndürülür.
 const SIGNATURE_SCHEMES = ["body", "timestamp.body"] as const;
 
+// Shopier her webhook kaydı için ayrı bir token üretiyor (order.created ve
+// order.fulfilled farklı token'lara sahip). Bu yüzden secret'lar virgülle
+// ayrılmış liste olarak tutulur ve herhangi biri eşleşirse imza geçerlidir.
+function secretList(value: string | undefined): string[] {
+  return (value ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 function matchSignature(
   raw: string,
   signature: string,
   timestamp: string,
-  secret: string
+  secrets: string[]
 ): string | null {
-  for (const scheme of SIGNATURE_SCHEMES) {
-    const payload = scheme === "body" ? raw : `${timestamp}.${raw}`;
-    for (const encoding of ["hex", "base64"] as const) {
-      const digest = crypto.createHmac("sha256", secret).update(payload, "utf8").digest(encoding);
-      const a = Buffer.from(digest);
-      const b = Buffer.from(signature);
-      if (a.length === b.length && crypto.timingSafeEqual(a, b)) return `${scheme}:${encoding}`;
+  for (const secret of secrets) {
+    for (const scheme of SIGNATURE_SCHEMES) {
+      const payload = scheme === "body" ? raw : `${timestamp}.${raw}`;
+      for (const encoding of ["hex", "base64"] as const) {
+        const digest = crypto.createHmac("sha256", secret).update(payload, "utf8").digest(encoding);
+        const a = Buffer.from(digest);
+        const b = Buffer.from(signature);
+        if (a.length === b.length && crypto.timingSafeEqual(a, b)) return `${scheme}:${encoding}`;
+      }
     }
   }
   return null;
@@ -64,12 +76,12 @@ function matchSignature(
 function inspectSignature(req: NextRequest, raw: string) {
   const signature = req.headers.get("shopier-signature");
   if (!signature) return;
-  const probe = process.env.SHOPIER_WEBHOOK_SECRET ?? process.env.SHOPIER_WEBHOOK_TOKEN;
-  if (!probe) return;
+  const probes = secretList(process.env.SHOPIER_WEBHOOK_SECRET ?? process.env.SHOPIER_WEBHOOK_TOKEN);
+  if (probes.length === 0) return;
   const timestamp = req.headers.get("shopier-timestamp") ?? "";
   console.log("Shopier webhook: imza incelemesi", {
-    matchedScheme: matchSignature(raw, signature, timestamp, probe) ?? "EŞLEŞME YOK",
-    received: signature,
+    matchedScheme: matchSignature(raw, signature, timestamp, probes) ?? "EŞLEŞME YOK",
+    webhookId: req.headers.get("shopier-webhook-id"),
     timestamp,
   });
 }
@@ -81,13 +93,15 @@ export async function POST(req: NextRequest) {
 
     // Doğru imza şeması teyit edilene kadar zorunlu doğrulama kapalı.
     // Teyit edildiğinde Railway'e SHOPIER_WEBHOOK_SECRET eklenerek açılır.
-    const secret = process.env.SHOPIER_WEBHOOK_SECRET;
-    if (secret) {
+    const secrets = secretList(process.env.SHOPIER_WEBHOOK_SECRET);
+    if (secrets.length > 0) {
       const signature = req.headers.get("shopier-signature");
       if (!signature) return new NextResponse("FAILED", { status: 403 });
       const timestamp = req.headers.get("shopier-timestamp") ?? "";
-      if (!matchSignature(raw, signature, timestamp, secret)) {
-        console.error("Shopier webhook: imza doğrulanamadı", { received: signature });
+      if (!matchSignature(raw, signature, timestamp, secrets)) {
+        console.error("Shopier webhook: imza doğrulanamadı", {
+          webhookId: req.headers.get("shopier-webhook-id"),
+        });
         return new NextResponse("FAILED", { status: 403 });
       }
     } else {
