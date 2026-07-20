@@ -24,6 +24,16 @@ function getUpstash() {
   return new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN });
 }
 
+// Shopier webhook URL'sini doğrularken GET isteği atabiliyor; tarayıcıdan
+// açıldığında da 405 yerine anlamlı bir yanıt dönsün. Gerçek işlem POST'ta.
+export async function GET() {
+  return NextResponse.json({
+    ok: true,
+    endpoint: "shopier-webhook",
+    method: "POST",
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const webhookToken = process.env.SHOPIER_WEBHOOK_TOKEN;
