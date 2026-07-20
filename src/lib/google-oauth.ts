@@ -2,10 +2,21 @@ const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_ACCOUNTS_URL = "https://mybusinessaccountmanagement.googleapis.com/v1/accounts";
 const GOOGLE_REVIEWS_URL = "https://mybusiness.googleapis.com/v4";
 
+/**
+ * Google Cloud Console'daki "İzin verilen yönlendirme URI'leri" ile BİREBİR
+ * eşleşmeli. NEXTAUTH_URL'in sonundaki olası "/" temizlenir; yoksa çift slash
+ * (…//api/google/callback) oluşup redirect_uri_mismatch hatası verir.
+ * Console'a eklenecek değer tam olarak bu fonksiyonun döndürdüğüdür.
+ */
+export function getGoogleRedirectUri(): string {
+  const base = (process.env.NEXTAUTH_URL ?? "").replace(/\/+$/, "");
+  return `${base}/api/google/callback`;
+}
+
 export function getGoogleAuthUrl(brandId: string, state?: string): string {
   const params = new URLSearchParams({
     client_id: process.env.GOOGLE_CLIENT_ID!,
-    redirect_uri: `${process.env.NEXTAUTH_URL}/api/google/callback`,
+    redirect_uri: getGoogleRedirectUri(),
     response_type: "code",
     scope: [
       "https://www.googleapis.com/auth/business.manage",
@@ -32,7 +43,7 @@ export async function exchangeCodeForTokens(code: string): Promise<{
       code,
       client_id: process.env.GOOGLE_CLIENT_ID!,
       client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-      redirect_uri: `${process.env.NEXTAUTH_URL}/api/google/callback`,
+      redirect_uri: getGoogleRedirectUri(),
       grant_type: "authorization_code",
     }),
   });
