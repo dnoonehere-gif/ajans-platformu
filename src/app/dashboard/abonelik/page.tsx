@@ -172,8 +172,13 @@ export default function AbonelikPage() {
   const activatedAt =
     subscription?.status === "ACTIVE" &&
     Date.now() - new Date(subscription.startedAt).getTime() < 15 * 60 * 1000;
+  // Ödeme iframe içinde yapıldığı için kullanıcı sayfadan ayrılmıyor. Shopier'ın
+  // yönlendirme ayarına bağlı kalmadan, ödeme penceresi açıkken de aktivasyonu
+  // bekleyip yakalayabiliyoruz.
+  const awaitingActivation = paymentReturn || checkoutModal !== null;
+
   useEffect(() => {
-    if (!paymentReturn || activatedAt) return;
+    if (!awaitingActivation || activatedAt) return;
     // Abonelik aktifleşene kadar 5 saniyede bir kontrol et, en fazla 2 dakika
     let tries = 0;
     const timer = setInterval(() => {
@@ -181,17 +186,20 @@ export default function AbonelikPage() {
       load();
     }, 5000);
     return () => clearInterval(timer);
-  }, [paymentReturn, activatedAt, load]);
+  }, [awaitingActivation, activatedAt, load]);
 
   // Plan bilgisi sidebar kilitleri ve plan sınırları gibi dashboard'un her
   // yerinde kullanılıyor; sadece bu sayfanın verisini tazelemek yetmiyor.
   // Aktivasyon görülünce bir kez tam yenileme yapılır.
   useEffect(() => {
-    if (!paymentReturn || !activatedAt) return;
+    if (!awaitingActivation || !activatedAt) return;
     if (sessionStorage.getItem("nv-sub-reloaded") === "1") return;
     sessionStorage.setItem("nv-sub-reloaded", "1");
-    window.location.reload();
-  }, [paymentReturn, activatedAt]);
+    // Ödeme penceresinden geliniyorsa onay banner'ı görünsün diye parametreyle
+    // yüklenir; zaten dönüş sayfasındaysak yerinde yenilemek yeterli.
+    if (paymentReturn) window.location.reload();
+    else window.location.href = `${window.location.pathname}?odeme=basarili`;
+  }, [awaitingActivation, activatedAt, paymentReturn]);
 
   async function handleUpgrade(plan: Plan) {
     if (!brandId) return;
