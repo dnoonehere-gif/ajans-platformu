@@ -15,10 +15,6 @@ const L = {
     metrics: ["Üretilen İçerik", "Alınan Yorum", "Ortalama Puan", "Chatbot Mesaj", "QR Tarama", "AI Kullanım", "Gönderilen E-posta", "Yeni Lead (CRM)", "Sosyal Medya Post"],
     sentiment: "Yorum Duygu Analizi", connErr: "Bağlantı hatası", genErr: "Rapor oluşturulamadı",
     positive: "Olumlu", neutral: "Nötr", negative: "Olumsuz",
-    pdfReportTitle: "Performans Raporu",
-    pdfMetricsHeading: "Genel Metrikler",
-    pdfGeneratedLabel: "Oluşturulma",
-    pdfFooter: "Bu rapor Novelya platformu tarafından otomatik oluşturulmuştur.",
   },
   en: {
     title: "Client Reports",
@@ -30,10 +26,6 @@ const L = {
     metrics: ["Content Produced", "Reviews Received", "Average Rating", "Chatbot Messages", "QR Scans", "AI Usage", "Emails Sent", "New Leads (CRM)", "Social Media Posts"],
     sentiment: "Review Sentiment Analysis", connErr: "Connection error", genErr: "Report could not be generated",
     positive: "Positive", neutral: "Neutral", negative: "Negative",
-    pdfReportTitle: "Performance Report",
-    pdfMetricsHeading: "Overview Metrics",
-    pdfGeneratedLabel: "Generated",
-    pdfFooter: "This report was generated automatically by the Novelya platform.",
   },
 };
 
@@ -94,84 +86,34 @@ export default function RaporlarPage() {
       : report.period
     : "";
 
-  function downloadPdf() {
-    if (!report) return;
-    const locale = lang === "en" ? "en-GB" : "tr-TR";
-    const fmt = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
-    const m = report.metrics;
+  const [downloading, setDownloading] = useState(false);
 
-    const html = `<!DOCTYPE html>
-<html lang="${lang}">
-<head><meta charset="UTF-8"><title>${report.brand} — ${periodLabel} ${sL.reportWord}</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1a1a2e;padding:40px}
-.header{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #6366f1;padding-bottom:20px;margin-bottom:30px}
-.brand{font-size:28px;font-weight:800;color:#6366f1}
-.period{font-size:14px;color:#666}
-.date{font-size:13px;color:#888;margin-top:4px}
-h2{font-size:18px;font-weight:700;margin:24px 0 12px;color:#1a1a2e}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
-.card{border:1px solid #e5e7eb;border-radius:12px;padding:20px;text-align:center}
-.card .value{font-size:32px;font-weight:900;color:#6366f1}
-.card .label{font-size:12px;color:#888;margin-top:4px}
-.card.green .value{color:#22c55e}
-.card.amber .value{color:#f59e0b}
-.card.blue .value{color:#3b82f6}
-.card.pink .value{color:#ec4899}
-.card.red .value{color:#ef4444}
-.card.emerald .value{color:#10b981}
-.sentiment{display:flex;gap:12px;margin-bottom:24px}
-.sentiment .bar{flex:1;border-radius:8px;padding:12px;text-align:center;font-size:13px;font-weight:600}
-.sentiment .pos{background:#dcfce7;color:#16a34a}
-.sentiment .neu{background:#fef9c3;color:#a16207}
-.sentiment .neg{background:#fecaca;color:#dc2626}
-.footer{margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;font-size:11px;color:#aaa}
-.stars{color:#f59e0b;font-size:14px}
-@media print{body{padding:20px}.grid{grid-template-columns:repeat(3,1fr)}}
-</style></head>
-<body>
-<div class="header">
-  <div>
-    <div class="brand">${report.brand}</div>
-    <div class="period">${periodLabel} ${sL.pdfReportTitle}</div>
-    <div class="date">${fmt(report.dateRange.from)} – ${fmt(report.dateRange.to)}</div>
-  </div>
-  <div style="text-align:right">
-    <div style="font-size:12px;color:#aaa">${sL.pdfGeneratedLabel}</div>
-    <div style="font-size:13px;color:#666">${fmt(report.generatedAt)}</div>
-  </div>
-</div>
-
-<h2>${sL.pdfMetricsHeading}</h2>
-<div class="grid">
-  <div class="card"><div class="value">${m.contentProduced}</div><div class="label">${sL.metrics[0]}</div></div>
-  <div class="card amber"><div class="value">${m.reviewsReceived}</div><div class="label">${sL.metrics[1]}</div></div>
-  <div class="card"><div class="value">${m.avgRating > 0 ? m.avgRating + " ⭐" : "—"}</div><div class="label">${sL.metrics[2]}</div></div>
-  <div class="card blue"><div class="value">${m.chatbotInteractions}</div><div class="label">${sL.metrics[3]}</div></div>
-  <div class="card emerald"><div class="value">${m.qrScans}</div><div class="label">${sL.metrics[4]}</div></div>
-  <div class="card pink"><div class="value">${m.aiUsage}</div><div class="label">${sL.metrics[5]}</div></div>
-  <div class="card green"><div class="value">${m.emailsSent}</div><div class="label">${sL.metrics[6]}</div></div>
-  <div class="card"><div class="value">${m.crmLeads}</div><div class="label">${sL.metrics[7]}</div></div>
-  <div class="card blue"><div class="value">${m.socialPosts}</div><div class="label">${sL.metrics[8]}</div></div>
-</div>
-
-${m.reviewsReceived > 0 ? `
-<h2>${sL.sentiment}</h2>
-<div class="sentiment">
-  <div class="bar pos">😊 ${sL.positive}: ${m.sentimentBreakdown.positive}</div>
-  <div class="bar neu">😐 ${sL.neutral}: ${m.sentimentBreakdown.neutral}</div>
-  <div class="bar neg">😞 ${sL.negative}: ${m.sentimentBreakdown.negative}</div>
-</div>` : ""}
-
-<div class="footer">${sL.pdfFooter} · ${fmt(report.generatedAt)}</div>
-</body></html>`;
-
-    const w = window.open("", "_blank");
-    if (w) {
-      w.document.write(html);
-      w.document.close();
-      setTimeout(() => w.print(), 500);
+  async function downloadPdf() {
+    if (!report || !activeBrand) return;
+    setDownloading(true);
+    setError("");
+    try {
+      const res = await fetch(
+        `/api/reports/pdf?brandId=${activeBrand.id}&period=${period}&lang=${lang}`
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.error ?? sL.genErr);
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${report.brand}-${periodLabel}-${sL.reportWord}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError(sL.connErr);
+    } finally {
+      setDownloading(false);
     }
   }
 
@@ -226,9 +168,10 @@ ${m.reviewsReceived > 0 ? `
                 {formatDate(report.dateRange.from)} – {formatDate(report.dateRange.to)}
               </p>
             </div>
-            <button onClick={downloadPdf}
-              className="flex items-center gap-1.5 rounded-lg bg-[hsl(var(--primary))] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90">
-              <Download className="h-3.5 w-3.5" /> {sL.pdf}
+            <button onClick={downloadPdf} disabled={downloading}
+              className="flex items-center gap-1.5 rounded-lg bg-[hsl(var(--primary))] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-60">
+              {downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+              {downloading ? sL.creating : sL.pdf}
             </button>
           </div>
 
