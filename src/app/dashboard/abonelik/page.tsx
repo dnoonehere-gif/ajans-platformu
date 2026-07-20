@@ -159,9 +159,11 @@ export default function AbonelikPage() {
   // kullanıcıya "ödeme başarısız" izlenimi vermemek için bekleme durumu gösterilir.
   const [paymentReturn, setPaymentReturn] = useState(false);
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("odeme") !== "basarili") return;
-    setPaymentReturn(true);
-    window.history.replaceState({}, "", window.location.pathname);
+    const isReturn = new URLSearchParams(window.location.search).get("odeme") === "basarili";
+    if (isReturn) setPaymentReturn(true);
+    // Bayrak yalnızca ödeme dönüşü OLMAYAN yüklemelerde temizlenir; dönüş
+    // sayfasında temizlenirse yenileme sonrası tekrar tetiklenip döngü olur.
+    else sessionStorage.removeItem("nv-sub-reloaded");
   }, []);
 
   // Yükseltmede kullanıcının zaten ACTIVE bir aboneliği olur; sadece duruma
@@ -180,6 +182,16 @@ export default function AbonelikPage() {
     }, 5000);
     return () => clearInterval(timer);
   }, [paymentReturn, activatedAt, load]);
+
+  // Plan bilgisi sidebar kilitleri ve plan sınırları gibi dashboard'un her
+  // yerinde kullanılıyor; sadece bu sayfanın verisini tazelemek yetmiyor.
+  // Aktivasyon görülünce bir kez tam yenileme yapılır.
+  useEffect(() => {
+    if (!paymentReturn || !activatedAt) return;
+    if (sessionStorage.getItem("nv-sub-reloaded") === "1") return;
+    sessionStorage.setItem("nv-sub-reloaded", "1");
+    window.location.reload();
+  }, [paymentReturn, activatedAt]);
 
   async function handleUpgrade(plan: Plan) {
     if (!brandId) return;
