@@ -3,6 +3,7 @@ import { auth } from "@/server/auth/auth";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { buildReport, hasReportingAccess, type ReportPeriod } from "@/lib/reports";
 import { ReportPDF } from "@/lib/pdf/report";
+import { refreshPdfFonts } from "@/lib/pdf/fonts";
 
 export async function GET(req: NextRequest) {
   try {
@@ -21,6 +22,7 @@ export async function GET(req: NextRequest) {
     if (!hasAccess) return NextResponse.json({ error: "Bu özellik Ajans planına özeldir" }, { status: 403 });
 
     const report = await buildReport(brandId, period);
+    refreshPdfFonts();
     const buffer = await renderToBuffer(<ReportPDF report={report} lang={lang} />);
 
     const safeName = report.brand.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "rapor";

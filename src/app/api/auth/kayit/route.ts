@@ -9,6 +9,7 @@ import { rateLimit, getRateLimitKey, LIMITS } from "@/server/security/rate-limit
 import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { UserAgreementPDF } from "@/lib/pdf/contracts";
+import { refreshPdfFonts } from "@/lib/pdf/fonts";
 import { verifyCaptcha } from "@/lib/captcha";
 
 const schema = z.object({
@@ -62,6 +63,7 @@ export async function POST(req: NextRequest) {
     (async () => {
       try {
         const element = UserAgreementPDF({ data: { name, email, registeredAt: new Date() } });
+        refreshPdfFonts();
         const pdfBuffer = await renderToBuffer(element as Parameters<typeof renderToBuffer>[0]);
         await sendWelcomeEmail(email, name, pdfBuffer as Buffer);
       } catch {

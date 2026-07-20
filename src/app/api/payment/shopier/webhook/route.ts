@@ -7,6 +7,7 @@ import { sendNotification } from "@/server/notifications/send";
 import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { SubscriptionAgreementPDF } from "@/lib/pdf/contracts";
+import { refreshPdfFonts } from "@/lib/pdf/fonts";
 
 // Shopier ürün ID → plan slug
 const PRODUCT_TO_PLAN: Record<string, string> = {
@@ -268,6 +269,7 @@ export async function POST(req: NextRequest) {
               brandName: brand?.name,
             },
           });
+          refreshPdfFonts();
           const pdfBuffer = await renderToBuffer(element as Parameters<typeof renderToBuffer>[0]);
           await sendSubscriptionConfirmEmail(user.email!, {
             name: user.name ?? "Kullanıcı",

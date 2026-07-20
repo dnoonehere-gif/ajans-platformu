@@ -3,6 +3,7 @@ import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { InvoicePDF } from "@/lib/pdf/invoice";
+import { refreshPdfFonts } from "@/lib/pdf/fonts";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -22,6 +23,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     });
     if (!invoice) return NextResponse.json({ error: "Fatura bulunamadı" }, { status: 404 });
 
+    refreshPdfFonts();
     const buffer = await renderToBuffer(
       <InvoicePDF
         inv={{
