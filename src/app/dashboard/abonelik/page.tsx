@@ -33,6 +33,9 @@ const L = {
     planWord: "Planı", securePay: "Güvenli ödeme", secureIframe: "Güvenli Ödeme", openNewTab: "Yeni sekmede aç",
     subCreated: "Aboneliğiniz oluşturuldu", paySoon: "Ödeme sistemi yakında aktive edilecek.",
     payFooter: "Ödeme tamamlandıktan sonra planınız otomatik olarak aktive olur. Bu pencereyi kapatabilirsiniz.",
+    payOkTitle: "Ödemeniz alındı",
+    payOkWaiting: "Planınız aktive ediliyor, bu birkaç saniye sürebilir. Sayfa otomatik güncellenecek.",
+    payOkDone: "Planınız aktif! İyi çalışmalar.",
   },
   en: {
     selectBrand: "Select a brand first",
@@ -58,6 +61,9 @@ const L = {
     planWord: "Plan", securePay: "Secure payment", secureIframe: "Secure Payment", openNewTab: "Open in new tab",
     subCreated: "Your subscription has been created", paySoon: "Payments will be activated soon.",
     payFooter: "Once payment is complete your plan activates automatically. You can close this window.",
+    payOkTitle: "Payment received",
+    payOkWaiting: "Your plan is being activated, this may take a few seconds. The page will update automatically.",
+    payOkDone: "Your plan is active. Enjoy!",
   },
 };
 
@@ -148,6 +154,33 @@ export default function AbonelikPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  // Shopier ödeme dönüşü: ?odeme=basarili ile gelinir. Abonelik webhook ile
+  // aktifleştiği için birkaç saniye gecikebilir; o sürede sayfayı yenileyerek
+  // kullanıcıya "ödeme başarısız" izlenimi vermemek için bekleme durumu gösterilir.
+  const [paymentReturn, setPaymentReturn] = useState(false);
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("odeme") !== "basarili") return;
+    setPaymentReturn(true);
+    window.history.replaceState({}, "", window.location.pathname);
+  }, []);
+
+  // Yükseltmede kullanıcının zaten ACTIVE bir aboneliği olur; sadece duruma
+  // bakmak "aktif oldu" sanılmasına yol açar. Bu yüzden aboneliğin YENİ
+  // oluşturulmuş olması aranır.
+  const activatedAt =
+    subscription?.status === "ACTIVE" &&
+    Date.now() - new Date(subscription.startedAt).getTime() < 15 * 60 * 1000;
+  useEffect(() => {
+    if (!paymentReturn || activatedAt) return;
+    // Abonelik aktifleşene kadar 5 saniyede bir kontrol et, en fazla 2 dakika
+    let tries = 0;
+    const timer = setInterval(() => {
+      if (++tries > 24) return clearInterval(timer);
+      load();
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [paymentReturn, activatedAt, load]);
+
   async function handleUpgrade(plan: Plan) {
     if (!brandId) return;
     setUpgrading(plan.id);
@@ -211,10 +244,29 @@ export default function AbonelikPage() {
             <p className="text-sm text-[hsl(var(--muted-foreground))]">{activeBrand.name} · {sL.subtitle}</p>
           </div>
         </div>
-        <button onClick={load} className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] px-3 py-2 text-sm transition hover:bg-[hsl(var(--accent))]">
+        <button onClick={load} data-testid="refresh-sub" className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] px-3 py-2 text-sm transition hover:bg-[hsl(var(--accent))]">
           <RefreshCw className="h-4 w-4" /> {sL.refresh}
         </button>
       </div>
+
+      {paymentReturn && (
+        <div
+          data-testid="payment-return"
+          className="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-4"
+        >
+          {activatedAt ? (
+            <Check className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
+          ) : (
+            <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin text-emerald-400" />
+          )}
+          <div>
+            <p className="font-semibold text-emerald-300">{sL.payOkTitle}</p>
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">
+              {activatedAt ? sL.payOkDone : sL.payOkWaiting}
+            </p>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex h-64 items-center justify-center">
