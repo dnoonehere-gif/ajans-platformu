@@ -260,7 +260,7 @@ export default function AnaSayfa() {
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
             <Link href="/giris" className="hidden text-sm font-medium text-slate-300 transition hover:text-white sm:block">{s.navLogin}</Link>
-            <Link href="/kayit" className="rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 transition hover:opacity-90 hover:shadow-violet-500/40">
+            <Link href="/kayit" className="hidden whitespace-nowrap rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 transition hover:opacity-90 hover:shadow-violet-500/40 sm:inline-flex">
               {s.navSignup}
             </Link>
             <button
@@ -277,8 +277,11 @@ export default function AnaSayfa() {
             <div className="flex flex-col gap-4">
               <a href="#ozellikler" onClick={() => setMenuOpen(false)} className="text-sm text-slate-300">{s.navFeatures}</a>
               <a href="#nasil-calisir" onClick={() => setMenuOpen(false)} className="text-sm text-slate-300">{s.navHow}</a>
-              <Link href="/fiyatlar" className="text-sm text-slate-300">{s.navPricing}</Link>
-              <Link href="/giris" className="text-sm text-slate-300">{s.navLogin}</Link>
+              <Link href="/fiyatlar" onClick={() => setMenuOpen(false)} className="text-sm text-slate-300">{s.navPricing}</Link>
+              <div className="mt-2 flex flex-col gap-2 border-t border-white/[0.06] pt-4">
+                <Link href="/giris" onClick={() => setMenuOpen(false)} className="rounded-xl border border-white/10 py-2.5 text-center text-sm font-medium text-slate-200">{s.navLogin}</Link>
+                <Link href="/kayit" onClick={() => setMenuOpen(false)} className="rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-2.5 text-center text-sm font-semibold text-white shadow-lg shadow-violet-500/25">{s.navSignup}</Link>
+              </div>
             </div>
           </div>
         )}

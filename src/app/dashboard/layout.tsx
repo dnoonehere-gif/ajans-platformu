@@ -1,4 +1,5 @@
 import { auth } from "@/server/auth/auth";
+import { prisma } from "@/lib/prisma";
 
 import { redirect } from "next/navigation";
 import { Palette, ChevronRight } from "lucide-react";
@@ -20,6 +21,17 @@ import { signOut } from "@/server/auth/auth";
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user) redirect("/giris");
+
+  // E-posta doğrulanmadan dashboard'a erişim yok. JWT yenilenmesini beklememek
+  // için doğrulama durumu DB'den taze okunur (kullanıcı doğrular doğrulamaz açılır).
+  const userId = (session.user as { id?: string }).id;
+  if (userId) {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { emailVerified: true },
+    });
+    if (dbUser && !dbUser.emailVerified) redirect("/dogrulama-bekleniyor");
+  }
 
   const user = session.user as { name?: string | null; email?: string | null; role?: string };
   const isAdmin = user.role === "SUPER_ADMIN" || user.role === "ADMIN";
