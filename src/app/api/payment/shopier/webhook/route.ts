@@ -121,7 +121,24 @@ export async function POST(req: NextRequest) {
       return new NextResponse("OK", { status: 200 });
     }
 
-    if (eventType === "order.fulfilled") {
+    // Ödeme tamamlanmışsa aboneliği aç. Shopier aynı sipariş için hem
+    // order.created hem order.fulfilled gönderebiliyor, ayrıca 200 alamazsa
+    // 9 kez tekrar deniyor — bu yüzden ödeme durumuna bakılıyor, olay tipine değil.
+    const paid = data.paymentStatus ? data.paymentStatus === "paid" : eventType === "order.fulfilled";
+
+    if (paid) {
+      // Aynı sipariş daha önce işlendiyse tekrar abonelik/fatura oluşturma
+      if (orderId) {
+        const existing = await prisma.subscription.findFirst({
+          where: { provider: "SHOPIER", providerSubId: orderId },
+          select: { id: true },
+        });
+        if (existing) {
+          console.log("Shopier webhook: sipariş zaten işlenmiş, atlandı", { orderId });
+          return new NextResponse("OK", { status: 200 });
+        }
+      }
+
       // Redis'ten brandId bul
       const redis = getUpstash();
       let brandId: string | null = null;
@@ -228,8 +245,12 @@ export async function POST(req: NextRequest) {
           }).catch(() => null);
         }
       })();
-    } else if (eventType === "order.created") {
-      console.log("Shopier order.created:", { buyerEmail, planSlug, orderId });
+    } else {
+      console.log("Shopier webhook: ödeme henüz tamamlanmamış", {
+        eventType,
+        orderId,
+        paymentStatus: data.paymentStatus,
+      });
     }
 
     return new NextResponse("OK", { status: 200 });
