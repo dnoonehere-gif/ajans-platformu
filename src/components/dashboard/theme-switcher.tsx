@@ -12,16 +12,20 @@ export function ThemeLabel() {
   const { lang } = useLang();
   return <span className="flex-1">{TS_L[lang].theme}</span>;
 }
-export function LogoutTitle({ children }: { children: (title: string) => React.ReactNode }) {
+export function LogoutButton() {
   const { lang } = useLang();
-  return <>{children(TS_L[lang].logout)}</>;
+  return (
+    <button type="submit" title={TS_L[lang].logout} className="text-[hsl(var(--muted-foreground))] transition hover:text-red-400">
+      <LogOut className="h-3.5 w-3.5" />
+    </button>
+  );
 }
 export function UserName({ name }: { name: string | null | undefined }) {
   const { lang } = useLang();
   return <>{name ?? TS_L[lang].userFallback}</>;
 }
 import { useTheme } from "next-themes";
-import { Sun, Moon, Monitor, Zap } from "lucide-react";
+import { Sun, Moon, Monitor, Zap, LogOut } from "lucide-react";
 
 const COLORS = [
   { id: "purple", label: "Mor", hex: "#7c6ff7" },

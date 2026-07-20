@@ -1,7 +1,7 @@
 import { auth } from "@/server/auth/auth";
 
 import { redirect } from "next/navigation";
-import { LogOut, Palette, ChevronRight } from "lucide-react";
+import { Palette, ChevronRight } from "lucide-react";
 import { BrandProvider } from "@/components/dashboard/brand-provider";
 import { WhiteLabelProvider } from "@/components/dashboard/white-label-provider";
 import { WhiteLabelLogo } from "@/components/dashboard/white-label-logo";
@@ -9,7 +9,7 @@ import { BrandSwitcher } from "@/components/dashboard/brand-switcher";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { LanguageSwitcher } from "@/components/language-provider";
 import { Breadcrumb } from "@/components/dashboard/breadcrumb";
-import { ThemeSwitcher, ThemeLabel, LogoutTitle, UserName } from "@/components/dashboard/theme-switcher";
+import { ThemeSwitcher, ThemeLabel, LogoutButton, UserName } from "@/components/dashboard/theme-switcher";
 import { NavClient } from "@/components/dashboard/nav-client";
 import { SubscriptionBanner } from "@/components/dashboard/subscription-banner";
 import { MobileSidebarToggle } from "@/components/dashboard/mobile-sidebar";
@@ -70,11 +70,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 <p className="truncate text-[10px] text-[hsl(var(--muted-foreground))]">{user.email}</p>
               </div>
               <form action={async () => { "use server"; await signOut({ redirectTo: `${process.env.NEXTAUTH_URL ?? ""}/giris` }); }}>
-                <LogoutTitle>{(title) => (
-                  <button type="submit" title={title} className="text-[hsl(var(--muted-foreground))] transition hover:text-red-400">
-                    <LogOut className="h-3.5 w-3.5" />
-                  </button>
-                )}</LogoutTitle>
+                <LogoutButton />
               </form>
             </div>
           </div>
@@ -114,11 +110,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
                     <p className="truncate text-[10px] text-[hsl(var(--muted-foreground))]">{user.email}</p>
                   </div>
                   <form action={async () => { "use server"; await signOut({ redirectTo: `${process.env.NEXTAUTH_URL ?? ""}/giris` }); }}>
-                    <LogoutTitle>{(title) => (
-                      <button type="submit" title={title} className="text-[hsl(var(--muted-foreground))] transition hover:text-red-400">
-                        <LogOut className="h-3.5 w-3.5" />
-                      </button>
-                    )}</LogoutTitle>
+                    <LogoutButton />
                   </form>
                 </div>
               </div>
