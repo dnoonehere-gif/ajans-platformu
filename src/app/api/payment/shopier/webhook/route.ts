@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { Redis } from "@upstash/redis";
 import { sendSubscriptionConfirmEmail } from "@/lib/email";
@@ -34,37 +35,77 @@ export async function GET() {
   });
 }
 
+// Shopier imzayı HS256 (HMAC-SHA256) ile üretip Shopier-Signature başlığında
+// gönderiyor. İmzalanan içeriğin tam formatı dokümanda belirtilmediği için
+// yaygın iki şema da denenir; eşleşmezse istek reddedilir ve adaylar loglanır.
+function verifySignature(raw: string, signature: string, timestamp: string, secret: string): boolean {
+  const candidates = [raw, `${timestamp}.${raw}`];
+  for (const payload of candidates) {
+    for (const encoding of ["hex", "base64"] as const) {
+      const digest = crypto.createHmac("sha256", secret).update(payload, "utf8").digest(encoding);
+      const a = Buffer.from(digest);
+      const b = Buffer.from(signature);
+      if (a.length === b.length && crypto.timingSafeEqual(a, b)) return true;
+    }
+  }
+  console.error("Shopier webhook: imza eşleşmedi", {
+    received: signature,
+    hexOfBody: crypto.createHmac("sha256", secret).update(raw, "utf8").digest("hex"),
+  });
+  return false;
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const webhookToken = process.env.SHOPIER_WEBHOOK_TOKEN;
-    if (webhookToken) {
-      const incoming =
-        req.headers.get("x-shopier-webhook-token") ??
-        req.headers.get("authorization")?.replace("Bearer ", "") ?? "";
-      if (incoming !== webhookToken) {
+    // İmza ham gövde üzerinden hesaplandığı için önce metin olarak okunur
+    const raw = await req.text();
+
+    const secret = process.env.SHOPIER_WEBHOOK_TOKEN;
+    const signature = req.headers.get("shopier-signature");
+    if (secret) {
+      if (!signature) return new NextResponse("FAILED", { status: 403 });
+      const timestamp = req.headers.get("shopier-timestamp") ?? "";
+      if (!verifySignature(raw, signature, timestamp, secret)) {
         return new NextResponse("FAILED", { status: 403 });
       }
     }
 
-    const event = await req.json();
-    const eventType: string = event.event ?? "";
-    const data = event.data ?? {};
+    const body = JSON.parse(raw);
+
+    // Olay tipi Shopier-Event başlığında gelir; gövdedeki alan yedek olarak kullanılır
+    const eventType: string = req.headers.get("shopier-event") ?? body.event ?? "";
 
     if (eventType !== "order.fulfilled" && eventType !== "order.created") {
       return new NextResponse("OK", { status: 200 });
     }
 
+    // Sipariş gövdenin kökünde ya da data altında gelebilir
+    const data = body.data ?? body;
+
+    // Alan adları Shopier Order modeline göre; eski tahminler yedekte bırakıldı
     const buyerEmail: string | undefined =
-      data.buyer?.email ?? data.customer?.email ?? data.email;
-    const productId: string =
-      String(data.product?.id ?? data.product_id ?? data.items?.[0]?.product_id ?? "");
-    const orderId: string =
-      String(data.id ?? data.order_id ?? "");
-    const totalValue: number =
-      data.total ?? data.total_price ?? data.amount ?? 0;
+      data.shippingInfo?.email ??
+      data.billingInfo?.email ??
+      data.buyer?.email ??
+      data.customer?.email ??
+      data.email;
+
+    const productId: string = String(
+      data.lineItems?.[0]?.productId ??
+        data.product?.id ??
+        data.product_id ??
+        data.items?.[0]?.product_id ??
+        ""
+    );
+
+    const orderId: string = String(data.id ?? data.order_id ?? "");
+
+    const totalValue: number = Number(
+      data.totals?.total ?? data.total ?? data.total_price ?? data.amount ?? 0
+    );
 
     if (!buyerEmail || !productId) {
-      console.error("Shopier webhook: eksik alan", { buyerEmail, productId });
+      console.error("Shopier webhook: eksik alan", { eventType, buyerEmail, productId, orderId });
       return new NextResponse("OK", { status: 200 });
     }
 
