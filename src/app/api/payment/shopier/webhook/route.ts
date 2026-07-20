@@ -36,23 +36,42 @@ export async function GET() {
 }
 
 // Shopier imzayı HS256 (HMAC-SHA256) ile üretip Shopier-Signature başlığında
-// gönderiyor. İmzalanan içeriğin tam formatı dokümanda belirtilmediği için
-// yaygın iki şema da denenir; eşleşmezse istek reddedilir ve adaylar loglanır.
-function verifySignature(raw: string, signature: string, timestamp: string, secret: string): boolean {
-  const candidates = [raw, `${timestamp}.${raw}`];
-  for (const payload of candidates) {
+// gönderiyor, ancak imzalanan içeriğin tam formatı dokümanda belirtilmemiş.
+// Bu yüzden yaygın şemalar denenir ve hangisinin tuttuğu döndürülür.
+const SIGNATURE_SCHEMES = ["body", "timestamp.body"] as const;
+
+function matchSignature(
+  raw: string,
+  signature: string,
+  timestamp: string,
+  secret: string
+): string | null {
+  for (const scheme of SIGNATURE_SCHEMES) {
+    const payload = scheme === "body" ? raw : `${timestamp}.${raw}`;
     for (const encoding of ["hex", "base64"] as const) {
       const digest = crypto.createHmac("sha256", secret).update(payload, "utf8").digest(encoding);
       const a = Buffer.from(digest);
       const b = Buffer.from(signature);
-      if (a.length === b.length && crypto.timingSafeEqual(a, b)) return true;
+      if (a.length === b.length && crypto.timingSafeEqual(a, b)) return `${scheme}:${encoding}`;
     }
   }
-  console.error("Shopier webhook: imza eşleşmedi", {
+  return null;
+}
+
+// İmza doğrulaması SHOPIER_WEBHOOK_SECRET tanımlanana kadar kapalıdır.
+// Kapalıyken bile, imza başlığı geldiyse hangi şemanın tuttuğu loglanır —
+// ilk gerçek webhook teslimatı doğru şemayı kendisi ortaya çıkarsın diye.
+function inspectSignature(req: NextRequest, raw: string) {
+  const signature = req.headers.get("shopier-signature");
+  if (!signature) return;
+  const probe = process.env.SHOPIER_WEBHOOK_SECRET ?? process.env.SHOPIER_WEBHOOK_TOKEN;
+  if (!probe) return;
+  const timestamp = req.headers.get("shopier-timestamp") ?? "";
+  console.log("Shopier webhook: imza incelemesi", {
+    matchedScheme: matchSignature(raw, signature, timestamp, probe) ?? "EŞLEŞME YOK",
     received: signature,
-    hexOfBody: crypto.createHmac("sha256", secret).update(raw, "utf8").digest("hex"),
+    timestamp,
   });
-  return false;
 }
 
 export async function POST(req: NextRequest) {
@@ -60,14 +79,19 @@ export async function POST(req: NextRequest) {
     // İmza ham gövde üzerinden hesaplandığı için önce metin olarak okunur
     const raw = await req.text();
 
-    const secret = process.env.SHOPIER_WEBHOOK_TOKEN;
-    const signature = req.headers.get("shopier-signature");
+    // Doğru imza şeması teyit edilene kadar zorunlu doğrulama kapalı.
+    // Teyit edildiğinde Railway'e SHOPIER_WEBHOOK_SECRET eklenerek açılır.
+    const secret = process.env.SHOPIER_WEBHOOK_SECRET;
     if (secret) {
+      const signature = req.headers.get("shopier-signature");
       if (!signature) return new NextResponse("FAILED", { status: 403 });
       const timestamp = req.headers.get("shopier-timestamp") ?? "";
-      if (!verifySignature(raw, signature, timestamp, secret)) {
+      if (!matchSignature(raw, signature, timestamp, secret)) {
+        console.error("Shopier webhook: imza doğrulanamadı", { received: signature });
         return new NextResponse("FAILED", { status: 403 });
       }
+    } else {
+      inspectSignature(req, raw);
     }
 
     const body = JSON.parse(raw);
