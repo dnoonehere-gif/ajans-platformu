@@ -27,48 +27,104 @@ async function sendMail(
   });
 }
 
+// ── Koyu tema paleti ────────────────────────────────────────────────
+const C = {
+  bg: "#07070c",          // en dış zemin (near-black, hafif soğuk)
+  card: "#121218",        // kart
+  cardInner: "#1a1a23",   // iç panel
+  border: "#26262f",
+  borderSoft: "#20202a",
+  heading: "#f4f4ff",
+  text: "#9a9ab2",
+  textDim: "#6b6b80",
+  textFaint: "#4a4a5a",
+  primary: "#8b5cf6",
+  primaryLt: "#a78bfa",
+  grad: "linear-gradient(135deg,#6366f1 0%,#8b5cf6 55%,#a855f7 100%)",
+};
+
 function layout(opts: { preheader?: string; body: string; footerNote?: string }) {
   return `<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="supported-color-schemes" content="dark" />
   <title>Novelya</title>
 </head>
-<body style="margin:0;padding:0;background:#0f0f13;font-family:'Segoe UI',Arial,sans-serif;">
-  ${opts.preheader ? `<div style="display:none;max-height:0;overflow:hidden;">${opts.preheader}</div>` : ""}
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f13;padding:40px 16px;">
+<body style="margin:0;padding:0;background:${C.bg};font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  ${opts.preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${opts.preheader}</div>` : ""}
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:${C.bg};padding:40px 16px;">
     <tr><td align="center">
-      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#18181f;border-radius:16px;overflow:hidden;border:1px solid #2a2a35;">
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:580px;width:100%;background:${C.card};border-radius:20px;overflow:hidden;border:1px solid ${C.border};">
+        <!-- Başlık bandı -->
         <tr>
-          <td style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:28px 32px;">
-            <div style="display:inline-flex;align-items:center;gap:10px;">
-              <div style="width:32px;height:32px;background:rgba(255,255,255,0.2);border-radius:8px;display:inline-block;text-align:center;line-height:32px;font-size:16px;font-weight:900;color:#fff;">N</div>
-              <span style="color:#fff;font-size:16px;font-weight:700;margin-left:8px;">Novelya</span>
-            </div>
+          <td style="background-color:#7c3aed;background:${C.grad};padding:32px 36px 30px;">
+            <table cellpadding="0" cellspacing="0" role="presentation">
+              <tr>
+                <td style="vertical-align:middle;">
+                  <div style="width:44px;height:44px;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.28);border-radius:12px;text-align:center;line-height:44px;font-size:22px;font-weight:900;color:#fff;">N</div>
+                </td>
+                <td style="vertical-align:middle;padding-left:14px;">
+                  <div style="color:#fff;font-size:19px;font-weight:800;letter-spacing:-0.3px;line-height:1.1;">Novelya</div>
+                  <div style="color:rgba(255,255,255,0.75);font-size:11.5px;font-weight:500;letter-spacing:0.2px;margin-top:3px;">Yapay Zekâ Destekli Dijital Ajans</div>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
-        <tr><td style="padding:32px;">${opts.body}</td></tr>
+        <!-- İnce vurgu çizgisi -->
+        <tr><td style="height:3px;background:${C.grad};line-height:3px;font-size:0;">&nbsp;</td></tr>
+        <!-- Gövde -->
+        <tr><td style="padding:36px 36px 32px;">${opts.body}</td></tr>
+        <!-- Alt bilgi -->
         <tr>
-          <td style="padding:20px 32px;border-top:1px solid #2a2a35;background:#13131a;">
-            <p style="margin:0 0 6px;font-size:12px;color:#666;">${opts.footerNote ?? "Bu e-postayı hesabınızla ilgili bir işlem nedeniyle aldınız."}</p>
-            <p style="margin:0;font-size:12px;color:#444;">© ${new Date().getFullYear()} Novelya &nbsp;·&nbsp;<a href="${BASE_URL}" style="color:#6366f1;text-decoration:none;">novelya.com.tr</a></p>
+          <td style="padding:24px 36px 28px;border-top:1px solid ${C.borderSoft};background:#0d0d12;">
+            <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
+              <tr><td style="padding-bottom:12px;">
+                <a href="${BASE_URL}/dashboard" style="color:${C.primaryLt};text-decoration:none;font-size:12px;font-weight:600;">Dashboard</a>
+                <span style="color:${C.textFaint};font-size:12px;">&nbsp;·&nbsp;</span>
+                <a href="${BASE_URL}/sss" style="color:${C.primaryLt};text-decoration:none;font-size:12px;font-weight:600;">Yardım</a>
+                <span style="color:${C.textFaint};font-size:12px;">&nbsp;·&nbsp;</span>
+                <a href="${BASE_URL}/iletisim" style="color:${C.primaryLt};text-decoration:none;font-size:12px;font-weight:600;">İletişim</a>
+              </td></tr>
+            </table>
+            <p style="margin:0 0 6px;font-size:12px;color:${C.textDim};line-height:1.6;">${opts.footerNote ?? "Bu e-postayı hesabınızla ilgili bir işlem nedeniyle aldınız."}</p>
+            <p style="margin:0;font-size:12px;color:${C.textFaint};">© ${new Date().getFullYear()} Novelya &nbsp;·&nbsp;<a href="${BASE_URL}" style="color:${C.textDim};text-decoration:none;">novelya.com.tr</a></p>
           </td>
         </tr>
       </table>
+      <p style="max-width:580px;margin:16px auto 0;font-size:11px;color:${C.textFaint};text-align:center;line-height:1.5;">Türkiye'nin yapay zekâ destekli dijital ajans platformu</p>
     </td></tr>
   </table>
 </body>
 </html>`;
 }
 
-const h = (t: string) => `<h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#f0f0ff;">${t}</h1>`;
-const p = (t: string) => `<p style="margin:0 0 16px;font-size:15px;color:#a0a0b8;line-height:1.7;">${t}</p>`;
-const cta = (t: string, u: string) => `<a href="${u}" style="display:inline-block;margin:8px 0 24px;padding:13px 28px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;">${t}</a>`;
-const divider = () => `<hr style="border:none;border-top:1px solid #2a2a35;margin:24px 0;" />`;
-const infoBox = (c: string) => `<div style="background:#1e1e2e;border:1px solid #2a2a35;border-radius:10px;padding:16px 20px;margin:16px 0;">${c}</div>`;
-const badge = (t: string, color = "#6366f1") => `<span style="display:inline-block;padding:3px 10px;background:${color}22;color:${color};border-radius:20px;font-size:12px;font-weight:700;">${t}</span>`;
-const note = (t: string) => `<p style="margin:16px 0 0;font-size:12px;color:#555;line-height:1.6;">${t}</p>`;
+// Büyük ikon rozeti — önemli maillerin başına
+const heroIcon = (emoji: string) =>
+  `<div style="width:64px;height:64px;background:${C.cardInner};border:1px solid ${C.border};border-radius:18px;text-align:center;line-height:64px;font-size:30px;margin:0 0 20px;">${emoji}</div>`;
+
+const h = (t: string) => `<h1 style="margin:0 0 10px;font-size:23px;font-weight:800;letter-spacing:-0.4px;color:${C.heading};line-height:1.3;">${t}</h1>`;
+const p = (t: string) => `<p style="margin:0 0 16px;font-size:15px;color:${C.text};line-height:1.75;">${t}</p>`;
+const cta = (t: string, u: string) => `<table cellpadding="0" cellspacing="0" role="presentation" style="margin:10px 0 24px;"><tr><td style="background-color:#7c3aed;background:${C.grad};border-radius:12px;"><a href="${u}" style="display:inline-block;padding:14px 32px;color:#fff;text-decoration:none;font-weight:700;font-size:14.5px;letter-spacing:0.2px;">${t}&nbsp;&nbsp;→</a></td></tr></table>`;
+const divider = () => `<div style="height:1px;background:linear-gradient(90deg,transparent,${C.border} 30%,${C.border} 70%,transparent);margin:24px 0;line-height:1px;font-size:0;">&nbsp;</div>`;
+const infoBox = (c: string) => `<div style="background:${C.cardInner};border:1px solid ${C.border};border-radius:14px;padding:18px 22px;margin:18px 0;">${c}</div>`;
+const accentBox = (c: string, color = C.primary) => `<table cellpadding="0" cellspacing="0" role="presentation" width="100%" style="margin:18px 0;"><tr><td style="width:4px;background:${color};border-radius:4px 0 0 4px;">&nbsp;</td><td style="background:${C.cardInner};border:1px solid ${C.border};border-left:none;border-radius:0 14px 14px 0;padding:16px 20px;">${c}</td></tr></table>`;
+const badge = (t: string, color = C.primary) => `<span style="display:inline-block;padding:4px 12px;background:${color}22;color:${color};border:1px solid ${color}44;border-radius:20px;font-size:12px;font-weight:700;">${t}</span>`;
+const note = (t: string) => `<p style="margin:14px 0 0;font-size:12px;color:${C.textDim};line-height:1.6;">${t}</p>`;
+
+// Metrik kutucukları (2 sütun) — haftalık özet için
+const statTile = (emoji: string, value: string | number, label: string, accent = C.primaryLt) =>
+  `<td width="50%" style="padding:6px;"><div style="background:${C.cardInner};border:1px solid ${C.border};border-radius:14px;padding:18px 16px;"><div style="font-size:22px;line-height:1;margin-bottom:8px;">${emoji}</div><div style="font-size:26px;font-weight:800;color:${accent};line-height:1;">${value}</div><div style="font-size:12px;color:${C.textDim};margin-top:6px;">${label}</div></div></td>`;
+const statGrid = (tiles: string[]) => {
+  const rows: string[] = [];
+  for (let i = 0; i < tiles.length; i += 2) {
+    rows.push(`<tr>${tiles[i]}${tiles[i + 1] ?? '<td width="50%">&nbsp;</td>'}</tr>`);
+  }
+  return `<table cellpadding="0" cellspacing="0" role="presentation" width="100%" style="margin:8px 0 20px;">${rows.join("")}</table>`;
+};
 
 export async function sendVerificationEmail(email: string, token: string) {
   const url = `${BASE_URL}/mail-dogrulama?token=${token}`;
@@ -108,21 +164,28 @@ export async function sendWelcomeEmail(
   const attachments: Attachment[] = pdfBuffer
     ? [{ filename: "Novelya-Kullanici-Sozlesmesi.pdf", content: pdfBuffer }]
     : [];
-  await sendMail(email, "Novelya'ya hoş geldiniz!", layout({
-    preheader: "Novelya'ya hoş geldiniz!",
+  const feat = (emoji: string, title: string, desc: string) =>
+    `<tr>
+      <td style="width:40px;vertical-align:top;padding:10px 0;"><div style="width:36px;height:36px;background:${C.card};border:1px solid ${C.border};border-radius:10px;text-align:center;line-height:36px;font-size:17px;">${emoji}</div></td>
+      <td style="padding:10px 0 10px 14px;vertical-align:top;"><div style="font-size:14px;font-weight:700;color:${C.heading};">${title}</div><div style="font-size:12.5px;color:${C.textDim};margin-top:2px;line-height:1.5;">${desc}</div></td>
+    </tr>`;
+  await sendMail(email, "Novelya'ya hoş geldiniz! 🎉", layout({
+    preheader: "Hesabınız hazır — işletmenizi dijitale taşımaya başlayın.",
     body: `
-      ${h(`Merhaba ${name}! 👋`)}
-      ${p("Novelya'ya hoş geldiniz.")}
+      ${heroIcon("👋")}
+      ${h(`Merhaba ${name}, hoş geldiniz!`)}
+      ${p("Novelya'ya katıldığınız için teşekkürler. İşletmenizi yapay zekâ ile dijitale taşımak için ihtiyacınız olan her şey tek platformda.")}
       ${infoBox(`
-        <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#f0f0ff;">Neler yapabilirsiniz?</p>
-        <table cellpadding="0" cellspacing="0" style="font-size:13px;color:#a0a0b8;width:100%;">
-          <tr><td style="padding:4px 0;">✨</td><td style="padding:4px 8px;">AI ile içerik üretin</td></tr>
-          <tr><td style="padding:4px 0;">🤖</td><td style="padding:4px 8px;">Chatbot kurun</td></tr>
-          <tr><td style="padding:4px 0;">⭐</td><td style="padding:4px 8px;">Müşteri yorumlarını analiz edin</td></tr>
-          <tr><td style="padding:4px 0;">🌐</td><td style="padding:4px 8px;">AI website oluşturun</td></tr>
+        <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${C.heading};letter-spacing:0.2px;">NELER YAPABİLİRSİNİZ?</p>
+        <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
+          ${feat("🌐", "AI ile web sitesi", "Dakikalar içinde profesyonel bir site oluşturun")}
+          ${feat("🤖", "Akıllı chatbot", "Müşteri sorularını 7/24 yanıtlayın")}
+          ${feat("✨", "İçerik üretimi", "Sosyal medya ve blog içeriklerini otomatikleştirin")}
+          ${feat("⭐", "Yorum analizi", "Müşteri memnuniyetini tek bakışta görün")}
         </table>
       `)}
       ${cta("Dashboard'a Git", `${BASE_URL}/dashboard`)}
+      ${note("Kullanıcı sözleşmeniz bu e-postaya eklenmiştir. Lütfen saklayınız.")}
     `,
   }), attachments.length ? attachments : undefined);
 }
@@ -135,7 +198,7 @@ export async function sendTeamInviteEmail(email: string, opts: {
   await sendMail(email, `${opts.inviterName} sizi ${opts.brandName} takımına davet etti`, layout({
     body: `
       ${h("Takım daveti 👥")}
-      ${p(`<strong style="color:#f0f0ff;">${opts.inviterName}</strong>, sizi <strong style="color:#f0f0ff;">${opts.brandName}</strong> markasına ${badge(roleLabel[opts.role] ?? opts.role)} rolüyle davet etti.`)}
+      ${p(`<strong style="color:${C.heading};">${opts.inviterName}</strong>, sizi <strong style="color:${C.heading};">${opts.brandName}</strong> markasına ${badge(roleLabel[opts.role] ?? opts.role)} rolüyle davet etti.`)}
       ${cta("Daveti Kabul Et", url)}
       ${note("Bu davet <strong>7 gün</strong> geçerlidir.")}
     `,
@@ -148,12 +211,14 @@ export async function sendSubscriptionConfirmEmail(email: string, opts: {
   const attachments: Attachment[] = opts.pdfBuffer
     ? [{ filename: "Novelya-Abonelik-Sozlesmesi.pdf", content: opts.pdfBuffer }]
     : [];
-  await sendMail(email, `${opts.planName} planınız başladı — Novelya`, layout({
+  await sendMail(email, `${opts.planName} planınız başladı 🚀 — Novelya`, layout({
+    preheader: `${opts.planName} planınız aktif. Tüm özellikler kullanıma hazır.`,
     body: `
-      ${h("Aboneliğiniz başladı 🚀")}
-      ${p(`Merhaba <strong style="color:#f0f0ff;">${opts.name}</strong>, ${badge(opts.planName, "#22c55e")} planınız aktif!`)}
-      ${p("Abonelik sözleşmeniz bu e-postaya eklenmiştir. Lütfen saklayınız.")}
-      ${cta("Dashboard'a Git", `${BASE_URL}/dashboard/abonelik`)}
+      ${heroIcon("🚀")}
+      ${h("Aboneliğiniz başladı!")}
+      ${p(`Merhaba <strong style="color:${C.heading};">${opts.name}</strong>, ödemeniz alındı ve ${badge(opts.planName, "#22c55e")} planınız aktif. Tüm özellikler artık kullanımınıza açık.`)}
+      ${accentBox(`<p style="margin:0;font-size:13.5px;color:${C.text};line-height:1.6;">📎 <strong style="color:${C.heading};">Abonelik sözleşmeniz</strong> bu e-postaya PDF olarak eklenmiştir. Yasal kaydınız için lütfen saklayınız.</p>`, "#22c55e")}
+      ${cta("Planımı Görüntüle", `${BASE_URL}/dashboard/abonelik`)}
     `,
   }), attachments.length ? attachments : undefined);
 }
@@ -164,7 +229,7 @@ export async function sendSubscriptionCancelEmail(email: string, opts: {
   await sendMail(email, "Aboneliğiniz iptal edildi — Novelya", layout({
     body: `
       ${h("Abonelik iptali")}
-      ${p(`Merhaba <strong style="color:#f0f0ff;">${opts.name}</strong>, <strong style="color:#f0f0ff;">${opts.planName}</strong> planınız iptal edildi.`)}
+      ${p(`Merhaba <strong style="color:${C.heading};">${opts.name}</strong>, <strong style="color:${C.heading};">${opts.planName}</strong> planınız iptal edildi.`)}
       ${cta("Planımı Yenile", `${BASE_URL}/fiyatlar`)}
     `,
   }));
@@ -173,16 +238,41 @@ export async function sendSubscriptionCancelEmail(email: string, opts: {
 export async function sendNegativeReviewAlertEmail(email: string, opts: {
   brandName: string; rating: number; reviewText: string; reviewId: string;
 }) {
-  const stars = "⭐".repeat(opts.rating) + "☆".repeat(5 - opts.rating);
-  await sendMail(email, `${opts.brandName} için ${opts.rating}⭐ olumsuz yorum alındı`, layout({
+  const stars = "★".repeat(opts.rating) + "☆".repeat(5 - opts.rating);
+  await sendMail(email, `⚠️ ${opts.brandName} için ${opts.rating}★ olumsuz yorum`, layout({
+    preheader: `${opts.brandName} için hızlı yanıt vermeniz önerilir.`,
     body: `
-      ${h("Olumsuz yorum uyarısı ⚠️")}
-      ${p(`<strong style="color:#f0f0ff;">${opts.brandName}</strong> markanız için yeni bir olumsuz yorum alındı.`)}
-      ${infoBox(`
-        <p style="margin:0 0 8px;font-size:18px;">${stars}</p>
-        <p style="margin:0;font-size:14px;color:#a0a0b8;font-style:italic;">"${opts.reviewText.slice(0, 200)}${opts.reviewText.length > 200 ? "…" : ""}"</p>
-      `)}
-      ${cta("Yorumu İncele", `${BASE_URL}/dashboard/reviews`)}
+      ${heroIcon("⚠️")}
+      ${h("Olumsuz yorum uyarısı")}
+      ${p(`<strong style="color:${C.heading};">${opts.brandName}</strong> markanız için yeni bir olumsuz yorum alındı. Hızlı ve yapıcı bir yanıt itibarınızı korur.`)}
+      ${accentBox(`
+        <p style="margin:0 0 8px;font-size:17px;color:#f59e0b;letter-spacing:2px;">${stars}</p>
+        <p style="margin:0;font-size:14px;color:${C.text};font-style:italic;line-height:1.6;">"${opts.reviewText.slice(0, 220).replace(/</g, "&lt;")}${opts.reviewText.length > 220 ? "…" : ""}"</p>
+      `, "#f59e0b")}
+      ${cta("Yorumu İncele ve Yanıtla", `${BASE_URL}/dashboard/reviews`)}
+    `,
+  }));
+}
+
+export async function sendWeeklyDigestEmail(email: string, opts: {
+  name?: string; brandName: string;
+  reviews: number; negativeCount: number; reservations: number; leads: number; conversations: number;
+}) {
+  const greeting = opts.name ? `Merhaba ${opts.name},` : "Merhaba,";
+  await sendMail(email, `📊 ${opts.brandName} — Haftalık Özet`, layout({
+    preheader: `${opts.brandName} için geçen haftanın performans özeti hazır.`,
+    body: `
+      ${heroIcon("📊")}
+      ${h("Haftalık özetiniz hazır")}
+      ${p(`${greeting} <strong style="color:${C.heading};">${opts.brandName}</strong> için geçen haftanın performansı:`)}
+      ${statGrid([
+        statTile("⭐", opts.reviews, opts.negativeCount > 0 ? `Yeni yorum · ${opts.negativeCount} olumsuz` : "Yeni yorum", opts.negativeCount > 0 ? "#f59e0b" : "#a78bfa"),
+        statTile("📅", opts.reservations, "Yeni rezervasyon", "#22c55e"),
+        statTile("👤", opts.leads, "Yeni müşteri adayı", "#3b82f6"),
+        statTile("💬", opts.conversations, "Chatbot konuşması", "#a78bfa"),
+      ])}
+      ${opts.negativeCount > 0 ? accentBox(`<p style="margin:0;font-size:13px;color:${C.text};line-height:1.6;">Bu hafta <strong style="color:#f59e0b;">${opts.negativeCount} olumsuz yorum</strong> aldınız. İncelemenizi öneririz.</p>`, "#f59e0b") : ""}
+      ${cta("Dashboard'da İncele", `${BASE_URL}/dashboard`)}
     `,
   }));
 }
@@ -202,9 +292,9 @@ export async function sendContactEmail(opts: {
     body: `
       ${h("Yeni iletişim mesajı 📬")}
       ${infoBox(`
-        <p style="margin:0 0 6px;font-size:13px;color:#a0a0b8;"><strong style="color:#f0f0ff;">Ad:</strong> ${opts.name}</p>
-        <p style="margin:0 0 6px;font-size:13px;color:#a0a0b8;"><strong style="color:#f0f0ff;">E-posta:</strong> ${opts.email}</p>
-        <p style="margin:0;font-size:13px;color:#a0a0b8;"><strong style="color:#f0f0ff;">Konu:</strong> ${opts.subject}</p>
+        <p style="margin:0 0 6px;font-size:13px;color:${C.text};"><strong style="color:${C.heading};">Ad:</strong> ${opts.name}</p>
+        <p style="margin:0 0 6px;font-size:13px;color:${C.text};"><strong style="color:${C.heading};">E-posta:</strong> ${opts.email}</p>
+        <p style="margin:0;font-size:13px;color:${C.text};"><strong style="color:${C.heading};">Konu:</strong> ${opts.subject}</p>
       `)}
       ${p(opts.message.replace(/</g, "&lt;").replace(/\n/g, "<br/>"))}
       ${note(`Yanıtlamak için doğrudan ${opts.email} adresine e-posta gönderebilirsiniz.`)}

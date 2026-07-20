@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendCustomEmail } from "@/lib/email";
+import { sendWeeklyDigestEmail } from "@/lib/email";
 
 // Haftalık özet e-postası — her pazartesi çağrılır (cron scheduler kontrol eder)
 // Header: Authorization: Bearer <CRON_SECRET>
@@ -56,27 +56,15 @@ export async function POST(req: NextRequest) {
       // Hiç aktivite yoksa mail atma
       if (reviews + reservations + leads + conversations === 0) continue;
 
-      const lines = [
-        `Merhaba${brand.owner.name ? ` ${brand.owner.name}` : ""},`,
-        ``,
-        `${brand.name} için geçen haftanın özeti:`,
-        ``,
-        `⭐ ${reviews} yeni yorum${negativeCount > 0 ? ` (${negativeCount} olumsuz — incelemenizi öneririz)` : ""}`,
-        `📅 ${reservations} yeni rezervasyon`,
-        `👤 ${leads} yeni müşteri adayı (CRM)`,
-        `💬 ${conversations} chatbot konuşması`,
-        ``,
-        `Detaylar için dashboard'unuza göz atın: ${process.env.NEXTAUTH_URL ?? "https://www.novelya.com.tr"}/dashboard`,
-        ``,
-        `İyi haftalar dileriz,`,
-        `Novelya Ekibi`,
-      ];
-
-      await sendCustomEmail(
-        brand.owner.email,
-        `📊 ${brand.name} — Haftalık Özet`,
-        lines.join("\n")
-      );
+      await sendWeeklyDigestEmail(brand.owner.email, {
+        name: brand.owner.name ?? undefined,
+        brandName: brand.name,
+        reviews,
+        negativeCount,
+        reservations,
+        leads,
+        conversations,
+      });
       sent++;
     } catch (e) {
       console.error(`Weekly digest error for brand ${brand.id}:`, e);
