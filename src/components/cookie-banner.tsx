@@ -1,6 +1,24 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Cookie, X } from "lucide-react";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    title: "Çerez Tercihleri",
+    desc: "Deneyiminizi iyileştirmek için çerezler kullanıyoruz. Zorunlu çerezler sitenin çalışması için gereklidir; analitik çerezler ise kullanımı anlamamıza yardımcı olur.",
+    essential: "Zorunlu çerezler", alwaysOn: "Her zaman açık",
+    analytics: "Analitik çerezler",
+    acceptAll: "Tümünü Kabul Et", settings: "Ayarlar", saveChoice: "Seçimi Kaydet", reject: "Reddet",
+  },
+  en: {
+    title: "Cookie Preferences",
+    desc: "We use cookies to improve your experience. Essential cookies are required for the site to work; analytics cookies help us understand usage.",
+    essential: "Essential cookies", alwaysOn: "Always on",
+    analytics: "Analytics cookies",
+    acceptAll: "Accept All", settings: "Settings", saveChoice: "Save Choice", reject: "Reject",
+  },
+};
 
 interface Consent {
   necessary: true;
@@ -9,6 +27,8 @@ interface Consent {
 }
 
 export function CookieBanner() {
+  const { lang } = useLang();
+  const sL = L[lang];
   const [visible, setVisible] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [analytics, setAnalytics] = useState(true);
@@ -30,7 +50,7 @@ export function CookieBanner() {
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="flex items-center gap-2">
           <Cookie className="h-5 w-5 text-[hsl(var(--primary))]" />
-          <p className="font-semibold text-sm">Çerez Tercihleri</p>
+          <p className="font-semibold text-sm">{sL.title}</p>
         </div>
         <button onClick={() => save(false)} className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">
           <X className="h-4 w-4" />
@@ -38,18 +58,17 @@ export function CookieBanner() {
       </div>
 
       <p className="mb-4 text-xs leading-relaxed text-[hsl(var(--muted-foreground))]">
-        Deneyiminizi iyileştirmek için çerezler kullanıyoruz. Zorunlu çerezler sitenin çalışması için gereklidir;
-        analitik çerezler ise kullanımı anlamamıza yardımcı olur.
+        {sL.desc}
       </p>
 
       {showSettings && (
         <div className="mb-4 space-y-2 rounded-xl bg-[hsl(var(--muted)/0.4)] p-3">
           <label className="flex items-center justify-between text-xs">
-            <span className="font-medium">Zorunlu çerezler</span>
-            <span className="text-[hsl(var(--muted-foreground))]">Her zaman açık</span>
+            <span className="font-medium">{sL.essential}</span>
+            <span className="text-[hsl(var(--muted-foreground))]">{sL.alwaysOn}</span>
           </label>
           <label className="flex cursor-pointer items-center justify-between text-xs">
-            <span className="font-medium">Analitik çerezler</span>
+            <span className="font-medium">{sL.analytics}</span>
             <div
               className={`relative h-5 w-9 rounded-full transition ${analytics ? "bg-[hsl(var(--primary))]" : "bg-[hsl(var(--muted))]"}`}
               onClick={() => setAnalytics(!analytics)}
@@ -65,19 +84,19 @@ export function CookieBanner() {
           onClick={() => save(true)}
           className="flex-1 rounded-lg bg-[hsl(var(--primary))] px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
         >
-          Tümünü Kabul Et
+          {sL.acceptAll}
         </button>
         <button
           onClick={() => (showSettings ? save(analytics) : setShowSettings(true))}
           className="flex-1 rounded-lg border border-[hsl(var(--border))] px-4 py-2 text-xs font-medium transition hover:bg-[hsl(var(--accent))]"
         >
-          {showSettings ? "Seçimi Kaydet" : "Ayarlar"}
+          {showSettings ? sL.saveChoice : sL.settings}
         </button>
         <button
           onClick={() => save(false)}
           className="rounded-lg px-3 py-2 text-xs text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))]"
         >
-          Reddet
+          {sL.reject}
         </button>
       </div>
     </div>
