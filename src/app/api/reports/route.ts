@@ -62,6 +62,9 @@ export async function POST(req: NextRequest) {
 
     const report = {
       brand: brand?.name ?? "Bilinmeyen",
+      // Etiket istemcide dile göre üretilir; sabit Türkçe metin geriye
+      // dönük uyumluluk için korunuyor.
+      periodKey: period,
       period: period === "week" ? "Haftalık" : "Aylık",
       dateRange: { from: since.toISOString(), to: now.toISOString() },
       metrics: {

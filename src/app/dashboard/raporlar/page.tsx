@@ -13,8 +13,12 @@ const L = {
     creating: "Oluşturuluyor...", createBtn: "Rapor Oluştur",
     reportWord: "Rapor", pdf: "PDF İndir",
     metrics: ["Üretilen İçerik", "Alınan Yorum", "Ortalama Puan", "Chatbot Mesaj", "QR Tarama", "AI Kullanım", "Gönderilen E-posta", "Yeni Lead (CRM)", "Sosyal Medya Post"],
-    sentiment: "Yorum Duygu Analizi",
+    sentiment: "Yorum Duygu Analizi", connErr: "Bağlantı hatası", genErr: "Rapor oluşturulamadı",
     positive: "Olumlu", neutral: "Nötr", negative: "Olumsuz",
+    pdfReportTitle: "Performans Raporu",
+    pdfMetricsHeading: "Genel Metrikler",
+    pdfGeneratedLabel: "Oluşturulma",
+    pdfFooter: "Bu rapor Novelya platformu tarafından otomatik oluşturulmuştur.",
   },
   en: {
     title: "Client Reports",
@@ -24,14 +28,19 @@ const L = {
     creating: "Generating...", createBtn: "Generate Report",
     reportWord: "Report", pdf: "Download PDF",
     metrics: ["Content Produced", "Reviews Received", "Average Rating", "Chatbot Messages", "QR Scans", "AI Usage", "Emails Sent", "New Leads (CRM)", "Social Media Posts"],
-    sentiment: "Review Sentiment Analysis",
+    sentiment: "Review Sentiment Analysis", connErr: "Connection error", genErr: "Report could not be generated",
     positive: "Positive", neutral: "Neutral", negative: "Negative",
+    pdfReportTitle: "Performance Report",
+    pdfMetricsHeading: "Overview Metrics",
+    pdfGeneratedLabel: "Generated",
+    pdfFooter: "This report was generated automatically by the Novelya platform.",
   },
 };
 
 interface ReportData {
   brand: string;
   period: string;
+  periodKey?: "week" | "month";
   dateRange: { from: string; to: string };
   metrics: {
     contentProduced: number;
@@ -69,22 +78,31 @@ export default function RaporlarPage() {
         body: JSON.stringify({ brandId: activeBrand.id, period }),
       });
       const data = await res.json();
-      if (!res.ok) setError(data.error ?? "Rapor oluşturulamadı");
+      if (!res.ok) setError(data.error ?? sL.genErr);
       else setReport(data.report);
     } catch {
-      setError("Bağlantı hatası");
+      setError(sL.connErr);
     }
     setLoading(false);
   }
 
+  // API geriye dönük uyumluluk için sabit Türkçe etiket dönüyor; gösterilecek
+  // etiket periodKey'den dile göre üretilir.
+  const periodLabel = report
+    ? report.periodKey
+      ? sL[report.periodKey]
+      : report.period
+    : "";
+
   function downloadPdf() {
     if (!report) return;
-    const fmt = (iso: string) => new Date(iso).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+    const locale = lang === "en" ? "en-GB" : "tr-TR";
+    const fmt = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
     const m = report.metrics;
 
     const html = `<!DOCTYPE html>
-<html lang="tr">
-<head><meta charset="UTF-8"><title>${report.brand} — ${report.period} Rapor</title>
+<html lang="${lang}">
+<head><meta charset="UTF-8"><title>${report.brand} — ${periodLabel} ${sL.reportWord}</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1a1a2e;padding:40px}
@@ -116,37 +134,37 @@ h2{font-size:18px;font-weight:700;margin:24px 0 12px;color:#1a1a2e}
 <div class="header">
   <div>
     <div class="brand">${report.brand}</div>
-    <div class="period">${report.period} Performans Raporu</div>
+    <div class="period">${periodLabel} ${sL.pdfReportTitle}</div>
     <div class="date">${fmt(report.dateRange.from)} – ${fmt(report.dateRange.to)}</div>
   </div>
   <div style="text-align:right">
-    <div style="font-size:12px;color:#aaa">Oluşturulma</div>
+    <div style="font-size:12px;color:#aaa">${sL.pdfGeneratedLabel}</div>
     <div style="font-size:13px;color:#666">${fmt(report.generatedAt)}</div>
   </div>
 </div>
 
-<h2>Genel Metrikler</h2>
+<h2>${sL.pdfMetricsHeading}</h2>
 <div class="grid">
-  <div class="card"><div class="value">${m.contentProduced}</div><div class="label">Üretilen İçerik</div></div>
-  <div class="card amber"><div class="value">${m.reviewsReceived}</div><div class="label">Alınan Yorum</div></div>
-  <div class="card"><div class="value">${m.avgRating > 0 ? m.avgRating + " ⭐" : "—"}</div><div class="label">Ortalama Puan</div></div>
-  <div class="card blue"><div class="value">${m.chatbotInteractions}</div><div class="label">Chatbot Mesaj</div></div>
-  <div class="card emerald"><div class="value">${m.qrScans}</div><div class="label">QR Tarama</div></div>
-  <div class="card pink"><div class="value">${m.aiUsage}</div><div class="label">AI Kullanım</div></div>
-  <div class="card green"><div class="value">${m.emailsSent}</div><div class="label">Gönderilen E-posta</div></div>
-  <div class="card"><div class="value">${m.crmLeads}</div><div class="label">Yeni Lead (CRM)</div></div>
-  <div class="card blue"><div class="value">${m.socialPosts}</div><div class="label">Sosyal Medya Post</div></div>
+  <div class="card"><div class="value">${m.contentProduced}</div><div class="label">${sL.metrics[0]}</div></div>
+  <div class="card amber"><div class="value">${m.reviewsReceived}</div><div class="label">${sL.metrics[1]}</div></div>
+  <div class="card"><div class="value">${m.avgRating > 0 ? m.avgRating + " ⭐" : "—"}</div><div class="label">${sL.metrics[2]}</div></div>
+  <div class="card blue"><div class="value">${m.chatbotInteractions}</div><div class="label">${sL.metrics[3]}</div></div>
+  <div class="card emerald"><div class="value">${m.qrScans}</div><div class="label">${sL.metrics[4]}</div></div>
+  <div class="card pink"><div class="value">${m.aiUsage}</div><div class="label">${sL.metrics[5]}</div></div>
+  <div class="card green"><div class="value">${m.emailsSent}</div><div class="label">${sL.metrics[6]}</div></div>
+  <div class="card"><div class="value">${m.crmLeads}</div><div class="label">${sL.metrics[7]}</div></div>
+  <div class="card blue"><div class="value">${m.socialPosts}</div><div class="label">${sL.metrics[8]}</div></div>
 </div>
 
 ${m.reviewsReceived > 0 ? `
-<h2>Yorum Duygu Analizi</h2>
+<h2>${sL.sentiment}</h2>
 <div class="sentiment">
-  <div class="bar pos">😊 Olumlu: ${m.sentimentBreakdown.positive}</div>
-  <div class="bar neu">😐 Nötr: ${m.sentimentBreakdown.neutral}</div>
-  <div class="bar neg">😞 Olumsuz: ${m.sentimentBreakdown.negative}</div>
+  <div class="bar pos">😊 ${sL.positive}: ${m.sentimentBreakdown.positive}</div>
+  <div class="bar neu">😐 ${sL.neutral}: ${m.sentimentBreakdown.neutral}</div>
+  <div class="bar neg">😞 ${sL.negative}: ${m.sentimentBreakdown.negative}</div>
 </div>` : ""}
 
-<div class="footer">Bu rapor Novelya platformu tarafından otomatik oluşturulmuştur. · ${fmt(report.generatedAt)}</div>
+<div class="footer">${sL.pdfFooter} · ${fmt(report.generatedAt)}</div>
 </body></html>`;
 
     const w = window.open("", "_blank");
@@ -157,7 +175,8 @@ ${m.reviewsReceived > 0 ? `
     }
   }
 
-  const formatDate = (iso: string) => new Date(iso).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(lang === "en" ? "en-GB" : "tr-TR", { day: "numeric", month: "long", year: "numeric" });
 
   const inp = "rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2.5 text-sm outline-none transition focus:border-[hsl(var(--primary))]";
 
@@ -201,7 +220,7 @@ ${m.reviewsReceived > 0 ? `
         <section className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="font-semibold">{report.brand} — {report.period} {sL.reportWord}</h2>
+              <h2 className="font-semibold">{report.brand} — {periodLabel} {sL.reportWord}</h2>
               <p className="flex items-center gap-1.5 text-xs text-[hsl(var(--muted-foreground))]">
                 <Calendar className="h-3.5 w-3.5" />
                 {formatDate(report.dateRange.from)} – {formatDate(report.dateRange.to)}
