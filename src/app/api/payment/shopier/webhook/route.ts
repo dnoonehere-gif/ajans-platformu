@@ -15,6 +15,8 @@ const PRODUCT_TO_PLAN: Record<string, string> = {
   "48859443": "baslangic-yillik",
   "48859459": "profesyonel-yillik",
   "48859474": "isletme-yillik",
+  "48897218": "ajans",
+  "48897230": "ajans-yillik",
 };
 
 function getUpstash() {
