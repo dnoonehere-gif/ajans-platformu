@@ -1,9 +1,12 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { registerPdfFonts, PDF_FONT_FAMILY } from "./fonts";
+
+registerPdfFonts();
 
 const styles = StyleSheet.create({
   page: {
-    fontFamily: "Helvetica",
+    fontFamily: PDF_FONT_FAMILY,
     fontSize: 10,
     paddingTop: 50,
     paddingBottom: 60,
@@ -19,9 +22,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-end",
   },
-  logo: { fontSize: 22, fontFamily: "Helvetica-Bold", color: "#6366f1" },
+  logo: { fontSize: 22, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", color: "#6366f1" },
   logoSub: { fontSize: 8, color: "#888", marginTop: 2 },
-  invNo: { fontSize: 13, fontFamily: "Helvetica-Bold", textAlign: "right" },
+  invNo: { fontSize: 13, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", textAlign: "right" },
   invDate: { fontSize: 9, color: "#888", textAlign: "right", marginTop: 3 },
   tableHeader: {
     flexDirection: "row",
@@ -30,7 +33,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     marginBottom: 4,
   },
-  th: { fontSize: 8, fontFamily: "Helvetica-Bold", color: "#888", textTransform: "uppercase" },
+  th: { fontSize: 8, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", color: "#888", textTransform: "uppercase" },
   row: {
     flexDirection: "row",
     borderBottomWidth: 0.5,
@@ -41,7 +44,7 @@ const styles = StyleSheet.create({
   cellSub: { fontSize: 8, color: "#999", marginTop: 2 },
   statusBadge: {
     fontSize: 8,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: PDF_FONT_FAMILY, fontWeight: "bold",
     paddingVertical: 3,
     paddingHorizontal: 8,
     borderRadius: 8,
@@ -56,7 +59,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   totalLabel: { fontSize: 8, color: "#888", marginBottom: 4 },
-  totalAmount: { fontSize: 22, fontFamily: "Helvetica-Bold", color: "#6366f1" },
+  totalAmount: { fontSize: 22, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", color: "#6366f1" },
   paidAt: { fontSize: 8, color: "#888", marginTop: 6 },
   footer: {
     position: "absolute",
@@ -72,9 +75,9 @@ const styles = StyleSheet.create({
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   PENDING: { label: "BEKLEMEDE", color: "#ca8a04", bg: "#fef9c3" },
-  PAID: { label: "ODENDI", color: "#16a34a", bg: "#dcfce7" },
-  FAILED: { label: "BASARISIZ", color: "#dc2626", bg: "#fee2e2" },
-  REFUNDED: { label: "IADE EDILDI", color: "#2563eb", bg: "#dbeafe" },
+  PAID: { label: "ÖDENDİ", color: "#16a34a", bg: "#dcfce7" },
+  FAILED: { label: "BAŞARISIZ", color: "#dc2626", bg: "#fee2e2" },
+  REFUNDED: { label: "İADE EDİLDİ", color: "#2563eb", bg: "#dbeafe" },
 };
 
 const PROVIDER_LABELS: Record<string, string> = {
@@ -123,16 +126,16 @@ export function InvoicePDF({ inv }: { inv: InvoicePdfData }) {
         </View>
 
         <View style={styles.tableHeader}>
-          <Text style={[styles.th, { flex: 3 }]}>Aciklama</Text>
+          <Text style={[styles.th, { flex: 3 }]}>Açıklama</Text>
           <Text style={[styles.th, { flex: 2 }]}>Marka</Text>
-          <Text style={[styles.th, { flex: 2 }]}>Odeme Yontemi</Text>
+          <Text style={[styles.th, { flex: 2 }]}>Ödeme Yöntemi</Text>
           <Text style={[styles.th, { flex: 2 }]}>Durum</Text>
           <Text style={[styles.th, { flex: 2, textAlign: "right" }]}>Tutar</Text>
         </View>
 
         <View style={styles.row}>
           <View style={{ flex: 3 }}>
-            <Text style={[styles.cell, { fontFamily: "Helvetica-Bold" }]}>{inv.planName}</Text>
+            <Text style={[styles.cell, { fontFamily: PDF_FONT_FAMILY, fontWeight: "bold" }]}>{inv.planName}</Text>
             <Text style={styles.cellSub}>Abonelik</Text>
           </View>
           <Text style={[styles.cell, { flex: 2 }]}>{inv.brandName}</Text>
@@ -145,7 +148,7 @@ export function InvoicePDF({ inv }: { inv: InvoicePdfData }) {
               {status.label}
             </Text>
           </View>
-          <Text style={[styles.cell, { flex: 2, textAlign: "right", fontFamily: "Helvetica-Bold" }]}>
+          <Text style={[styles.cell, { flex: 2, textAlign: "right", fontFamily: PDF_FONT_FAMILY, fontWeight: "bold" }]}>
             {fmtMoney(inv.amountCents, inv.currency)}
           </Text>
         </View>
@@ -154,13 +157,13 @@ export function InvoicePDF({ inv }: { inv: InvoicePdfData }) {
           <View style={styles.totalBox}>
             <Text style={styles.totalLabel}>TOPLAM</Text>
             <Text style={styles.totalAmount}>{fmtMoney(inv.amountCents, inv.currency)}</Text>
-            {inv.paidAt ? <Text style={styles.paidAt}>Odeme tarihi: {fmtDate(inv.paidAt)}</Text> : null}
+            {inv.paidAt ? <Text style={styles.paidAt}>Ödeme tarihi: {fmtDate(inv.paidAt)}</Text> : null}
           </View>
         </View>
 
         <View style={styles.footer} fixed>
           <Text style={styles.footerText}>
-            Bu belge Novelya platformu tarafindan olusturulmustur. Resmi e-fatura yerine gecmez.
+            Bu belge Novelya platformu tarafından oluşturulmuştur. Resmi e-fatura yerine geçmez.
           </Text>
         </View>
       </Page>

@@ -1,12 +1,15 @@
 import React from "react";
 import {
-  Document, Page, Text, View, StyleSheet, Font,
+  Document, Page, Text, View, StyleSheet,
 } from "@react-pdf/renderer";
+import { registerPdfFonts, PDF_FONT_FAMILY } from "./fonts";
+
+registerPdfFonts();
 
 // ─── Stiller ────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   page: {
-    fontFamily: "Helvetica",
+    fontFamily: PDF_FONT_FAMILY,
     fontSize: 10,
     paddingTop: 50,
     paddingBottom: 60,
@@ -24,13 +27,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-end",
   },
-  logo: { fontSize: 20, fontFamily: "Helvetica-Bold", color: "#6366f1" },
+  logo: { fontSize: 20, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", color: "#6366f1" },
   logoSub: { fontSize: 8, color: "#888", marginTop: 2 },
   docTitle: { fontSize: 8, color: "#888", textAlign: "right" },
   // Belge başlığı
   title: {
     fontSize: 16,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: PDF_FONT_FAMILY, fontWeight: "bold",
     color: "#1a1a2e",
     textAlign: "center",
     marginBottom: 6,
@@ -54,13 +57,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginBottom: 4,
   },
-  infoLabel: { fontFamily: "Helvetica-Bold", width: 120, fontSize: 9 },
+  infoLabel: { fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", width: 120, fontSize: 9 },
   infoValue: { flex: 1, fontSize: 9, color: "#444" },
   // Bölümler
   section: { marginBottom: 16 },
   sectionTitle: {
     fontSize: 11,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: PDF_FONT_FAMILY, fontWeight: "bold",
     color: "#6366f1",
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0f0",
@@ -95,7 +98,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   signatureLabel: { fontSize: 8, color: "#666" },
-  signatureValue: { fontSize: 9, fontFamily: "Helvetica-Bold", marginTop: 4 },
+  signatureValue: { fontSize: 9, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", marginTop: 4 },
   badge: {
     backgroundColor: "#6366f1",
     color: "#fff",
@@ -398,11 +401,11 @@ export function SubscriptionAgreementPDF({ data }: { data: SubscriptionAgreement
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>1. TARAFLAR</Text>
           <Text style={styles.paragraph}>
-            <Text style={{ fontFamily: "Helvetica-Bold" }}>Satıcı (Hizmet Sağlayıcı):</Text>{" "}
+            <Text style={{ fontFamily: PDF_FONT_FAMILY, fontWeight: "bold" }}>Satıcı (Hizmet Sağlayıcı):</Text>{" "}
             Novelya Yazılım Hizmetleri, novelya.com.tr, novelya@novelya.com.tr
           </Text>
           <Text style={styles.paragraph}>
-            <Text style={{ fontFamily: "Helvetica-Bold" }}>Alıcı (Abone):</Text>{" "}
+            <Text style={{ fontFamily: PDF_FONT_FAMILY, fontWeight: "bold" }}>Alıcı (Abone):</Text>{" "}
             {data.name} ({data.email})
           </Text>
         </View>
@@ -431,7 +434,7 @@ export function SubscriptionAgreementPDF({ data }: { data: SubscriptionAgreement
           <Text style={styles.listItem}>• SEO içerik üretimi (üst planlarda)</Text>
           <Text style={styles.listItem}>• Takım üyeleri ve çoklu marka yönetimi (plana göre değişir)</Text>
           <Text style={styles.listItem}>• {data.planName === "İşletme" ? "Dedike hesap yöneticisi desteği" : data.planName === "Profesyonel" ? "Öncelikli müşteri desteği" : "E-posta müşteri desteği"}</Text>
-          <Text style={{ ...styles.paragraph, marginTop: 6, fontFamily: "Helvetica-Oblique", color: "#666" }}>
+          <Text style={{ ...styles.paragraph, marginTop: 6, fontFamily: PDF_FONT_FAMILY, fontStyle: "italic", color: "#666" }}>
             Güncel özellik listesi için novelya.com.tr/fiyatlar adresini ziyaret edin.
           </Text>
         </View>
@@ -439,7 +442,7 @@ export function SubscriptionAgreementPDF({ data }: { data: SubscriptionAgreement
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>4. ÖDEME VE YENİLEME KOŞULLARI</Text>
           <Text style={styles.paragraph}>
-            Abonelik bedeli olan <Text style={{ fontFamily: "Helvetica-Bold" }}>{price}</Text> ({interval}), ödeme
+            Abonelik bedeli olan <Text style={{ fontFamily: PDF_FONT_FAMILY, fontWeight: "bold" }}>{price}</Text> ({interval}), ödeme
             işlemi tamamlandığında tahsil edilmiştir. Abonelik her fatura döneminin sonunda otomatik olarak
             yenilenir ve yenileme bedeli kayıtlı ödeme yönteminden çekilir.
           </Text>
@@ -457,13 +460,13 @@ export function SubscriptionAgreementPDF({ data }: { data: SubscriptionAgreement
             sonunda geçerli olur; kalan süre için ücret iade edilmez.
           </Text>
           <Text style={styles.paragraph}>
-            <Text style={{ fontFamily: "Helvetica-Bold" }}>Cayma Hakkı:</Text> Mesafeli Sözleşmeler Yönetmeliği
+            <Text style={{ fontFamily: PDF_FONT_FAMILY, fontWeight: "bold" }}>Cayma Hakkı:</Text> Mesafeli Sözleşmeler Yönetmeliği
             uyarınca, dijital içerik ve hizmetlerde hizmetin ifasına başlanılmasıyla birlikte cayma hakkı
             kullanılamaz. Alıcı, ödeme işlemini tamamlayarak hizmetin ifasının başlatılmasına açıkça rıza
             göstermiş ve cayma hakkından feragat etmiştir.
           </Text>
           <Text style={styles.paragraph}>
-            <Text style={{ fontFamily: "Helvetica-Bold" }}>İstisna:</Text> Yıllık abonelikte, satın alma tarihinden
+            <Text style={{ fontFamily: PDF_FONT_FAMILY, fontWeight: "bold" }}>İstisna:</Text> Yıllık abonelikte, satın alma tarihinden
             itibaren 7 (yedi) gün içinde ve hizmet esaslı biçimde kullanılmamışsa iade talebinde bulunulabilir.
           </Text>
         </View>
