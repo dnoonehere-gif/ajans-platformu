@@ -57,22 +57,25 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  try {
-    await sendVerificationEmail(email, token);
-    // Kullanıcı sözleşmesi PDF'i arka planda oluştur ve hoş geldin mailine ekle
-    (async () => {
-      try {
-        const element = UserAgreementPDF({ data: { name, email, registeredAt: new Date() } });
-        refreshPdfFonts();
-        const pdfBuffer = await renderToBuffer(element as Parameters<typeof renderToBuffer>[0]);
-        await sendWelcomeEmail(email, name, pdfBuffer as Buffer);
-      } catch {
-        sendWelcomeEmail(email, name).catch(() => null);
-      }
-    })();
-  } catch {
-    // Mail gönderilemese de kayıt tamamlanır
-  }
+  // Doğrulama maili + hoş geldin maili (kullanıcı sözleşmesi PDF ekli).
+  // Kayıt işlemini bloklamamak için beklemeden gönderilir; hatalar loglanır.
+  sendVerificationEmail(email, token).catch((e) =>
+    console.error("Doğrulama maili gönderilemedi:", e)
+  );
+  (async () => {
+    try {
+      const element = UserAgreementPDF({ data: { name, email, registeredAt: new Date() } });
+      refreshPdfFonts();
+      const pdfBuffer = await renderToBuffer(element as Parameters<typeof renderToBuffer>[0]);
+      await sendWelcomeEmail(email, name, pdfBuffer as Buffer);
+    } catch (e) {
+      // PDF üretimi/gönderimi başarısız olursa en azından PDF'siz hoş geldin maili git
+      console.error("Hoş geldin maili PDF ile gönderilemedi, PDF'siz deneniyor:", e);
+      await sendWelcomeEmail(email, name).catch((e2) =>
+        console.error("Hoş geldin maili PDF'siz de gönderilemedi:", e2)
+      );
+    }
+  })();
 
   auditFromRequest("auth.register", user.id, {
     entity: "User", entityId: user.id, metadata: { email, name },

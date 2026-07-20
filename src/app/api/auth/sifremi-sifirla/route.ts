@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { sendPasswordChangedEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -22,6 +23,11 @@ export async function POST(req: NextRequest) {
   const passwordHash = await bcrypt.hash(password, 12);
   await prisma.user.update({ where: { email: record.email }, data: { passwordHash } });
   await prisma.passwordResetToken.delete({ where: { token } });
+
+  // Güvenlik bildirimi — mail gönderilemese de işlem başarılı sayılır
+  sendPasswordChangedEmail(record.email).catch((e) =>
+    console.error("Şifre değişikliği maili gönderilemedi:", e)
+  );
 
   return NextResponse.json({ ok: true });
 }

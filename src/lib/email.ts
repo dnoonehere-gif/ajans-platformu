@@ -127,7 +127,7 @@ const statGrid = (tiles: string[]) => {
 };
 
 export async function sendVerificationEmail(email: string, token: string) {
-  const url = `${BASE_URL}/mail-dogrulama?token=${token}`;
+  const url = `${BASE_URL}/api/auth/mail-dogrula?token=${token}`;
   await sendMail(email, "E-posta adresinizi doğrulayın — Novelya", layout({
     preheader: "Hesabınızı etkinleştirmek için e-postanızı doğrulayın.",
     body: `
@@ -152,6 +152,20 @@ export async function sendPasswordResetEmail(email: string, token: string) {
       ${divider()}
       ${note("Bu link <strong>1 saat</strong> geçerlidir.")}
       ${note("Bu isteği siz yapmadıysanız bu maili yok sayabilirsiniz.")}
+    `,
+  }));
+}
+
+export async function sendPasswordChangedEmail(email: string) {
+  await sendMail(email, "Şifreniz değiştirildi — Novelya", layout({
+    preheader: "Hesabınızın şifresi az önce değiştirildi.",
+    footerNote: "Bu bir güvenlik bildirimidir.",
+    body: `
+      ${heroIcon("🔒")}
+      ${h("Şifreniz değiştirildi")}
+      ${p("Hesabınızın şifresi az önce başarıyla güncellendi. Artık yeni şifrenizle giriş yapabilirsiniz.")}
+      ${accentBox(`<p style="margin:0;font-size:13px;color:${C.text};line-height:1.6;">Bu işlemi <strong style="color:${C.heading};">siz yapmadıysanız</strong>, hesabınız risk altında olabilir. Hemen şifrenizi sıfırlayın ve bizimle iletişime geçin.</p>`, "#ef4444")}
+      ${cta("Giriş Yap", `${BASE_URL}/giris`)}
     `,
   }));
 }
