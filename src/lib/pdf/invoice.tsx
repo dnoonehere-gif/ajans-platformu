@@ -1,8 +1,25 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Svg, Defs, LinearGradient, Stop, Rect } from "@react-pdf/renderer";
 import { registerPdfFonts, PDF_FONT_FAMILY } from "./fonts";
 
 registerPdfFonts();
+
+const CONTENT_W = 495;
+
+function GradientBar({ height = 3 }: { height?: number }) {
+  return (
+    <Svg height={height} width={CONTENT_W} style={{ marginBottom: 28 }}>
+      <Defs>
+        <LinearGradient id="invgrad" x1="0" y1="0" x2="1" y2="0">
+          <Stop offset="0" stopColor="#6366f1" />
+          <Stop offset="0.55" stopColor="#8b5cf6" />
+          <Stop offset="1" stopColor="#a855f7" />
+        </LinearGradient>
+      </Defs>
+      <Rect x="0" y="0" width={CONTENT_W} height={height} rx={height / 2} fill="url(#invgrad)" />
+    </Svg>
+  );
+}
 
 const styles = StyleSheet.create({
   page: {
@@ -14,16 +31,19 @@ const styles = StyleSheet.create({
     color: "#1a1a2e",
   },
   header: {
-    borderBottomWidth: 2,
-    borderBottomColor: "#6366f1",
-    paddingBottom: 16,
-    marginBottom: 28,
+    paddingBottom: 14,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-end",
+    alignItems: "center",
   },
-  logo: { fontSize: 22, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", color: "#6366f1" },
-  logoSub: { fontSize: 8, color: "#888", marginTop: 2 },
+  logoLockup: { flexDirection: "row", alignItems: "center" },
+  logoTile: {
+    width: 34, height: 34, borderRadius: 9, backgroundColor: "#6366f1",
+    color: "#fff", fontSize: 19, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold",
+    textAlign: "center", lineHeight: 1.75, marginRight: 10,
+  },
+  logo: { fontSize: 20, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", color: "#1a1a2e" },
+  logoSub: { fontSize: 8, color: "#8888a0", marginTop: 1 },
   invNo: { fontSize: 13, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", textAlign: "right" },
   invDate: { fontSize: 9, color: "#888", textAlign: "right", marginTop: 3 },
   tableHeader: {
@@ -115,15 +135,19 @@ export function InvoicePDF({ inv }: { inv: InvoicePdfData }) {
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <View>
-            <Text style={styles.logo}>Novelya</Text>
-            <Text style={styles.logoSub}>novelya.com.tr</Text>
+          <View style={styles.logoLockup}>
+            <Text style={styles.logoTile}>N</Text>
+            <View>
+              <Text style={styles.logo}>Novelya</Text>
+              <Text style={styles.logoSub}>novelya.com.tr</Text>
+            </View>
           </View>
           <View>
             <Text style={styles.invNo}>Fatura #{inv.id.slice(-8).toUpperCase()}</Text>
             <Text style={styles.invDate}>{fmtDate(inv.createdAt)}</Text>
           </View>
         </View>
+        <GradientBar />
 
         <View style={styles.tableHeader}>
           <Text style={[styles.th, { flex: 3 }]}>Açıklama</Text>

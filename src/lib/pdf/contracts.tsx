@@ -1,10 +1,30 @@
 import React from "react";
 import {
   Document, Page, Text, View, StyleSheet,
+  Svg, Defs, LinearGradient, Stop, Rect,
 } from "@react-pdf/renderer";
 import { registerPdfFonts, PDF_FONT_FAMILY } from "./fonts";
 
 registerPdfFonts();
+
+// A4 içerik genişliği: 595 - 50 - 50 = 495pt
+const CONTENT_W = 495;
+
+// Açık zeminde mor gradient vurgu bandı (yazdırmaya uygun ince şerit)
+function GradientBar({ height = 4, width = CONTENT_W, mb = 0 }: { height?: number; width?: number; mb?: number }) {
+  return (
+    <Svg height={height} width={width} style={{ marginBottom: mb }}>
+      <Defs>
+        <LinearGradient id="nvgrad" x1="0" y1="0" x2="1" y2="0">
+          <Stop offset="0" stopColor="#6366f1" />
+          <Stop offset="0.55" stopColor="#8b5cf6" />
+          <Stop offset="1" stopColor="#a855f7" />
+        </LinearGradient>
+      </Defs>
+      <Rect x="0" y="0" width={width} height={height} rx={height / 2} fill="url(#nvgrad)" />
+    </Svg>
+  );
+}
 
 // ─── Stiller ────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
@@ -19,17 +39,20 @@ const styles = StyleSheet.create({
   },
   // Üst başlık bandı
   header: {
-    borderBottomWidth: 2,
-    borderBottomColor: "#6366f1",
-    paddingBottom: 14,
-    marginBottom: 20,
+    paddingBottom: 12,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-end",
+    alignItems: "center",
   },
-  logo: { fontSize: 20, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", color: "#6366f1" },
-  logoSub: { fontSize: 8, color: "#888", marginTop: 2 },
-  docTitle: { fontSize: 8, color: "#888", textAlign: "right" },
+  logoLockup: { flexDirection: "row", alignItems: "center" },
+  logoTile: {
+    width: 30, height: 30, borderRadius: 8, backgroundColor: "#6366f1",
+    color: "#fff", fontSize: 17, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold",
+    textAlign: "center", lineHeight: 1.7, marginRight: 9,
+  },
+  logo: { fontSize: 17, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", color: "#1a1a2e" },
+  logoSub: { fontSize: 7.5, color: "#8888a0", marginTop: 1 },
+  docTitle: { fontSize: 8, color: "#8888a0", textAlign: "right" },
   // Belge başlığı
   title: {
     fontSize: 16,
@@ -46,29 +69,32 @@ const styles = StyleSheet.create({
   },
   // Bilgi kutusu
   infoBox: {
-    backgroundColor: "#f5f5ff",
+    backgroundColor: "#f7f6ff",
+    borderWidth: 1,
+    borderColor: "#e6e4fb",
     borderLeftWidth: 3,
-    borderLeftColor: "#6366f1",
-    padding: 12,
-    marginBottom: 20,
-    borderRadius: 4,
+    borderLeftColor: "#8b5cf6",
+    padding: 16,
+    marginBottom: 22,
+    borderRadius: 10,
   },
   infoRow: {
     flexDirection: "row",
-    marginBottom: 4,
+    marginBottom: 5,
   },
-  infoLabel: { fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", width: 120, fontSize: 9 },
-  infoValue: { flex: 1, fontSize: 9, color: "#444" },
+  infoLabel: { fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", width: 120, fontSize: 9, color: "#2a2a45" },
+  infoValue: { flex: 1, fontSize: 9, color: "#555" },
   // Bölümler
   section: { marginBottom: 16 },
   sectionTitle: {
     fontSize: 11,
     fontFamily: PDF_FONT_FAMILY, fontWeight: "bold",
-    color: "#6366f1",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0f0",
-    paddingBottom: 4,
-    marginBottom: 8,
+    color: "#6d28d9",
+    borderLeftWidth: 3,
+    borderLeftColor: "#8b5cf6",
+    paddingLeft: 9,
+    paddingBottom: 2,
+    marginBottom: 9,
   },
   paragraph: { fontSize: 9.5, color: "#333", marginBottom: 6, textAlign: "justify" },
   listItem: { fontSize: 9.5, color: "#333", marginBottom: 4, paddingLeft: 12 },
@@ -100,30 +126,39 @@ const styles = StyleSheet.create({
   signatureLabel: { fontSize: 8, color: "#666" },
   signatureValue: { fontSize: 9, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", marginTop: 4 },
   badge: {
-    backgroundColor: "#6366f1",
-    color: "#fff",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 3,
+    backgroundColor: "#ede9fe",
+    color: "#6d28d9",
+    borderWidth: 1,
+    borderColor: "#ddd6fe",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
     fontSize: 8,
+    fontFamily: PDF_FONT_FAMILY, fontWeight: "bold",
     alignSelf: "flex-start",
-    marginBottom: 12,
+    marginBottom: 14,
   },
 });
 
 function PageHeader({ title }: { title: string }) {
   const today = new Date().toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" });
   return (
-    <View style={styles.header}>
-      <View>
-        <Text style={styles.logo}>Novelya</Text>
-        <Text style={styles.logoSub}>Yapay Zekâ Destekli Dijital Ajans Platformu</Text>
+    <View style={{ marginBottom: 20 }}>
+      <View style={styles.header}>
+        <View style={styles.logoLockup}>
+          <Text style={styles.logoTile}>N</Text>
+          <View>
+            <Text style={styles.logo}>Novelya</Text>
+            <Text style={styles.logoSub}>Yapay Zekâ Destekli Dijital Ajans Platformu</Text>
+          </View>
+        </View>
+        <View>
+          <Text style={styles.docTitle}>{title}</Text>
+          <Text style={styles.docTitle}>{today}</Text>
+          <Text style={styles.docTitle}>novelya.com.tr</Text>
+        </View>
       </View>
-      <View>
-        <Text style={styles.docTitle}>{title}</Text>
-        <Text style={styles.docTitle}>{today}</Text>
-        <Text style={styles.docTitle}>novelya.com.tr</Text>
-      </View>
+      <GradientBar height={3} />
     </View>
   );
 }

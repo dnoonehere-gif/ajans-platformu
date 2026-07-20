@@ -1,9 +1,26 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Svg, Defs, LinearGradient, Stop, Rect } from "@react-pdf/renderer";
 import { registerPdfFonts, PDF_FONT_FAMILY } from "./fonts";
 import type { BuiltReport, ReportPeriod } from "@/lib/reports";
 
 registerPdfFonts();
+
+const CONTENT_W = 495;
+
+function GradientBar({ height = 3 }: { height?: number }) {
+  return (
+    <Svg height={height} width={CONTENT_W} style={{ marginBottom: 28 }}>
+      <Defs>
+        <LinearGradient id="repgrad" x1="0" y1="0" x2="1" y2="0">
+          <Stop offset="0" stopColor="#6366f1" />
+          <Stop offset="0.55" stopColor="#8b5cf6" />
+          <Stop offset="1" stopColor="#a855f7" />
+        </LinearGradient>
+      </Defs>
+      <Rect x="0" y="0" width={CONTENT_W} height={height} rx={height / 2} fill="url(#repgrad)" />
+    </Svg>
+  );
+}
 
 type Lang = "tr" | "en";
 
@@ -61,10 +78,7 @@ const styles = StyleSheet.create({
     color: "#1a1a2e",
   },
   header: {
-    borderBottomWidth: 2,
-    borderBottomColor: "#6366f1",
-    paddingBottom: 16,
-    marginBottom: 28,
+    paddingBottom: 14,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
@@ -72,6 +86,7 @@ const styles = StyleSheet.create({
   brand: { fontSize: 26, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", color: "#6366f1" },
   period: { fontSize: 12, color: "#666", marginTop: 4 },
   dateRange: { fontSize: 9, color: "#888", marginTop: 3 },
+  brandMark: { fontSize: 9, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", color: "#6366f1", textAlign: "right", marginBottom: 6 },
   genLabel: { fontSize: 8, color: "#aaa", textAlign: "right" },
   genValue: { fontSize: 9, color: "#666", textAlign: "right", marginTop: 2 },
   heading: { fontSize: 14, fontFamily: PDF_FONT_FAMILY, fontWeight: "bold", marginBottom: 12 },
@@ -148,10 +163,12 @@ export function ReportPDF({ report, lang }: { report: BuiltReport; lang: Lang })
             </Text>
           </View>
           <View>
+            <Text style={styles.brandMark}>Novelya</Text>
             <Text style={styles.genLabel}>{t.generated}</Text>
             <Text style={styles.genValue}>{fmtDate(report.generatedAt, lang)}</Text>
           </View>
         </View>
+        <GradientBar />
 
         <Text style={styles.heading}>{t.metricsHeading}</Text>
         <View style={styles.grid}>
