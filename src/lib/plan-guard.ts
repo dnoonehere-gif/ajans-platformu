@@ -13,10 +13,17 @@ export interface PlanFeatures {
   support: string;
 }
 
+/**
+ * Aktif aboneliği OLMAYAN (veya askıya alınmış) kullanıcılar için geçerli.
+ * Ücretli özelliklerin hiçbiri açık değildir; kullanıcı yalnızca tek bir marka
+ * oluşturup panele girebilir, kullanmak için abone olması gerekir.
+ * (Önceden website:true, aiContent:50, qrCodes:2 idi — abonesiz kullanım
+ * mümkün oluyordu.)
+ */
 const DEFAULT_FEATURES: PlanFeatures = {
-  brands: 1, teamMembers: 2, aiContent: 50,
-  chatbot: false, reviews: false, qrCodes: 2,
-  website: true, googleBusiness: false, seoContent: false, support: "email",
+  brands: 1, teamMembers: 1, aiContent: 0,
+  chatbot: false, reviews: false, qrCodes: 0,
+  website: false, googleBusiness: false, seoContent: false, support: "email",
 };
 
 export type SubscriptionState = "active" | "suspended" | "none";

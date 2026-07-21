@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { generateWebsiteBlocks } from "@/server/ai/website-generator";
+import { getBrandPlanFeatures } from "@/lib/plan-guard";
 import { z } from "zod";
 
 const schema = z.object({
@@ -26,6 +27,14 @@ export async function POST(req: NextRequest) {
     where: { id: brandId, ownerId: user.id },
   });
   if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
+
+  const features = await getBrandPlanFeatures(brandId);
+  if (!features.website) {
+    return NextResponse.json({
+      error: "Website oluşturma özelliği aktif aboneliğinizde bulunmuyor.",
+      upgrade: true,
+    }, { status: 403 });
+  }
 
   // Renk veya telefon değiştiyse markayı güncelle
   if (primaryColor || phone) {

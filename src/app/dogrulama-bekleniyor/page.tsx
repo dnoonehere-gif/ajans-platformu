@@ -14,7 +14,7 @@ const L = {
     resend: "Doğrulama E-postasını Tekrar Gönder",
     sending: "Gönderiliyor...",
     sent: "Doğrulama e-postası gönderildi! Gelen kutunuzu kontrol edin.",
-    already: "E-postanız zaten doğrulanmış. Sayfayı yenileyin.",
+    already: "E-postanız zaten doğrulanmış. Yönlendiriliyorsunuz...",
     error: "Bir hata oluştu, lütfen tekrar deneyin.",
     logout: "Çıkış Yap",
     refresh: "Doğruladım, Devam Et",
@@ -27,7 +27,7 @@ const L = {
     resend: "Resend Verification Email",
     sending: "Sending...",
     sent: "Verification email sent! Check your inbox.",
-    already: "Your email is already verified. Please refresh the page.",
+    already: "Your email is already verified. Redirecting...",
     error: "Something went wrong, please try again.",
     logout: "Sign Out",
     refresh: "I've Verified, Continue",
@@ -47,7 +47,13 @@ export default function VerificationPending() {
       const res = await fetch("/api/auth/dogrulama-tekrar", { method: "POST" });
       const data = await res.json().catch(() => null);
       if (!res.ok) return setState("error");
-      setState(data?.already ? "already" : "sent");
+      if (data?.already) {
+        // Zaten doğrulanmış — kullanıcıyı bekletmeden dashboard'a al
+        setState("already");
+        window.location.href = "/dashboard";
+        return;
+      }
+      setState("sent");
     } catch {
       setState("error");
     }
@@ -84,8 +90,10 @@ export default function VerificationPending() {
           {state === "sending" ? t.sending : t.resend}
         </button>
 
+        {/* Sayfayı yenilemek işe yaramaz (burada kalır); dashboard'a gidilmeli.
+            Doğrulama tamamlandıysa layout içeri alır, tamamlanmadıysa geri döner. */}
         <button
-          onClick={() => window.location.reload()}
+          onClick={() => { window.location.href = "/dashboard"; }}
           className="mt-3 w-full rounded-xl border border-white/10 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/[0.04]"
         >
           {t.refresh}

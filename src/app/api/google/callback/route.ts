@@ -6,10 +6,11 @@ import {
   getGoogleAccounts,
   getGoogleLocations,
 } from "@/lib/google-oauth";
+import { appUrl } from "@/lib/base-url";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
-  if (!session?.user) return NextResponse.redirect(new URL("/giris", req.url));
+  if (!session?.user) return NextResponse.redirect(appUrl("/giris", req));
 
   const { searchParams } = req.nextUrl;
   const code = searchParams.get("code");
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
 
   if (error || !code || !brandId) {
     return NextResponse.redirect(
-      new URL(`/dashboard/google?error=cancelled&brandId=${brandId ?? ""}`, req.url)
+      appUrl(`/dashboard/google?error=cancelled&brandId=${brandId ?? ""}`, req)
     );
   }
 
@@ -66,12 +67,12 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.redirect(
-      new URL(`/dashboard/google?brandId=${brandId}&connected=1`, req.url)
+      appUrl(`/dashboard/google?brandId=${brandId}&connected=1`, req)
     );
   } catch (e) {
     console.error("Google callback error:", e);
     return NextResponse.redirect(
-      new URL(`/dashboard/google?brandId=${brandId}&error=failed`, req.url)
+      appUrl(`/dashboard/google?brandId=${brandId}&error=failed`, req)
     );
   }
 }
