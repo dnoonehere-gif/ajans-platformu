@@ -8,6 +8,80 @@ import {
 import Link from "next/link";
 import { BlockRenderer } from "@/components/website/block-renderer";
 import type { Block } from "@/server/ai/website-generator";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    suggestions: [
+      "Butonları kırmızı yap",
+      "Hero arka planını lacivert yap",
+      "Başlığı daha etkileyici yaz",
+      "Hizmetlere bir tane daha ekle",
+      "İletişim bölümüne e-posta ekle",
+      "Butonları yeşil yap",
+      "Özellikleri 4'e çıkar",
+      "CTA metnini değiştir",
+    ],
+    greeting: "Merhaba! Web sitenizi düzenlememe yardımcı olabilirim. Ne değiştirmek istersiniz?",
+    applied: "✅ Değişiklik uygulandı! Önizlemede görebilirsiniz.",
+    problem: "Bir sorun oluştu",
+    undone: "↩️ Son değişiklik geri alındı.",
+    live: "Yayında", draft: "Taslak",
+    viewSite: "Siteyi Görüntüle",
+    export: "Dışa Aktar", exportTitle: "HTML olarak indir",
+    domain: "Domain", undo: "Geri Al",
+    save: "Kaydet", saved: "Kaydedildi",
+    unpublish: "Yayından Kaldır", publish: "Yayınla",
+    unpublishShort: "Kaldır", publishShort: "Yayınla",
+    novelyaAddr: "Novelya Adresi",
+    novelyaAddrNote: "Site yayında olunca bu adres hemen çalışır.",
+    ownDomain: "Kendi Domainin ile Bağla",
+    dnsAdd: "DNS ayarlarına şu kaydı ekle:",
+    dnsHint: (u: string) => `Cloudflare, GoDaddy veya domainin kayıtlı olduğu panelde DNS > Add Record > Type: CNAME, Name: www, Target: ${u}`,
+    aiEditor: "AI Editör", aiEditorSub: "Doğal dille düzenle",
+    hints: "Öneriler",
+    inputPlaceholder: "Butonları kırmızı yap...",
+    enterHint: "Enter ile gönder · Shift+Enter yeni satır",
+    livePreview: "Canlı Önizleme",
+    aiWorking: "AI düzenleniyor...", editing: "Düzenleniyor...",
+    preview: "Önizleme", fullscreen: "Tam Ekran", editorTab: "Düzenleyici",
+  },
+  en: {
+    suggestions: [
+      "Make the buttons red",
+      "Make the hero background navy",
+      "Write a more compelling headline",
+      "Add one more service",
+      "Add an email to the contact section",
+      "Make the buttons green",
+      "Increase features to 4",
+      "Change the CTA text",
+    ],
+    greeting: "Hi! I can help you edit your website. What would you like to change?",
+    applied: "✅ Change applied! You can see it in the preview.",
+    problem: "Something went wrong",
+    undone: "↩️ Last change was undone.",
+    live: "Live", draft: "Draft",
+    viewSite: "View Site",
+    export: "Export", exportTitle: "Download as HTML",
+    domain: "Domain", undo: "Undo",
+    save: "Save", saved: "Saved",
+    unpublish: "Unpublish", publish: "Publish",
+    unpublishShort: "Unpublish", publishShort: "Publish",
+    novelyaAddr: "Novelya Address",
+    novelyaAddrNote: "This address works as soon as the site is published.",
+    ownDomain: "Connect Your Own Domain",
+    dnsAdd: "Add this record to your DNS settings:",
+    dnsHint: (u: string) => `In Cloudflare, GoDaddy or wherever your domain is registered: DNS > Add Record > Type: CNAME, Name: www, Target: ${u}`,
+    aiEditor: "AI Editor", aiEditorSub: "Edit with natural language",
+    hints: "Suggestions",
+    inputPlaceholder: "Make the buttons red...",
+    enterHint: "Enter to send · Shift+Enter for a new line",
+    livePreview: "Live Preview",
+    aiWorking: "AI is editing...", editing: "Editing...",
+    preview: "Preview", fullscreen: "Fullscreen", editorTab: "Editor",
+  },
+};
 
 interface WebsitePage {
   id: string;
@@ -32,23 +106,15 @@ interface ChatMessage {
   loading?: boolean;
 }
 
-const SUGGESTIONS = [
-  "Butonları kırmızı yap",
-  "Hero arka planını lacivert yap",
-  "Başlığı daha etkileyici yaz",
-  "Hizmetlere bir tane daha ekle",
-  "İletişim bölümüne e-posta ekle",
-  "Butonları yeşil yap",
-  "Özellikleri 4'e çıkar",
-  "CTA metnini değiştir",
-];
-
 export default function WebsiteEditorPage({
   params,
 }: {
   params: Promise<{ websiteId: string }>;
 }) {
   const { websiteId } = use(params);
+  const { lang } = useLang();
+  const sL = L[lang];
+  const SUGGESTIONS = sL.suggestions;
   const [website, setWebsite] = useState<Website | null>(null);
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [saving, setSaving] = useState(false);
@@ -60,7 +126,7 @@ export default function WebsiteEditorPage({
 
   // AI Chat
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: "ai", content: "Merhaba! Web sitenizi düzenlememe yardımcı olabilirim. Ne değiştirmek istersiniz?" },
+    { role: "ai", content: L[lang].greeting },
   ]);
   const [input, setInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
@@ -138,7 +204,7 @@ export default function WebsiteEditorPage({
       setBlocks(data.blocks);
       setMessages((m) => [
         ...m.slice(0, -1),
-        { role: "ai", content: "✅ Değişiklik uygulandı! Önizlemede görebilirsiniz." },
+        { role: "ai", content: sL.applied },
       ]);
 
       // Otomatik kaydet
@@ -146,7 +212,7 @@ export default function WebsiteEditorPage({
     } catch (e) {
       setMessages((m) => [
         ...m.slice(0, -1),
-        { role: "ai", content: `❌ Hata: ${e instanceof Error ? e.message : "Bir sorun oluştu"}` },
+        { role: "ai", content: `❌ Hata: ${e instanceof Error ? e.message : sL.problem}` },
       ]);
     } finally {
       setAiLoading(false);
@@ -158,7 +224,7 @@ export default function WebsiteEditorPage({
     const prev = history[history.length - 1];
     setBlocks(prev);
     setHistory((h) => h.slice(0, -1));
-    setMessages((m) => [...m, { role: "ai", content: "↩️ Son değişiklik geri alındı." }]);
+    setMessages((m) => [...m, { role: "ai", content: sL.undone }]);
   }
 
   if (!website) {
@@ -189,7 +255,7 @@ export default function WebsiteEditorPage({
                 : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"
             }`}
           >
-            {website.isPublished ? "Yayında" : "Taslak"}
+            {website.isPublished ? sL.live : sL.draft}
           </span>
         </div>
 
@@ -203,7 +269,7 @@ export default function WebsiteEditorPage({
               className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-green-400 transition hover:bg-green-500/10"
             >
               <ExternalLink className="h-4 w-4" />
-              <span className="hidden sm:inline">Siteyi Görüntüle</span>
+              <span className="hidden sm:inline">{sL.viewSite}</span>
             </a>
           )}
 
@@ -212,10 +278,10 @@ export default function WebsiteEditorPage({
             href={`/api/website/${website.brandId}/export`}
             download
             className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
-            title="HTML olarak indir"
+            title={sL.exportTitle}
           >
             <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">Dışa Aktar</span>
+            <span className="hidden sm:inline">{sL.export}</span>
           </a>
 
           {/* Domain Yardım */}
@@ -224,7 +290,7 @@ export default function WebsiteEditorPage({
             className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
           >
             <HelpCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">Domain</span>
+            <span className="hidden sm:inline">{sL.domain}</span>
             <ChevronDown className={`h-3 w-3 transition ${domainHelpOpen ? "rotate-180" : ""}`} />
           </button>
 
@@ -232,7 +298,7 @@ export default function WebsiteEditorPage({
           <button
             onClick={undo}
             disabled={history.length === 0}
-            title="Geri Al"
+            title={sL.undo}
             className="rounded-lg p-2 text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))] disabled:opacity-30"
           >
             <RotateCcw className="h-4 w-4" />
@@ -244,9 +310,9 @@ export default function WebsiteEditorPage({
             className="hidden items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] lg:flex"
           >
             {view === "split" ? (
-              <><Eye className="h-4 w-4" /> Tam Ekran</>
+              <><Eye className="h-4 w-4" /> {sL.fullscreen}</>
             ) : (
-              <><Pencil className="h-4 w-4" /> Düzenleyici</>
+              <><Pencil className="h-4 w-4" /> {sL.editorTab}</>
             )}
           </button>
 
@@ -263,7 +329,7 @@ export default function WebsiteEditorPage({
             ) : (
               <Save className="h-4 w-4" />
             )}
-            <span className="hidden sm:inline">{saved ? "Kaydedildi" : "Kaydet"}</span>
+            <span className="hidden sm:inline">{saved ? sL.saved : sL.save}</span>
           </button>
 
           {/* Yayınla */}
@@ -283,8 +349,8 @@ export default function WebsiteEditorPage({
             ) : (
               <Eye className="h-4 w-4" />
             )}
-            <span className="hidden sm:inline">{website.isPublished ? "Yayından Kaldır" : "Yayınla"}</span>
-            <span className="sm:hidden">{website.isPublished ? "Kaldır" : "Yayınla"}</span>
+            <span className="hidden sm:inline">{website.isPublished ? sL.unpublish : sL.publish}</span>
+            <span className="sm:hidden">{website.isPublished ? sL.unpublishShort : sL.publishShort}</span>
           </button>
         </div>
       </header>
@@ -302,7 +368,7 @@ export default function WebsiteEditorPage({
                   {/* Novelya Subdomain */}
                   <div className="flex-1 min-w-56">
                     <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                      Novelya Adresi
+                      {sL.novelyaAddr}
                     </p>
                     <div className="flex items-center gap-2">
                       <code className="rounded-lg bg-[hsl(var(--card))] border border-[hsl(var(--border))] px-3 py-1.5 text-sm font-mono text-[hsl(var(--primary))]">
@@ -312,23 +378,23 @@ export default function WebsiteEditorPage({
                         <ExternalLink className="h-3.5 w-3.5" />
                       </a>
                     </div>
-                    <p className="mt-1 text-[11px] text-[hsl(var(--muted-foreground))]">Site yayında olunca bu adres hemen çalışır.</p>
+                    <p className="mt-1 text-[11px] text-[hsl(var(--muted-foreground))]">{sL.novelyaAddrNote}</p>
                   </div>
 
                   {/* Kendi Domain */}
                   <div className="flex-1 min-w-72">
                     <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                      Kendi Domainin ile Bağla
+                      {sL.ownDomain}
                     </p>
                     <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3 space-y-2 text-sm">
-                      <p className="font-medium">DNS ayarlarına şu kaydı ekle:</p>
+                      <p className="font-medium">{sL.dnsAdd}</p>
                       <div className="rounded-lg bg-[hsl(var(--muted))] px-3 py-2 font-mono text-xs">
                         <span className="text-blue-400">CNAME</span>{" "}
                         <span className="text-yellow-400">www</span>{" "}
                         <span className="text-green-400">→ {subUrl}</span>
                       </div>
                       <p className="text-[11px] text-[hsl(var(--muted-foreground))]">
-                        Cloudflare, GoDaddy veya domainin kayıtlı olduğu panelde DNS &gt; Add Record &gt; Type: CNAME, Name: www, Target: {subUrl}
+                        {sL.dnsHint(subUrl)}
                       </p>
                     </div>
                   </div>
@@ -350,8 +416,8 @@ export default function WebsiteEditorPage({
                 <Bot className="h-4 w-4 text-[hsl(var(--primary))]" />
               </div>
               <div>
-                <p className="text-sm font-semibold">AI Editör</p>
-                <p className="text-[10px] text-[hsl(var(--muted-foreground))]">Doğal dille düzenle</p>
+                <p className="text-sm font-semibold">{sL.aiEditor}</p>
+                <p className="text-[10px] text-[hsl(var(--muted-foreground))]">{sL.aiEditorSub}</p>
               </div>
             </div>
 
@@ -377,7 +443,7 @@ export default function WebsiteEditorPage({
                     {msg.loading ? (
                       <div className="flex items-center gap-2">
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        <span>Düzenleniyor...</span>
+                        <span>{sL.editing}</span>
                       </div>
                     ) : (
                       msg.content
@@ -392,7 +458,7 @@ export default function WebsiteEditorPage({
             {messages.length <= 2 && (
               <div className="border-t border-[hsl(var(--border))] px-4 py-3">
                 <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-                  Öneriler
+                  {sL.hints}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {SUGGESTIONS.slice(0, 4).map((s) => (
@@ -422,7 +488,7 @@ export default function WebsiteEditorPage({
                       sendInstruction(input);
                     }
                   }}
-                  placeholder="Butonları kırmızı yap..."
+                  placeholder={sL.inputPlaceholder}
                   disabled={aiLoading}
                   className="flex-1 resize-none rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2.5 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.15)] placeholder:text-[hsl(var(--muted-foreground))] disabled:opacity-50"
                 />
@@ -439,7 +505,7 @@ export default function WebsiteEditorPage({
                 </button>
               </div>
               <p className="mt-1.5 text-[10px] text-[hsl(var(--muted-foreground))]">
-                Enter ile gönder · Shift+Enter yeni satır
+                {sL.enterHint}
               </p>
             </div>
           </aside>
@@ -450,12 +516,12 @@ export default function WebsiteEditorPage({
           {/* Önizleme şeridi */}
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.9)] px-5 py-2 backdrop-blur">
             <span className="text-xs text-[hsl(var(--muted-foreground))]">
-              Canlı Önizleme
+              {sL.livePreview}
             </span>
             {aiLoading && (
               <span className="flex items-center gap-1.5 text-xs text-[hsl(var(--primary))]">
                 <Loader2 className="h-3 w-3 animate-spin" />
-                AI düzenleniyor...
+                {sL.aiWorking}
               </span>
             )}
           </div>
@@ -478,7 +544,7 @@ export default function WebsiteEditorPage({
             }`}
           >
             <Bot className="h-4 w-4" />
-            AI Editör
+            {sL.aiEditor}
           </button>
           <button
             onClick={() => setMobileTab("preview")}
@@ -489,7 +555,7 @@ export default function WebsiteEditorPage({
             }`}
           >
             <Eye className="h-4 w-4" />
-            Önizleme
+            {sL.preview}
           </button>
         </div>
       )}

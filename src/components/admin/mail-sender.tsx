@@ -1,17 +1,42 @@
 "use client";
 import { useState } from "react";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    customers: "Müşteriler", superAdmins: "Süper Adminler", admins: "Adminler", staff: "Personel",
+    connErr: "Bağlantı hatası", bulkMail: "Toplu Mail Gönder",
+    bulkMailSub: "{sL.bulkMailSub}",
+    byRole: "Role göre", singleUser: "Tek kullanıcı",
+    content: "İçerik", contentPh: "Mail içeriği... HTML desteklenmez, düz metin kullanın.",
+    sentTo: (n: number) => `${n} kullanıcıya başarıyla gönderildi.`,
+    send: "Gönder",
+  },
+  en: {
+    customers: "Customers", superAdmins: "Super Admins", admins: "Admins", staff: "Staff",
+    connErr: "Connection error", bulkMail: "Send Bulk Email",
+    bulkMailSub: "Send targeted or bulk email to users",
+    byRole: "By role", singleUser: "Single user",
+    content: "Content", contentPh: "Email content... HTML is not supported, use plain text.",
+    sentTo: (n: number) => `Successfully sent to ${n} users.`,
+    send: "Send",
+  },
+};
+
 import { Send, Loader2, Users, User, Shield, CheckCircle2, AlertCircle } from "lucide-react";
 
 type Target = "all" | "role" | "user";
 
 const ROLES = [
-  { value: "CUSTOMER", label: "Müşteriler" },
-  { value: "ADMIN", label: "Adminler" },
-  { value: "STAFF", label: "Personel" },
-  { value: "SUPER_ADMIN", label: "Süper Adminler" },
-];
+  { value: "CUSTOMER", key: "customers" },
+  { value: "ADMIN", key: "admins" },
+  { value: "STAFF", key: "staff" },
+  { value: "SUPER_ADMIN", key: "superAdmins" },
+] as const;
 
 export function MailSender() {
+  const { lang } = useLang();
+  const sL = L[lang];
   const [target, setTarget] = useState<Target>("all");
   const [role, setRole] = useState("CUSTOMER");
   const [userId, setUserId] = useState("");
@@ -34,7 +59,7 @@ export function MailSender() {
       if (res.ok) setResult({ ok: true, sent: data.sent });
       else setResult({ ok: false, error: data.error });
     } catch {
-      setResult({ ok: false, error: "Bağlantı hatası" });
+      setResult({ ok: false, error: sL.connErr });
     }
     setLoading(false);
   }
@@ -46,8 +71,8 @@ export function MailSender() {
           <Send className="h-4.5 w-4.5 text-violet-400" />
         </div>
         <div>
-          <h2 className="font-semibold">Toplu Mail Gönder</h2>
-          <p className="text-xs text-[hsl(var(--muted-foreground))]">Kullanıcılara özel veya toplu e-posta gönder</p>
+          <h2 className="font-semibold">{sL.bulkMail}</h2>
+          <p className="text-xs text-[hsl(var(--muted-foreground))]">{sL.bulkMailSub}</p>
         </div>
       </div>
 
@@ -57,8 +82,8 @@ export function MailSender() {
         <div className="flex gap-2">
           {[
             { value: "all" as Target, label: "Herkes", icon: Users },
-            { value: "role" as Target, label: "Role göre", icon: Shield },
-            { value: "user" as Target, label: "Tek kullanıcı", icon: User },
+            { value: "role" as Target, label: sL.byRole, icon: Shield },
+            { value: "user" as Target, label: sL.singleUser, icon: User },
           ].map(({ value, label, icon: Icon }) => (
             <button key={value} onClick={() => setTarget(value)}
               className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl border py-2 text-xs font-medium transition ${
@@ -75,7 +100,7 @@ export function MailSender() {
           <label className="mb-2 block text-xs font-medium text-[hsl(var(--muted-foreground))]">Rol</label>
           <select value={role} onChange={(e) => setRole(e.target.value)}
             className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary)/0.5)]">
-            {ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+            {ROLES.map((r) => <option key={r.value} value={r.value}>{sL[r.key]}</option>)}
           </select>
         </div>
       )}
@@ -95,23 +120,23 @@ export function MailSender() {
       </div>
 
       <div className="mb-5">
-        <label className="mb-2 block text-xs font-medium text-[hsl(var(--muted-foreground))]">İçerik</label>
+        <label className="mb-2 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.content}</label>
         <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={5}
-          placeholder="Mail içeriği... HTML desteklenmez, düz metin kullanın."
+          placeholder={sL.contentPh}
           className="w-full resize-none rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary)/0.5)]" />
       </div>
 
       {result && (
         <div className={`mb-4 flex items-center gap-2 rounded-xl p-3 text-sm ${result.ok ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"}`}>
           {result.ok ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertCircle className="h-4 w-4 shrink-0" />}
-          {result.ok ? `${result.sent} kullanıcıya başarıyla gönderildi.` : result.error}
+          {result.ok ? sL.sentTo(result.sent ?? 0) : result.error}
         </div>
       )}
 
       <button onClick={send} disabled={loading || !subject.trim() || !content.trim()}
         className="flex w-full items-center justify-center gap-2 rounded-xl bg-[hsl(var(--primary))] py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-        Gönder
+        {sL.send}
       </button>
     </div>
   );

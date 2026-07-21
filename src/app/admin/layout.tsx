@@ -1,19 +1,7 @@
 import { auth } from "@/server/auth/auth";
 import { LogoMark } from "@/components/logo";
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { LayoutDashboard, Users, Building2, Package, CreditCard, Brain, Bot, LogOut, ScrollText } from "lucide-react";
-
-const NAV = [
-  { href: "/admin", label: "Genel Bakış", icon: LayoutDashboard, exact: true },
-  { href: "/admin/kullanicilar", label: "Kullanıcılar", icon: Users },
-  { href: "/admin/markalar", label: "Markalar", icon: Building2 },
-  { href: "/admin/paketler", label: "Paketler", icon: Package },
-  { href: "/admin/odemeler", label: "Ödemeler", icon: CreditCard },
-  { href: "/admin/ai", label: "AI Kullanımı", icon: Brain },
-  { href: "/admin/chatbot", label: "Chatbot", icon: Bot },
-  { href: "/admin/loglar", label: "Sistem Logları", icon: ScrollText },
-];
+import { AdminNav } from "@/components/admin/admin-nav";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -33,30 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </div>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))] [&.active]:bg-[hsl(var(--primary)/0.12)] [&.active]:text-[hsl(var(--primary))]"
-            >
-              <item.icon className="h-4 w-4 shrink-0" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Footer */}
-        <div className="border-t border-[hsl(var(--border))] p-3">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
-          >
-            <LogOut className="h-4 w-4" />
-            Dashboard'a Dön
-          </Link>
-        </div>
+        <AdminNav />
       </aside>
 
       {/* Content */}

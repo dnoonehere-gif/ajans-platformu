@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import { T, type AdminKey } from "@/components/admin/t";
 import type { GlobalRole } from "@prisma/client";
 
-const ROLE_LABELS: Record<GlobalRole, string> = { SUPER_ADMIN: "Süper Admin", ADMIN: "Admin", CUSTOMER: "Müşteri", STAFF: "Personel" };
+const ROLE_KEYS: Record<GlobalRole, AdminKey> = { SUPER_ADMIN: "superAdmin", ADMIN: "admin", CUSTOMER: "customer", STAFF: "staff" };
 const ROLE_COLORS: Record<GlobalRole, string> = {
   SUPER_ADMIN: "text-purple-400 bg-purple-500/10",
   ADMIN: "text-blue-400 bg-blue-500/10",
@@ -27,8 +28,8 @@ export default async function KullanicilarPage() {
   return (
     <div className="p-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Kullanıcılar</h1>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">Toplam {users.length} kullanıcı</p>
+        <h1 className="text-2xl font-bold"><T k="users" /></h1>
+        <p className="text-sm text-[hsl(var(--muted-foreground))]"><T k="usersSub" n={users.length} /></p>
       </div>
 
       {/* Rol dağılımı */}
@@ -37,7 +38,7 @@ export default async function KullanicilarPage() {
           <div key={role} className="glass rounded-2xl p-4">
             <p className="text-xl font-bold">{roleCounts[role] ?? 0}</p>
             <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[role]}`}>
-              {ROLE_LABELS[role]}
+              <T k={ROLE_KEYS[role]} />
             </span>
           </div>
         ))}
@@ -48,8 +49,8 @@ export default async function KullanicilarPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[hsl(var(--border))]">
-              {["Kullanıcı", "Rol", "Marka", "Üyelik", "Doğrulandı", "Durum", "Kayıt"].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{h}</th>
+              {(["user", "role", "brand", "membership", "verified", "status", "createdAt"] as AdminKey[]).map((h) => (
+                <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]"><T k={h} /></th>
               ))}
             </tr>
           </thead>
@@ -69,20 +70,20 @@ export default async function KullanicilarPage() {
                 </td>
                 <td className="px-4 py-3">
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[u.globalRole]}`}>
-                    {ROLE_LABELS[u.globalRole]}
+                    <T k={ROLE_KEYS[u.globalRole]} />
                   </span>
                 </td>
                 <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">{u._count.ownedBrands}</td>
                 <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">{u._count.memberships}</td>
                 <td className="px-4 py-3">
                   {u.emailVerified
-                    ? <span className="text-xs text-green-400">✓ Doğrulandı</span>
-                    : <span className="text-xs text-orange-400">Bekliyor</span>}
+                    ? <span className="text-xs text-green-400">✓ <T k="verified" /></span>
+                    : <span className="text-xs text-orange-400"><T k="pending" /></span>}
                 </td>
                 <td className="px-4 py-3">
                   {u.isActive
-                    ? <span className="rounded-full bg-green-500/10 px-2 py-0.5 text-xs text-green-400">Aktif</span>
-                    : <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-xs text-red-400">Pasif</span>}
+                    ? <span className="rounded-full bg-green-500/10 px-2 py-0.5 text-xs text-green-400"><T k="active" /></span>
+                    : <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-xs text-red-400"><T k="passive" /></span>}
                 </td>
                 <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">
                   {new Date(u.createdAt).toLocaleDateString("tr-TR")}

@@ -1,6 +1,27 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Plus, Loader2, Pencil, Trash2, Check } from "lucide-react";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    plans: "Paketler", plansSub: "Abonelik planları", newPlan: "Yeni Paket Oluştur",
+    planName: "Paket Adı", planNamePh: "Başlangıç", trialDays: "Deneme Süresi (gün)",
+    period: "Dönem", monthly: "Aylık", yearly: "Yıllık",
+    create: "Oluştur", cancel: "İptal", month: "ay", year: "yıl",
+    daysTrial: (n: number) => `${n} gün deneme`,
+    empty: "{sL.empty}",
+  },
+  en: {
+    plans: "Plans", plansSub: "Subscription plans", newPlan: "Create New Plan",
+    planName: "Plan Name", planNamePh: "Starter", trialDays: "Trial Period (days)",
+    period: "Period", monthly: "Monthly", yearly: "Yearly",
+    create: "Create", cancel: "Cancel", month: "mo", year: "yr",
+    daysTrial: (n: number) => `${n} days trial`,
+    empty: "No plans yet. Create a new one.",
+  },
+};
+
 
 interface Plan {
   id: string;
@@ -15,6 +36,8 @@ interface Plan {
 }
 
 export default function PaketlerPage() {
+  const { lang } = useLang();
+  const sL = L[lang];
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -54,7 +77,7 @@ export default function PaketlerPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Paketler</h1>
-          <p className="text-sm text-[hsl(var(--muted-foreground))]">Abonelik planları</p>
+          <p className="text-sm text-[hsl(var(--muted-foreground))]">{sL.plansSub}</p>
         </div>
         <button onClick={() => setShowForm((s) => !s)}
           className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">
@@ -64,13 +87,13 @@ export default function PaketlerPage() {
 
       {showForm && (
         <form onSubmit={createPlan} className="glass mb-6 rounded-2xl p-5 space-y-4">
-          <p className="font-semibold">Yeni Paket Oluştur</p>
+          <p className="font-semibold">{sL.newPlan}</p>
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: "Paket Adı", key: "name", placeholder: "Başlangıç" },
+              { label: sL.planName, key: "name", placeholder: sL.planNamePh },
               { label: "Slug", key: "slug", placeholder: "baslangic" },
               { label: "Fiyat (₺)", key: "priceCents", placeholder: "299", type: "number" },
-              { label: "Deneme Süresi (gün)", key: "trialDays", placeholder: "14", type: "number" },
+              { label: sL.trialDays, key: "trialDays", placeholder: "14", type: "number" },
             ].map((f) => (
               <div key={f.key} className="space-y-1.5">
                 <label className="text-sm font-medium">{f.label}</label>
@@ -83,11 +106,11 @@ export default function PaketlerPage() {
               </div>
             ))}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Dönem</label>
+              <label className="text-sm font-medium">{sL.period}</label>
               <select value={form.interval} onChange={(e) => setForm((f) => ({ ...f, interval: e.target.value }))}
                 className="flex h-10 w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 text-sm outline-none focus:border-[hsl(var(--primary))] transition">
-                <option value="month">Aylık</option>
-                <option value="year">Yıllık</option>
+                <option value="month">{sL.monthly}</option>
+                <option value="year">{sL.yearly}</option>
               </select>
             </div>
           </div>
@@ -96,11 +119,11 @@ export default function PaketlerPage() {
             <button type="submit" disabled={creating}
               className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
               {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              Oluştur
+              {sL.create}
             </button>
             <button type="button" onClick={() => setShowForm(false)}
               className="rounded-xl border border-[hsl(var(--border))] px-4 py-2 text-sm transition hover:bg-[hsl(var(--accent))]">
-              İptal
+              {sL.cancel}
             </button>
           </div>
         </form>
@@ -126,17 +149,17 @@ export default function PaketlerPage() {
               </div>
               <p className="text-3xl font-black">
                 ₺{(plan.priceCents / 100).toLocaleString("tr-TR")}
-                <span className="text-sm font-normal text-[hsl(var(--muted-foreground))]">/{plan.interval === "month" ? "ay" : "yıl"}</span>
+                <span className="text-sm font-normal text-[hsl(var(--muted-foreground))]">/{plan.interval === "month" ? sL.month : sL.year}</span>
               </p>
               <div className="mt-3 flex items-center justify-between text-xs text-[hsl(var(--muted-foreground))]">
-                <span>{plan.trialDays} gün deneme</span>
+                <span>{sL.daysTrial(plan.trialDays)}</span>
                 <span>{plan._count.subscriptions} abonelik</span>
               </div>
             </div>
           ))}
           {plans.length === 0 && (
             <div className="col-span-3 py-16 text-center text-[hsl(var(--muted-foreground))]">
-              Henüz paket yok. Yeni paket oluşturun.
+              {sL.empty}
             </div>
           )}
         </div>

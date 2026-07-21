@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { T, type AdminKey } from "@/components/admin/t";
 
 export default async function ChatbotAdminPage() {
   const [chatbots, msgStats, convStats] = await Promise.all([
@@ -26,7 +27,7 @@ export default async function ChatbotAdminPage() {
     <div className="p-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Chatbot</h1>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">Tüm marka chatbotları</p>
+        <p className="text-sm text-[hsl(var(--muted-foreground))]"><T k="allBrandChatbots" /></p>
       </div>
 
       {/* Özet */}
@@ -34,7 +35,7 @@ export default async function ChatbotAdminPage() {
         {[
           { label: "Toplam Chatbot", value: chatbots.length },
           { label: "Aktif Chatbot", value: activeCount },
-          { label: "Toplam Konuşma", value: totalConversations.toLocaleString("tr-TR") },
+          { label: "totalConv" as AdminKey, value: totalConversations.toLocaleString("tr-TR") },
           { label: "Toplam Mesaj", value: msgStats.toLocaleString("tr-TR") },
         ].map((s) => (
           <div key={s.label} className="glass rounded-2xl p-5">
@@ -52,14 +53,14 @@ export default async function ChatbotAdminPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[hsl(var(--border))]">
-              {["Marka", "Chatbot Adı", "Bilgi Tabanı", "Konuşma", "Durum", "Oluşturuldu"].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{h}</th>
+              {(["brand", "chatbotName", "knowledgeBase", "conversation", "status", "created"] as AdminKey[]).map((h) => (
+                <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]"><T k={h} /></th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-[hsl(var(--border))]">
             {chatbots.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-12 text-center text-[hsl(var(--muted-foreground))]">Henüz chatbot yok</td></tr>
+              <tr><td colSpan={6} className="px-4 py-12 text-center text-[hsl(var(--muted-foreground))]"><T k="noChatbot" /></td></tr>
             ) : chatbots.map((c) => (
               <tr key={c.id} className="hover:bg-[hsl(var(--accent)/0.5)]">
                 <td className="px-4 py-3">
@@ -67,7 +68,7 @@ export default async function ChatbotAdminPage() {
                   <p className="text-xs text-[hsl(var(--muted-foreground))] font-mono">/{c.brand.slug}</p>
                 </td>
                 <td className="px-4 py-3">{c.name}</td>
-                <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">{c._count.knowledgeBase} kayıt</td>
+                <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">{c._count.knowledgeBase} <T k="records" /></td>
                 <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">{c._count.conversations}</td>
                 <td className="px-4 py-3">
                   {c.isActive

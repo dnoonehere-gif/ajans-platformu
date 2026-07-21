@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import { T, type AdminKey } from "@/components/admin/t";
 
 const SUB_COLORS: Record<string, string> = { ACTIVE: "text-green-400 bg-green-500/10", TRIALING: "text-blue-400 bg-blue-500/10", PAST_DUE: "text-orange-400 bg-orange-500/10", CANCELED: "text-red-400 bg-red-500/10", EXPIRED: "text-gray-400 bg-gray-500/10" };
-const SUB_LABELS: Record<string, string> = { ACTIVE: "Aktif", TRIALING: "Deneme", PAST_DUE: "Gecikmiş", CANCELED: "İptal", EXPIRED: "Sona Erdi" };
+const SUB_KEYS: Record<string, AdminKey> = { ACTIVE: "active", TRIALING: "trial", PAST_DUE: "pastDue", CANCELED: "canceled", EXPIRED: "expired" };
 
 export default async function MarkalarPage() {
   const brands = await prisma.brand.findMany({
@@ -31,11 +32,11 @@ export default async function MarkalarPage() {
 
       {/* Abonelik özeti */}
       <div className="mb-6 grid grid-cols-5 gap-3">
-        {Object.entries(SUB_LABELS).map(([key, label]) => (
+        {Object.entries(SUB_KEYS).map(([key, tKey]) => (
           <div key={key} className="glass rounded-2xl p-4">
             <p className="text-xl font-bold">{subCounts[key] ?? 0}</p>
             <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${SUB_COLORS[key]}`}>
-              {label}
+              <T k={tKey} />
             </span>
           </div>
         ))}
@@ -46,8 +47,8 @@ export default async function MarkalarPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[hsl(var(--border))]">
-              {["Marka", "Sahibi", "Abonelik", "Yorum", "Üye", "İçerik", "Website", "Chatbot", "Kayıt"].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{h}</th>
+              {(["brand", "owner", "subscription", "review", "member", "content", "website", "chatbot", "createdAt"] as AdminKey[]).map((h) => (
+                <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]"><T k={h} /></th>
               ))}
             </tr>
           </thead>
@@ -68,7 +69,7 @@ export default async function MarkalarPage() {
                     {sub ? (
                       <div>
                         <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${SUB_COLORS[sub.status]}`}>
-                          {SUB_LABELS[sub.status]}
+                          <T k={SUB_KEYS[sub.status] ?? "active"} />
                         </span>
                         {sub.plan && <p className="mt-0.5 text-xs text-[hsl(var(--muted-foreground))]">{sub.plan.name}</p>}
                       </div>
@@ -79,14 +80,14 @@ export default async function MarkalarPage() {
                   <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">{b._count.contentItems}</td>
                   <td className="px-4 py-3">
                     {b.website?.isPublished
-                      ? <span className="text-xs text-green-400">✓ Yayında</span>
+                      ? <span className="text-xs text-green-400">✓ <T k="published" /></span>
                       : b.website ? <span className="text-xs text-orange-400">Taslak</span>
                       : <span className="text-xs text-[hsl(var(--muted-foreground))]">—</span>}
                   </td>
                   <td className="px-4 py-3">
                     {b.chatbot?.isActive
-                      ? <span className="text-xs text-green-400">✓ Aktif</span>
-                      : b.chatbot ? <span className="text-xs text-orange-400">Pasif</span>
+                      ? <span className="text-xs text-green-400">✓ <T k="active" /></span>
+                      : b.chatbot ? <span className="text-xs text-orange-400"><T k="passive" /></span>
                       : <span className="text-xs text-[hsl(var(--muted-foreground))]">—</span>}
                   </td>
                   <td className="px-4 py-3 text-xs text-[hsl(var(--muted-foreground))]">

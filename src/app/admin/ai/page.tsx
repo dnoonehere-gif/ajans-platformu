@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { T, type AdminKey } from "@/components/admin/t";
 
 const FEATURE_LABELS: Record<string, string> = {
-  content: "İçerik Üretici",
+  content: "contentGen",
   chatbot: "Chatbot",
   review_analysis: "Yorum Analizi",
-  dashboard_summary: "Dashboard Özeti",
+  dashboard_summary: "dashboardSummary",
   website: "Website Builder",
 };
 
@@ -35,21 +36,21 @@ export default async function AiPage() {
   return (
     <div className="p-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">AI Kullanımı</h1>
-        <p className="text-sm text-[hsl(var(--muted-foreground))]">Token tüketimi ve maliyet takibi</p>
+        <h1 className="text-2xl font-bold"><T k="aiUsage" /></h1>
+        <p className="text-sm text-[hsl(var(--muted-foreground))]"><T k="aiUsageSub" /></p>
       </div>
 
       {/* Toplam */}
       <div className="mb-6 grid grid-cols-4 gap-4">
         {[
-          { label: "Toplam İstek", value: total._count.toLocaleString("tr-TR") },
-          { label: "Toplam Token", value: totalTokens.toLocaleString("tr-TR") },
-          { label: "Giriş Token", value: (total._sum.tokensIn ?? 0).toLocaleString("tr-TR") },
-          { label: "Toplam Maliyet", value: `₺${((total._sum.costCents ?? 0) / 100).toFixed(2)}` },
+          { label: "totalRequests", value: total._count.toLocaleString("tr-TR") },
+          { label: "totalToken", value: totalTokens.toLocaleString("tr-TR") },
+          { label: "inputToken", value: (total._sum.tokensIn ?? 0).toLocaleString("tr-TR") },
+          { label: "totalCost", value: `₺${((total._sum.costCents ?? 0) / 100).toFixed(2)}` },
         ].map((s) => (
           <div key={s.label} className="glass rounded-2xl p-5">
             <p className="text-2xl font-bold">{s.value}</p>
-            <p className="text-sm text-[hsl(var(--muted-foreground))]">{s.label}</p>
+            <p className="text-sm text-[hsl(var(--muted-foreground))]"><T k={s.label as AdminKey} /></p>
           </div>
         ))}
       </div>
@@ -58,19 +59,19 @@ export default async function AiPage() {
         {/* Özelliğe göre */}
         <div className="glass rounded-2xl overflow-hidden">
           <div className="border-b border-[hsl(var(--border))] px-5 py-3">
-            <p className="font-semibold text-sm">Özelliğe Göre Kullanım</p>
+            <p className="font-semibold text-sm"><T k="byFeature" /></p>
           </div>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[hsl(var(--border))]">
-                {["Özellik", "İstek", "Token", "Maliyet"].map((h) => (
-                  <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{h}</th>
+                {(["feature", "requests", "token", "cost"] as AdminKey[]).map((h) => (
+                  <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]"><T k={h} /></th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-[hsl(var(--border))]">
               {byFeature.length === 0 ? (
-                <tr><td colSpan={4} className="px-4 py-8 text-center text-[hsl(var(--muted-foreground))]">Henüz veri yok</td></tr>
+                <tr><td colSpan={4} className="px-4 py-8 text-center text-[hsl(var(--muted-foreground))]"><T k="noData" /></td></tr>
               ) : byFeature.map((f) => (
                 <tr key={f.feature} className="hover:bg-[hsl(var(--accent)/0.5)]">
                   <td className="px-4 py-3 font-medium">{FEATURE_LABELS[f.feature] ?? f.feature}</td>
@@ -90,19 +91,19 @@ export default async function AiPage() {
         {/* Modele göre */}
         <div className="glass rounded-2xl overflow-hidden">
           <div className="border-b border-[hsl(var(--border))] px-5 py-3">
-            <p className="font-semibold text-sm">Modele Göre Kullanım</p>
+            <p className="font-semibold text-sm"><T k="byModel" /></p>
           </div>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[hsl(var(--border))]">
-                {["Model", "İstek", "Token", "Maliyet"].map((h) => (
-                  <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">{h}</th>
+                {(["model", "requests", "token", "cost"] as AdminKey[]).map((h) => (
+                  <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]"><T k={h} /></th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-[hsl(var(--border))]">
               {byModel.length === 0 ? (
-                <tr><td colSpan={4} className="px-4 py-8 text-center text-[hsl(var(--muted-foreground))]">Henüz veri yok</td></tr>
+                <tr><td colSpan={4} className="px-4 py-8 text-center text-[hsl(var(--muted-foreground))]"><T k="noData" /></td></tr>
               ) : byModel.map((m) => (
                 <tr key={m.model} className="hover:bg-[hsl(var(--accent)/0.5)]">
                   <td className="px-4 py-3 font-mono text-xs">{m.model}</td>
