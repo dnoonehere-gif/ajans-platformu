@@ -1,6 +1,26 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { Send, Bot, Loader2, X } from "lucide-react";
+import { useLang } from "@/components/language-provider";
+
+const L = {
+  tr: {
+    greeting: (bot: string) => `Merhaba! Ben ${bot}. Size nasıl yardımcı olabilirim?`,
+    online: "Çevrimiçi",
+    placeholder: "Mesajınızı yazın...",
+    genericError: "Bir hata oluştu. Lütfen tekrar deneyin.",
+    connError: "Bağlantı hatası.",
+    close: "Kapat",
+  },
+  en: {
+    greeting: (bot: string) => `Hi! I'm ${bot}. How can I help you?`,
+    online: "Online",
+    placeholder: "Type your message...",
+    genericError: "Something went wrong. Please try again.",
+    connError: "Connection error.",
+    close: "Close",
+  },
+};
 
 interface Message {
   role: "user" | "assistant";
@@ -16,8 +36,10 @@ interface ChatWidgetProps {
 }
 
 export function ChatWidget({ brandId, botName = "Asistan", primaryColor = "#6366f1", onClose, embedded = false }: ChatWidgetProps) {
+  const { lang } = useLang();
+  const sL = L[lang];
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: `Merhaba! Ben ${botName}. Size nasıl yardımcı olabilirim?` },
+    { role: "assistant", content: L[lang].greeting(botName) },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,7 +68,7 @@ export function ChatWidget({ brandId, botName = "Asistan", primaryColor = "#6366
       });
 
       if (!res.ok || !res.body) {
-        setMessages((m) => [...m, { role: "assistant", content: "Bir hata oluştu. Lütfen tekrar deneyin." }]);
+        setMessages((m) => [...m, { role: "assistant", content: sL.genericError }]);
         setLoading(false);
         return;
       }
@@ -72,7 +94,7 @@ export function ChatWidget({ brandId, botName = "Asistan", primaryColor = "#6366
         });
       }
     } catch {
-      setMessages((m) => [...m, { role: "assistant", content: "Bağlantı hatası." }]);
+      setMessages((m) => [...m, { role: "assistant", content: sL.connError }]);
     } finally {
       setLoading(false);
     }
@@ -93,7 +115,7 @@ export function ChatWidget({ brandId, botName = "Asistan", primaryColor = "#6366
           </div>
           <div>
             <p className="text-sm font-semibold text-white">{botName}</p>
-            <p className="text-xs text-white/70">Çevrimiçi</p>
+            <p className="text-xs text-white/70">{sL.online}</p>
           </div>
         </div>
         {onClose && (
@@ -143,7 +165,7 @@ export function ChatWidget({ brandId, botName = "Asistan", primaryColor = "#6366
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Mesajınızı yazın..."
+          placeholder={sL.placeholder}
           disabled={loading}
           className="flex-1 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3.5 py-2 text-sm outline-none focus:border-[hsl(var(--primary))] transition disabled:opacity-50"
         />
