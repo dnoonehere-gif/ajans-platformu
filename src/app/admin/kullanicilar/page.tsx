@@ -18,6 +18,16 @@ export default async function KullanicilarPage() {
       id: true, name: true, email: true, globalRole: true, isActive: true,
       emailVerified: true, createdAt: true,
       _count: { select: { ownedBrands: true, memberships: true } },
+      ownedBrands: {
+        select: {
+          subscriptions: {
+            where: { status: { in: ["ACTIVE", "TRIALING"] } },
+            select: { status: true, endsAt: true, plan: { select: { name: true } } },
+            orderBy: { createdAt: "desc" },
+            take: 1,
+          },
+        },
+      },
     },
   });
 
@@ -55,7 +65,7 @@ export default async function KullanicilarPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[hsl(var(--border))]">
-              {(["user", "role", "brand", "membership", "verified", "status", "createdAt"] as AdminKey[]).map((h) => (
+              {(["user", "role", "plan", "brand", "membership", "verified", "status", "createdAt"] as AdminKey[]).map((h) => (
                 <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]"><T k={h} /></th>
               ))}
             </tr>
@@ -78,6 +88,18 @@ export default async function KullanicilarPage() {
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_COLORS[u.globalRole]}`}>
                     <T k={ROLE_KEYS[u.globalRole]} />
                   </span>
+                </td>
+                <td className="px-4 py-3">
+                  {(() => {
+                    const sub = u.ownedBrands.flatMap((b) => b.subscriptions)[0];
+                    if (!sub) return <span className="text-xs text-[hsl(var(--muted-foreground))]">—</span>;
+                    const expired = sub.endsAt && new Date(sub.endsAt) < new Date();
+                    return (
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${expired ? "bg-orange-500/10 text-orange-400" : "bg-green-500/10 text-green-400"}`}>
+                        {sub.plan.name}
+                      </span>
+                    );
+                  })()}
                 </td>
                 <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">{u._count.ownedBrands}</td>
                 <td className="px-4 py-3 text-[hsl(var(--muted-foreground))]">{u._count.memberships}</td>

@@ -11,7 +11,12 @@ import { getBrandPlanFeatures, getMonthlyAiContentCount, isUnderLimit } from "@/
 const CONTENT_TYPES: ContentType[] = [
   "INSTAGRAM_POST", "REELS_IDEA", "STORY_IDEA", "FACEBOOK_POST", "LINKEDIN_POST",
   "BLOG_POST", "GOOGLE_ADS", "META_ADS", "SEO_CONTENT", "HASHTAGS", "CONTENT_PLAN",
+  "YOUTUBE_SHORTS", "YOUTUBE_TITLE", "YOUTUBE_DESCRIPTION", "YOUTUBE_SCRIPT",
+  "YOUTUBE_TAGS", "THUMBNAIL_TEXT",
 ];
+
+// Üretim dili — global hedef kitleye yayın yapanlar için
+const LANGUAGES = ["tr", "en", "de", "es", "fr", "ar", "ru"] as const;
 
 const schema = z.object({
   brandId: z.string(),
@@ -20,6 +25,7 @@ const schema = z.object({
   description: z.string().min(5),
   topic: z.string().optional(),
   tone: z.string().optional(),
+  language: z.enum(LANGUAGES).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -33,7 +39,7 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
 
-  const { brandId, type, sector, description, topic, tone } = parsed.data;
+  const { brandId, type, sector, description, topic, tone, language } = parsed.data;
 
   const brand = await prisma.brand.findFirst({
     where: { id: brandId, ownerId: (session.user as { id: string }).id },
@@ -57,6 +63,7 @@ export async function POST(req: NextRequest) {
     topic,
     tone,
     primaryColor: brand.primaryColor ?? undefined,
+    language,
   });
 
   const item = await prisma.contentItem.create({

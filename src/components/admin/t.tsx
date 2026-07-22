@@ -15,7 +15,7 @@ const DICT = {
     review: "Yorum", requests: "İstek", feature: "Özellik",
     // Roller
     superAdmin: "Süper Admin", admin: "Admin", customer: "Müşteri", staff: "Personel",
-    role: "Rol", membership: "Üyelik", status: "Durum",
+    role: "Rol", membership: "Üyelik", status: "Durum", plan: "Plan",
     // Abonelik
     subscription: "Abonelik", trial: "Deneme", pastDue: "Gecikmiş",
     canceled: "İptal", expired: "Sona Erdi",
@@ -56,7 +56,7 @@ const DICT = {
     website: "Website", chatbot: "Chatbot", owner: "Owner", member: "Members",
     review: "Reviews", requests: "Requests", feature: "Feature",
     superAdmin: "Super Admin", admin: "Admin", customer: "Customer", staff: "Staff",
-    role: "Role", membership: "Memberships", status: "Status",
+    role: "Role", membership: "Memberships", status: "Status", plan: "Plan",
     subscription: "Subscription", trial: "Trial", pastDue: "Past Due",
     canceled: "Canceled", expired: "Expired",
     overview: "Overview", overviewSub: "Platform-wide statistics",

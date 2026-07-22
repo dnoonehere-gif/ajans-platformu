@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Sparkles, Loader2, Trash2, Copy, Check,
   ChevronDown, ChevronUp, Calendar, Search, X,
-  Instagram, Facebook, Linkedin, Globe, FileText,
+  Instagram, Facebook, Linkedin, Globe, FileText, Youtube, Languages,
 } from "lucide-react";
 import type { ContentType } from "@prisma/client";
 import { useBrand } from "@/components/dashboard/brand-provider";
@@ -36,6 +36,7 @@ const L = {
     topicLabel: "Konu", optional: "(opsiyonel)",
     topicPh: "Yeni ürün lansmanı, Yaz kampanyası, Müşteri hikayesi...",
     toneLabel: "Ton", tonePh: "Veya kendiniz yazın...",
+    langLabel: "İçerik Dili", langHint: "Global kitleye yayın yapıyorsanız İngilizce seçin",
     genericError: "Hata oluştu",
     generatingBtn: "Üretiliyor...", generateBtn: "Üret", generated: "Üretildi!",
     searchPh: "İçerik ara...", all: "Tümü",
@@ -70,6 +71,7 @@ const L = {
     topicLabel: "Topic", optional: "(optional)",
     topicPh: "New product launch, Summer campaign, Customer story...",
     toneLabel: "Tone", tonePh: "Or write your own...",
+    langLabel: "Content Language", langHint: "Choose English if you target a global audience",
     genericError: "Something went wrong",
     generatingBtn: "Generating...", generateBtn: "Generate", generated: "Generated!",
     searchPh: "Search content...", all: "All",
@@ -91,6 +93,19 @@ const PLATFORM_GROUPS = [
       { value: "REELS_IDEA" as ContentType, label: "Reels", icon: "🎬", desc: "Video senaryosu" },
       { value: "STORY_IDEA" as ContentType, label: "Story", icon: "✨", desc: "5 story serisi" },
       { value: "HASHTAGS" as ContentType, label: "Hashtag", icon: "#️⃣", desc: "Niş + geniş set" },
+    ],
+  },
+  {
+    label: "YouTube",
+    color: "from-red-600 to-rose-600",
+    icon: Youtube,
+    types: [
+      { value: "YOUTUBE_SHORTS" as ContentType, label: "Shorts", icon: "⚡", desc: "Dikey kısa video senaryosu" },
+      { value: "YOUTUBE_TITLE" as ContentType, label: "Başlık", icon: "🎯", desc: "CTR odaklı 8 başlık" },
+      { value: "YOUTUBE_SCRIPT" as ContentType, label: "Senaryo", icon: "🎥", desc: "Uzun video, izlenme süresi" },
+      { value: "YOUTUBE_DESCRIPTION" as ContentType, label: "Açıklama", icon: "📄", desc: "SEO + bölümler" },
+      { value: "YOUTUBE_TAGS" as ContentType, label: "Etiketler", icon: "🏷️", desc: "20-25 tag" },
+      { value: "THUMBNAIL_TEXT" as ContentType, label: "Kapak", icon: "🖼️", desc: "Thumbnail metni" },
     ],
   },
   {
@@ -130,6 +145,16 @@ const PLATFORM_GROUPS = [
 ];
 
 const ALL_TYPES = PLATFORM_GROUPS.flatMap((g) => g.types);
+const LANGUAGES = [
+  { code: "tr", label: "Türkçe", flag: "🇹🇷" },
+  { code: "en", label: "English", flag: "🇬🇧" },
+  { code: "de", label: "Deutsch", flag: "🇩🇪" },
+  { code: "es", label: "Español", flag: "🇪🇸" },
+  { code: "fr", label: "Français", flag: "🇫🇷" },
+  { code: "ar", label: "العربية", flag: "🇸🇦" },
+  { code: "ru", label: "Русский", flag: "🇷🇺" },
+];
+
 const TONE_PRESETS = ["Samimi", "Profesyonel", "Eğlenceli", "Kurumsal", "İkna Edici", "Bilgilendirici"];
 
 // ─── Tipler ─────────────────────────────────────────────────────
@@ -448,6 +473,7 @@ export default function ContentPage() {
   const [selectedType, setSelectedType] = useState<ContentType>("INSTAGRAM_POST");
   const [topic, setTopic] = useState("");
   const [tone, setTone] = useState("");
+  const [contentLang, setContentLang] = useState("tr");
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState("");
   const [lastGenerated, setLastGenerated] = useState<ContentItem | null>(null);
@@ -487,6 +513,7 @@ export default function ContentPage() {
         description: (activeBrand as { description?: string })?.description ?? activeBrand?.name ?? "",
         topic: topic || undefined,
         tone: tone || undefined,
+        language: contentLang,
       }),
     });
     const data = await res.json();
@@ -621,6 +648,23 @@ export default function ContentPage() {
                 <input value={tone} onChange={(e) => setTone(e.target.value)}
                   placeholder={sL.tonePh}
                   className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2 text-sm outline-none transition focus:border-[hsl(var(--primary))]" />
+              </div>
+
+              {/* İçerik dili */}
+              <div>
+                <label className="mb-1.5 flex items-center gap-1.5 text-sm font-medium">
+                  <Languages className="h-3.5 w-3.5" /> {sL.langLabel}
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {LANGUAGES.map((l) => (
+                    <button key={l.code} type="button" onClick={() => setContentLang(l.code)}
+                      className={`rounded-lg px-2.5 py-1 text-xs transition ${contentLang === l.code ? "text-white" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))]"}`}
+                      style={contentLang === l.code ? { background: primaryColor } : {}}>
+                      {l.flag} {l.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-xs text-[hsl(var(--muted-foreground))]">{sL.langHint}</p>
               </div>
 
               {genError && <p className="rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-red-400">{genError}</p>}

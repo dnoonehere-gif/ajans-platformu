@@ -87,6 +87,13 @@ enum ContentType {
   SEO_CONTENT
   HASHTAGS
   CONTENT_PLAN
+  // YouTube içerik üreticileri için
+  YOUTUBE_SHORTS
+  YOUTUBE_TITLE
+  YOUTUBE_DESCRIPTION
+  YOUTUBE_SCRIPT
+  YOUTUBE_TAGS
+  THUMBNAIL_TEXT
 }
 
 /// Bildirim kanalı

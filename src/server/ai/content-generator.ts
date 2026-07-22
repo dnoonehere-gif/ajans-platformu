@@ -8,6 +8,23 @@ export interface ContentInput {
   tone?: string;
   topic?: string;
   primaryColor?: string;
+  /** Üretilecek içeriğin dili. Global hedef kitleye yayın yapanlar için. */
+  language?: string;
+}
+
+/** Prompt'un sonuna eklenen dil talimatı. Varsayılan Türkçe. */
+function langLine(language?: string): string {
+  if (!language || language === "tr") return "\nİçeriği Türkçe yaz.";
+  const names: Record<string, string> = {
+    en: "İngilizce (English)",
+    de: "Almanca (Deutsch)",
+    es: "İspanyolca (Español)",
+    fr: "Fransızca (Français)",
+    ar: "Arapça (العربية)",
+    ru: "Rusça (Русский)",
+  };
+  const name = names[language] ?? language;
+  return `\nÖNEMLİ: İçeriğin tamamını ${name} dilinde yaz. JSON anahtarları İngilizce kalsın, sadece değerler bu dilde olsun.`;
 }
 
 interface GeneratedContent {
@@ -132,13 +149,101 @@ Her güne bir içerik, 4 hafta = 28 gün. JSON formatında:
   ]
 }
 Çeşitli içerik türleri kullan: INSTAGRAM_POST, REELS_IDEA, STORY_IDEA, FACEBOOK_POST, LINKEDIN_POST, BLOG_POST`,
+
+  // ─── YouTube ──────────────────────────────────────────────────────
+  YOUTUBE_SHORTS: ({ brandName, sector, topic }) =>
+    `${brandName} (${sector}) için YouTube Shorts senaryosu yaz.
+Konu: ${topic ?? "kanalın ana teması"}
+Shorts formatı kritik: ilk 2 saniyede izleyiciyi yakala, sonuna kadar tut, döngüye uygun bitir.
+JSON döndür:
+{
+  "hook": "İlk 2 saniyede söylenecek/gösterilecek çarpıcı açılış",
+  "scenes": [
+    {"time": "0-3sn", "visual": "ne görünecek", "voiceover": "ne söylenecek", "text": "ekranda çıkacak yazı"}
+  ],
+  "cta": "Son 2 saniyede abone/takip çağrısı",
+  "loopTip": "Videonun sonu başına nasıl bağlanır (tekrar izletme taktiği)",
+  "hashtags": ["#etiket"],
+  "duration": "30-45 saniye"
+}
+5-7 sahne yaz. Sahneler somut ve çekilebilir olsun.`,
+
+  YOUTUBE_TITLE: ({ brandName, sector, topic }) =>
+    `${brandName} (${sector}) YouTube videosu için tıklanma oranı (CTR) yüksek başlıklar üret.
+Konu: ${topic ?? "kanalın ana teması"}
+JSON döndür:
+{
+  "titles": [
+    {"title": "başlık", "style": "merak/liste/sonuç/karşılaştırma/duygusal", "why": "neden tıklanır"}
+  ],
+  "bestPick": "en güçlü başlık",
+  "tip": "başlık optimizasyonu için kısa öneri"
+}
+8 farklı başlık üret. Her biri 60 karakteri geçmesin (arama sonuçlarında kesilmesin).
+Clickbait yapma — başlık videonun gerçekten vaat ettiği şeyi anlatsın.`,
+
+  YOUTUBE_DESCRIPTION: ({ brandName, sector, topic }) =>
+    `${brandName} (${sector}) YouTube videosu için açıklama metni yaz.
+Konu: ${topic ?? "kanalın ana teması"}
+JSON döndür:
+{
+  "hookLines": "İlk 2-3 satır (arama sonucunda görünen kısım, anahtar kelime içersin)",
+  "body": "Videoyu anlatan 2-3 paragraf",
+  "chapters": [{"time": "00:00", "title": "bölüm adı"}],
+  "links": ["Sosyal medya / abone ol / önerilen video satırları"],
+  "keywords": ["açıklamaya doğal şekilde serpiştirilecek anahtar kelimeler"]
+}
+6-8 bölüm (chapter) öner — izlenme süresini artırır.`,
+
+  YOUTUBE_SCRIPT: ({ brandName, sector, topic, tone }) =>
+    `${brandName} (${sector}) için uzun format YouTube video senaryosu yaz.
+Konu: ${topic ?? "kanalın ana teması"}
+Ton: ${tone ?? "samimi ve bilgilendirici"}
+Amaç: izlenme süresini (watch time) maksimize etmek.
+JSON döndür:
+{
+  "hook": "İlk 15 saniye — izleyiciyi tutacak açılış, videoda ne öğreneceğini söyle",
+  "sections": [
+    {"title": "bölüm başlığı", "duration": "tahmini süre", "talkingPoints": ["madde"], "bRoll": "önerilen görüntü"}
+  ],
+  "retentionTips": ["izleyiciyi elde tutmak için uygulanacak taktikler"],
+  "cta": "Abone ol / yorum / sonraki video çağrısı",
+  "estimatedLength": "8-12 dakika"
+}
+5-7 bölüm yaz. Her bölümde izleyiciyi bir sonrakine bağlayan bir merak unsuru bırak.`,
+
+  YOUTUBE_TAGS: ({ brandName, sector, topic }) =>
+    `${brandName} (${sector}) YouTube videosu için etiket (tag) seti üret.
+Konu: ${topic ?? "kanalın ana teması"}
+JSON döndür:
+{
+  "broad": ["geniş kitleye hitap eden genel etiketler"],
+  "specific": ["videoya özel niş etiketler"],
+  "longTail": ["uzun kuyruk arama terimleri"],
+  "total": "toplam karakter sayısı tahmini"
+}
+Toplam 20-25 etiket. YouTube etiket limiti 500 karakterdir, aşma.`,
+
+  THUMBNAIL_TEXT: ({ brandName, sector, topic }) =>
+    `${brandName} (${sector}) YouTube videosu için kapak görseli (thumbnail) metni ve konsepti öner.
+Konu: ${topic ?? "kanalın ana teması"}
+JSON döndür:
+{
+  "options": [
+    {"text": "kapakta yazacak metin", "emotion": "uyandırdığı duygu", "visual": "arka planda ne olmalı", "colors": "renk önerisi"}
+  ],
+  "bestPick": "en güçlü seçenek",
+  "rules": ["bu kapak için uyulacak tasarım kuralları"]
+}
+5 seçenek üret. Kapak metni EN FAZLA 4 kelime olsun — telefonda okunabilmeli.
+Başlıkla aynı şeyi tekrarlama; başlığı tamamlasın.`,
 };
 
 export async function generateContent(
   type: ContentType,
   input: ContentInput
 ): Promise<GeneratedContent> {
-  const prompt = PROMPTS[type](input);
+  const prompt = PROMPTS[type](input) + langLine(input.language);
   const raw = await generateText({ prompt, maxTokens: 1800 });
 
   const jsonTypes: ContentType[] = [
@@ -174,6 +279,12 @@ export const TYPE_LABELS: Record<ContentType, string> = {
   SEO_CONTENT: "SEO İçeriği",
   HASHTAGS: "Hashtag Seti",
   CONTENT_PLAN: "30 Günlük Plan",
+  YOUTUBE_SHORTS: "YouTube Shorts",
+  YOUTUBE_TITLE: "Video Başlıkları",
+  YOUTUBE_DESCRIPTION: "Video Açıklaması",
+  YOUTUBE_SCRIPT: "Video Senaryosu",
+  YOUTUBE_TAGS: "Video Etiketleri",
+  THUMBNAIL_TEXT: "Kapak (Thumbnail)",
 };
 
 export const TYPE_ICONS: Record<ContentType, string> = {
@@ -188,4 +299,10 @@ export const TYPE_ICONS: Record<ContentType, string> = {
   SEO_CONTENT: "🔎",
   HASHTAGS: "#️⃣",
   CONTENT_PLAN: "📅",
+  YOUTUBE_SHORTS: "⚡",
+  YOUTUBE_TITLE: "🎯",
+  YOUTUBE_DESCRIPTION: "📄",
+  YOUTUBE_SCRIPT: "🎥",
+  YOUTUBE_TAGS: "🏷️",
+  THUMBNAIL_TEXT: "🖼️",
 };
