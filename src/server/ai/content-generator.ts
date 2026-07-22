@@ -239,11 +239,37 @@ JSON döndür:
 Başlıkla aynı şeyi tekrarlama; başlığı tamamlasın.`,
 };
 
+/**
+ * Her prompt'un başına eklenen marka bağlamı. Marka açıklaması ve
+ * anlamsız/çok kısa konu girildiğinde AI'ı markaya göre yönlendirir —
+ * "asdasd" gibi bir konu verildiğinde saçma içerik üretilmesini engeller.
+ */
+function brandContext(input: ContentInput): string {
+  const lines = [
+    `MARKA: ${input.brandName}`,
+    `SEKTÖR: ${input.sector}`,
+  ];
+  if (input.description && input.description.trim().length > 3) {
+    lines.push(`MARKA AÇIKLAMASI: ${input.description.trim()}`);
+  }
+  // Anlamsız konu tespitini regex'e bırakmak kırılgan ("asdasd" gibi klavye
+  // saçmalıkları sesli harf içerdiği için filtreye takılmıyor). Kararı modele
+  // bırakmak daha sağlam: her zaman talimat olarak veriyoruz.
+  const topic = (input.topic ?? "").trim();
+  if (topic.length > 0) {
+    lines.push(
+      `KONU: ${topic}`,
+      `ÖNEMLİ: Yukarıdaki konu anlamsız, rastgele veya klavye saçmalığı ise (ör. "asdasd", "test", "aaa"), onu TAMAMEN GÖRMEZDEN GEL. O kelimeyi içerikte hiç geçirme. Bunun yerine markanın sektörüne ve açıklamasına uygun, gerçekten yayınlanabilir bir konu SEN seç ve onu işle.`
+    );
+  }
+  return lines.join("\n") + "\n\n";
+}
+
 export async function generateContent(
   type: ContentType,
   input: ContentInput
 ): Promise<GeneratedContent> {
-  const prompt = PROMPTS[type](input) + langLine(input.language);
+  const prompt = brandContext(input) + PROMPTS[type](input) + langLine(input.language);
   const raw = await generateText({ prompt, maxTokens: 1800 });
 
   const jsonTypes: ContentType[] = [
