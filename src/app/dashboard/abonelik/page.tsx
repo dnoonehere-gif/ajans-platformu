@@ -33,6 +33,8 @@ const L = {
     planWord: "Planı", securePay: "Güvenli ödeme", secureIframe: "Güvenli Ödeme", openNewTab: "Yeni sekmede aç",
     subCreated: "Aboneliğiniz oluşturuldu", paySoon: "Ödeme sistemi yakında aktive edilecek.",
     payFooter: "Ödeme tamamlandıktan sonra planınız otomatik olarak aktive olur. Bu pencereyi kapatabilirsiniz.",
+    iframeWarn: "Ödeme ekranı açılmazsa veya hata alırsanız",
+    iframeWarnAction: "yeni sekmede açın",
     payOkTitle: "Ödemeniz alındı",
     payOkWaiting: "Planınız aktive ediliyor, bu birkaç saniye sürebilir. Sayfa otomatik güncellenecek.",
     payOkDone: "Planınız aktif! İyi çalışmalar.",
@@ -61,6 +63,8 @@ const L = {
     planWord: "Plan", securePay: "Secure payment", secureIframe: "Secure Payment", openNewTab: "Open in new tab",
     subCreated: "Your subscription has been created", paySoon: "Payments will be activated soon.",
     payFooter: "Once payment is complete your plan activates automatically. You can close this window.",
+    iframeWarn: "If the payment screen doesn't load or shows an error,",
+    iframeWarnAction: "open it in a new tab",
     payOkTitle: "Payment received",
     payOkWaiting: "Your plan is being activated, this may take a few seconds. The page will update automatically.",
     payOkDone: "Your plan is active. Enjoy!",
@@ -528,6 +532,20 @@ export default function AbonelikPage() {
                 </button>
               </div>
             </div>
+
+            {/* Iframe engellenirse diye kalıcı uyarı (Shopier 3D Secure adımında
+                iframe içinde hata verebiliyor; yeni sekmede sorunsuz açılıyor) */}
+            {checkoutUrl && (
+              <div className="flex shrink-0 items-center justify-center gap-1.5 border-b border-amber-500/20 bg-amber-500/10 px-4 py-2.5 text-center text-xs text-amber-300">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                <span>
+                  {sL.iframeWarn}{" "}
+                  <a href={checkoutUrl} target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2 hover:text-amber-200">
+                    {sL.iframeWarnAction}
+                  </a>
+                </span>
+              </div>
+            )}
 
             {/* İframe veya fallback */}
             {checkoutUrl ? (
