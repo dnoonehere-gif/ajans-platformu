@@ -272,14 +272,24 @@ export async function generateContent(
   const prompt = brandContext(input) + PROMPTS[type](input) + langLine(input.language);
   const raw = await generateText({ prompt, maxTokens: 1800 });
 
+  // JSON döndüren tipler. Buraya eklenmeyen bir tip, prompt'u JSON istese bile
+  // düz metin dalına düşer ve ham çıktı (```json çitiyle birlikte) gövdeye basılır.
   const jsonTypes: ContentType[] = [
     "REELS_IDEA", "STORY_IDEA", "GOOGLE_ADS", "META_ADS",
     "SEO_CONTENT", "HASHTAGS", "CONTENT_PLAN",
+    "YOUTUBE_SHORTS", "YOUTUBE_TITLE", "YOUTUBE_DESCRIPTION",
+    "YOUTUBE_SCRIPT", "YOUTUBE_TAGS", "THUMBNAIL_TEXT",
   ];
 
   if (jsonTypes.includes(type)) {
     const jsonMatch = raw.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-    const meta = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+    let meta: Record<string, unknown> = {};
+    try {
+      if (jsonMatch) meta = JSON.parse(jsonMatch[0]);
+    } catch {
+      // Model bozuk JSON döndürdüyse üretimi tamamen kaybetme; ham metni göster
+      return { title: `${TYPE_LABELS[type]} — ${input.brandName}`, body: raw.trim() };
+    }
     return {
       title: `${TYPE_LABELS[type]} — ${input.topic ?? input.brandName}`,
       body: JSON.stringify(meta, null, 2),

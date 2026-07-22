@@ -40,6 +40,7 @@ const L = {
     langLabel: "İçerik Dili", langHint: "Global kitleye yayın yapıyorsanız İngilizce seçin",
     noDescWarn: "Markanızın açıklaması boş. İçerikler jenerik çıkar — daha isabetli sonuç için marka açıklamanızı doldurun.",
     noDescAction: "Marka ayarlarına git",
+    shortsScenes: "Sahneler", shortsLoop: "Döngü taktiği", shortsBest: "Önerilen", shortsWhy: "Neden",
     genericError: "Hata oluştu",
     generatingBtn: "Üretiliyor...", generateBtn: "Üret", generated: "Üretildi!",
     searchPh: "İçerik ara...", all: "Tümü",
@@ -77,6 +78,7 @@ const L = {
     langLabel: "Content Language", langHint: "Choose English if you target a global audience",
     noDescWarn: "Your brand description is empty. Content will be generic — fill it in for sharper results.",
     noDescAction: "Go to brand settings",
+    shortsScenes: "Scenes", shortsLoop: "Loop tip", shortsBest: "Best pick", shortsWhy: "Why",
     genericError: "Something went wrong",
     generatingBtn: "Generating...", generateBtn: "Generate", generated: "Generated!",
     searchPh: "Search content...", all: "All",
@@ -408,6 +410,116 @@ function ContentPlanView({ meta }: { meta: Record<string, unknown> }) {
   );
 }
 
+
+function ShortsView({ meta }: { meta: Record<string, unknown> }) {
+  const { lang } = useLang();
+  const sL = L[lang];
+  const { hook, scenes, cta, loopTip, hashtags, duration } = meta as {
+    hook: string;
+    scenes: { time: string; visual: string; voiceover: string; text: string }[];
+    cta: string; loopTip: string; hashtags: string[]; duration: string;
+  };
+  return (
+    <div className="mt-3 space-y-3 text-sm">
+      <div className="rounded-xl bg-[hsl(var(--primary)/0.08)] p-3">
+        <p className="mb-1 text-xs font-semibold text-[hsl(var(--primary))]">{sL.hook}</p>
+        <p>{hook}</p>
+      </div>
+      <div>
+        <p className="mb-2 text-xs font-semibold text-[hsl(var(--muted-foreground))]">{sL.shortsScenes}</p>
+        <div className="space-y-2">
+          {(scenes ?? []).map((sc, i) => (
+            <div key={i} className="rounded-xl border border-[hsl(var(--border))] p-3">
+              <span className="mb-1.5 inline-block rounded-md bg-[hsl(var(--muted))] px-2 py-0.5 font-mono text-[11px]">{sc.time}</span>
+              {sc.visual && <p className="text-xs text-[hsl(var(--muted-foreground))]">🎬 {sc.visual}</p>}
+              {sc.voiceover && <p className="mt-1 text-sm">🎙 {sc.voiceover}</p>}
+              {sc.text && <p className="mt-1 text-xs font-medium">💬 {sc.text}</p>}
+            </div>
+          ))}
+        </div>
+      </div>
+      {loopTip && (
+        <div className="rounded-xl bg-[hsl(var(--muted)/0.5)] p-3">
+          <p className="mb-1 text-xs font-semibold text-[hsl(var(--muted-foreground))]">{sL.shortsLoop}</p>
+          <p className="text-xs">{loopTip}</p>
+        </div>
+      )}
+      <div className="flex flex-wrap gap-2 text-xs">
+        {cta && <span className="rounded-lg bg-[hsl(var(--muted))] px-3 py-1.5">📢 {cta}</span>}
+        {duration && <span className="rounded-lg bg-[hsl(var(--muted))] px-3 py-1.5">⏱ {duration}</span>}
+      </div>
+      {hashtags?.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {hashtags.map((h, i) => (
+            <span key={i} className="rounded-lg bg-[hsl(var(--primary)/0.1)] px-2 py-1 text-xs text-[hsl(var(--primary))]">{h}</span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TitlesView({ meta }: { meta: Record<string, unknown> }) {
+  const { lang } = useLang();
+  const sL = L[lang];
+  const { titles, bestPick, tip } = meta as {
+    titles: { title: string; style: string; why: string }[]; bestPick: string; tip: string;
+  };
+  return (
+    <div className="mt-3 space-y-2 text-sm">
+      {bestPick && (
+        <div className="rounded-xl bg-[hsl(var(--primary)/0.08)] p-3">
+          <p className="mb-1 text-xs font-semibold text-[hsl(var(--primary))]">⭐ {sL.shortsBest}</p>
+          <p className="font-medium">{bestPick}</p>
+        </div>
+      )}
+      <div className="space-y-1.5">
+        {(titles ?? []).map((t, i) => (
+          <div key={i} className="rounded-xl border border-[hsl(var(--border))] p-3">
+            <p className="font-medium">{t.title}</p>
+            <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-[hsl(var(--muted-foreground))]">
+              {t.style && <span className="rounded bg-[hsl(var(--muted))] px-1.5 py-0.5">{t.style}</span>}
+              <span>{t.title?.length ?? 0}/60</span>
+            </div>
+            {t.why && <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{sL.shortsWhy}: {t.why}</p>}
+          </div>
+        ))}
+      </div>
+      {tip && <p className="text-xs text-[hsl(var(--muted-foreground))]">💡 {tip}</p>}
+    </div>
+  );
+}
+
+/** Özel görünümü olmayan JSON tipleri için okunabilir genel gösterim. */
+function GenericMetaView({ meta }: { meta: Record<string, unknown> }) {
+  return (
+    <div className="mt-3 space-y-2.5 text-sm">
+      {Object.entries(meta).map(([key, val]) => (
+        <div key={key}>
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[hsl(var(--muted-foreground))]">{key}</p>
+          {Array.isArray(val) ? (
+            <div className="space-y-1">
+              {val.map((v, i) =>
+                typeof v === "object" && v !== null ? (
+                  <div key={i} className="rounded-lg border border-[hsl(var(--border))] p-2.5 text-xs">
+                    {Object.entries(v as Record<string, unknown>).map(([k2, v2]) => (
+                      <p key={k2}><span className="text-[hsl(var(--muted-foreground))]">{k2}:</span> {String(v2)}</p>
+                    ))}
+                  </div>
+                ) : (
+                  <span key={i} className="mr-1.5 inline-block rounded-lg bg-[hsl(var(--muted))] px-2 py-1 text-xs">{String(v)}</span>
+                )
+              )}
+            </div>
+          ) : (
+            <p className="whitespace-pre-wrap text-sm">{String(val)}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function MetaView({ meta, type }: { meta: Record<string, unknown>; type: ContentType }) {
   if (type === "CONTENT_PLAN") return <ContentPlanView meta={meta} />;
   if (type === "HASHTAGS") return <HashtagsView meta={meta} />;
@@ -416,6 +528,10 @@ function MetaView({ meta, type }: { meta: Record<string, unknown>; type: Content
   if (type === "GOOGLE_ADS") return <GoogleAdsView meta={meta} />;
   if (type === "META_ADS") return <MetaAdsView meta={meta} />;
   if (type === "SEO_CONTENT") return <SeoView meta={meta} />;
+  if (type === "YOUTUBE_SHORTS") return <ShortsView meta={meta} />;
+  if (type === "YOUTUBE_TITLE") return <TitlesView meta={meta} />;
+  if (type === "YOUTUBE_DESCRIPTION" || type === "YOUTUBE_SCRIPT" || type === "YOUTUBE_TAGS" || type === "THUMBNAIL_TEXT")
+    return <GenericMetaView meta={meta} />;
   return <pre className="mt-2 overflow-x-auto rounded-xl bg-[hsl(var(--muted)/0.5)] p-4 text-xs">{JSON.stringify(meta, null, 2)}</pre>;
 }
 
