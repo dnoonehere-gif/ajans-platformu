@@ -34,14 +34,14 @@ export default async function AiPage() {
   const totalTokens = (total._sum.tokensIn ?? 0) + (total._sum.tokensOut ?? 0);
 
   return (
-    <div className="p-8">
+    <div className="p-4 lg:p-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold"><T k="aiUsage" /></h1>
         <p className="text-sm text-[hsl(var(--muted-foreground))]"><T k="aiUsageSub" /></p>
       </div>
 
       {/* Toplam */}
-      <div className="mb-6 grid grid-cols-4 gap-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {[
           { label: "totalRequests", value: total._count.toLocaleString("tr-TR") },
           { label: "totalToken", value: totalTokens.toLocaleString("tr-TR") },
@@ -57,11 +57,11 @@ export default async function AiPage() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Özelliğe göre */}
-        <div className="glass rounded-2xl overflow-hidden">
+        <div className="glass rounded-2xl overflow-hidden overflow-x-auto">
           <div className="border-b border-[hsl(var(--border))] px-5 py-3">
             <p className="font-semibold text-sm"><T k="byFeature" /></p>
           </div>
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-[hsl(var(--border))]">
                 {(["feature", "requests", "token", "cost"] as AdminKey[]).map((h) => (
@@ -89,11 +89,11 @@ export default async function AiPage() {
         </div>
 
         {/* Modele göre */}
-        <div className="glass rounded-2xl overflow-hidden">
+        <div className="glass rounded-2xl overflow-hidden overflow-x-auto">
           <div className="border-b border-[hsl(var(--border))] px-5 py-3">
             <p className="font-semibold text-sm"><T k="byModel" /></p>
           </div>
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-[hsl(var(--border))]">
                 {(["model", "requests", "token", "cost"] as AdminKey[]).map((h) => (

@@ -73,7 +73,7 @@ export default function PaketlerPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 lg:p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Paketler</h1>

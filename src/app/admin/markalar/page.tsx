@@ -24,14 +24,14 @@ export default async function MarkalarPage() {
   }, {} as Record<string, number>);
 
   return (
-    <div className="p-8">
+    <div className="p-4 lg:p-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Markalar</h1>
         <p className="text-sm text-[hsl(var(--muted-foreground))]">Toplam {brands.length} marka</p>
       </div>
 
       {/* Abonelik özeti */}
-      <div className="mb-6 grid grid-cols-5 gap-3">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {Object.entries(SUB_KEYS).map(([key, tKey]) => (
           <div key={key} className="glass rounded-2xl p-4">
             <p className="text-xl font-bold">{subCounts[key] ?? 0}</p>
@@ -43,8 +43,8 @@ export default async function MarkalarPage() {
       </div>
 
       {/* Tablo */}
-      <div className="glass rounded-2xl overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="glass rounded-2xl overflow-hidden overflow-x-auto">
+        <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-[hsl(var(--border))]">
               {(["brand", "owner", "subscription", "review", "member", "content", "website", "chatbot", "createdAt"] as AdminKey[]).map((h) => (

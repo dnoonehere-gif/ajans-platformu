@@ -36,7 +36,7 @@ export default async function AdminPage() {
   const SUB_KEYS: Record<string, AdminKey> = { ACTIVE: "active", TRIALING: "trial", PAST_DUE: "pastDue", CANCELED: "canceled", EXPIRED: "expired" };
 
   return (
-    <div className="p-8">
+    <div className="p-4 lg:p-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold"><T k="overview" /></h1>
         <p className="text-sm text-[hsl(var(--muted-foreground))]"><T k="overviewSub" /></p>
@@ -58,7 +58,7 @@ export default async function AdminPage() {
       {/* AI özet */}
       <div className="glass mb-8 rounded-2xl p-5">
         <p className="mb-4 text-sm font-semibold"><T k="aiSummary" /></p>
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
           <div>
             <p className="text-xs text-[hsl(var(--muted-foreground))]">Toplam Token</p>
             <p className="mt-1 text-xl font-bold">{totalTokens}</p>
@@ -78,7 +78,7 @@ export default async function AdminPage() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Son kayıt olan kullanıcılar */}
-        <div className="glass rounded-2xl overflow-hidden">
+        <div className="glass rounded-2xl overflow-hidden overflow-x-auto">
           <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-5 py-3">
             <p className="text-sm font-semibold"><T k="recentUsers" /></p>
             <a href="/admin/kullanicilar" className="text-xs text-[hsl(var(--primary))] hover:underline"><T k="seeAll" /></a>
@@ -102,7 +102,7 @@ export default async function AdminPage() {
         </div>
 
         {/* Son oluşturulan markalar */}
-        <div className="glass rounded-2xl overflow-hidden">
+        <div className="glass rounded-2xl overflow-hidden overflow-x-auto">
           <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-5 py-3">
             <p className="text-sm font-semibold"><T k="recentBrands" /></p>
             <a href="/admin/markalar" className="text-xs text-[hsl(var(--primary))] hover:underline"><T k="seeAll" /></a>

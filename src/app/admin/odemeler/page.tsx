@@ -26,14 +26,14 @@ export default async function OdemelerPage() {
   const totalFailed = totals.find((t) => t.status === "FAILED")?._sum.amountCents ?? 0;
 
   return (
-    <div className="p-8">
+    <div className="p-4 lg:p-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold"><T k="payments" /></h1>
         <p className="text-sm text-[hsl(var(--muted-foreground))]"><T k="paymentsSub" /></p>
       </div>
 
       {/* Özet */}
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         <div className="glass rounded-2xl p-5">
           <p className="text-xs text-[hsl(var(--muted-foreground))]">Toplam Tahsilat</p>
           <p className="mt-1 text-2xl font-bold text-green-400">₺{(totalPaid / 100).toLocaleString("tr-TR")}</p>
@@ -49,8 +49,8 @@ export default async function OdemelerPage() {
       </div>
 
       {/* Tablo */}
-      <div className="glass rounded-2xl overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="glass rounded-2xl overflow-hidden overflow-x-auto">
+        <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-[hsl(var(--border))]">
               {(["brand", "planName", "amount", "provider", "status", "paidAt", "created"] as AdminKey[]).map((h) => (

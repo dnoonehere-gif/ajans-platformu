@@ -157,7 +157,7 @@ export default function LoglarPage() {
   ];
 
   return (
-    <div className="p-8">
+    <div className="p-4 lg:p-8">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">{sL.title}</h1>
@@ -197,7 +197,7 @@ export default function LoglarPage() {
       </div>
 
       {/* Tablo */}
-      <div className="glass rounded-2xl overflow-hidden">
+      <div className="glass rounded-2xl overflow-hidden overflow-x-auto">
         {loading ? (
           <div className="flex h-64 items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--primary))]" />

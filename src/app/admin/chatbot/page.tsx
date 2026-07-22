@@ -24,14 +24,14 @@ export default async function ChatbotAdminPage() {
   const activeCount = chatbots.filter((c) => c.isActive).length;
 
   return (
-    <div className="p-8">
+    <div className="p-4 lg:p-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Chatbot</h1>
         <p className="text-sm text-[hsl(var(--muted-foreground))]"><T k="allBrandChatbots" /></p>
       </div>
 
       {/* Özet */}
-      <div className="mb-6 grid grid-cols-4 gap-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {[
           { label: "Toplam Chatbot", value: chatbots.length },
           { label: "Aktif Chatbot", value: activeCount },
@@ -46,11 +46,11 @@ export default async function ChatbotAdminPage() {
       </div>
 
       {/* Chatbot listesi */}
-      <div className="glass rounded-2xl overflow-hidden">
+      <div className="glass rounded-2xl overflow-hidden overflow-x-auto">
         <div className="border-b border-[hsl(var(--border))] px-5 py-3">
           <p className="font-semibold text-sm">Chatbot Listesi</p>
         </div>
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-[hsl(var(--border))]">
               {(["brand", "chatbotName", "knowledgeBase", "conversation", "status", "created"] as AdminKey[]).map((h) => (
