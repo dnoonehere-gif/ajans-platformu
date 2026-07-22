@@ -3,8 +3,9 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Sparkles, Loader2, Trash2, Copy, Check,
   ChevronDown, ChevronUp, Calendar, Search, X,
-  Instagram, Facebook, Linkedin, Globe, FileText, Youtube, Languages,
+  Instagram, Facebook, Linkedin, Globe, FileText, Youtube, Languages, AlertTriangle,
 } from "lucide-react";
+import Link from "next/link";
 import type { ContentType } from "@prisma/client";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { useLang } from "@/components/language-provider";
@@ -37,6 +38,8 @@ const L = {
     topicPh: "Yeni ürün lansmanı, Yaz kampanyası, Müşteri hikayesi...",
     toneLabel: "Ton", tonePh: "Veya kendiniz yazın...",
     langLabel: "İçerik Dili", langHint: "Global kitleye yayın yapıyorsanız İngilizce seçin",
+    noDescWarn: "Markanızın açıklaması boş. İçerikler jenerik çıkar — daha isabetli sonuç için marka açıklamanızı doldurun.",
+    noDescAction: "Marka ayarlarına git",
     genericError: "Hata oluştu",
     generatingBtn: "Üretiliyor...", generateBtn: "Üret", generated: "Üretildi!",
     searchPh: "İçerik ara...", all: "Tümü",
@@ -72,6 +75,8 @@ const L = {
     topicPh: "New product launch, Summer campaign, Customer story...",
     toneLabel: "Tone", tonePh: "Or write your own...",
     langLabel: "Content Language", langHint: "Choose English if you target a global audience",
+    noDescWarn: "Your brand description is empty. Content will be generic — fill it in for sharper results.",
+    noDescAction: "Go to brand settings",
     genericError: "Something went wrong",
     generatingBtn: "Generating...", generateBtn: "Generate", generated: "Generated!",
     searchPh: "Search content...", all: "All",
@@ -509,8 +514,8 @@ export default function ContentPage() {
       body: JSON.stringify({
         brandId,
         type: selectedType,
-        sector: (activeBrand as { sector?: string })?.sector ?? "Genel",
-        description: (activeBrand as { description?: string })?.description ?? activeBrand?.name ?? "",
+        sector: activeBrand?.sector || "Genel",
+        description: activeBrand?.description || activeBrand?.name || "",
         topic: topic || undefined,
         tone: tone || undefined,
         language: contentLang,
@@ -535,8 +540,8 @@ export default function ContentPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         brandId,
-        sector: (activeBrand as { sector?: string })?.sector ?? "Genel",
-        description: (activeBrand as { description?: string })?.description ?? activeBrand?.name ?? "",
+        sector: activeBrand?.sector || "Genel",
+        description: activeBrand?.description || activeBrand?.name || "",
         tone: planTone || undefined,
       }),
     });
@@ -649,6 +654,19 @@ export default function ContentPage() {
                   placeholder={sL.tonePh}
                   className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2 text-sm outline-none transition focus:border-[hsl(var(--primary))]" />
               </div>
+
+              {/* Marka açıklaması boşsa uyar — içerik kalitesini doğrudan etkiliyor */}
+              {activeBrand && !activeBrand.description?.trim() && (
+                <div className="flex items-start gap-2 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3.5 py-2.5 text-xs text-amber-300">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    {sL.noDescWarn}{" "}
+                    <Link href="/dashboard/ayarlar" className="font-semibold underline underline-offset-2 hover:text-amber-200">
+                      {sL.noDescAction}
+                    </Link>
+                  </span>
+                </div>
+              )}
 
               {/* İçerik dili */}
               <div>

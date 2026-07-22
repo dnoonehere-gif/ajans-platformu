@@ -1,7 +1,7 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 
-interface Brand { id: string; name: string; slug: string; logoUrl: string | null; primaryColor: string | null; role: string }
+interface Brand { id: string; name: string; slug: string; logoUrl: string | null; primaryColor: string | null; sector: string | null; description: string | null; role: string }
 interface BrandCtx { brands: Brand[]; activeBrand: Brand | null; setActiveBrand: (b: Brand) => void }
 
 const Ctx = createContext<BrandCtx>({ brands: [], activeBrand: null, setActiveBrand: () => {} });

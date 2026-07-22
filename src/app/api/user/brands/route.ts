@@ -9,14 +9,14 @@ export async function GET() {
   const [owned, memberships] = await Promise.all([
     prisma.brand.findMany({
       where: { ownerId: user.id, isActive: true },
-      select: { id: true, name: true, slug: true, logoUrl: true, primaryColor: true },
+      select: { id: true, name: true, slug: true, logoUrl: true, primaryColor: true, sector: true, description: true },
       orderBy: { createdAt: "asc" },
     }),
     prisma.brandMember.findMany({
       where: { userId: user.id },
       select: {
         role: true,
-        brand: { select: { id: true, name: true, slug: true, logoUrl: true, primaryColor: true, isActive: true } },
+        brand: { select: { id: true, name: true, slug: true, logoUrl: true, primaryColor: true, sector: true, description: true, isActive: true } },
       },
     }),
   ]);
