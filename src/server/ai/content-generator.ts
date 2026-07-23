@@ -265,6 +265,41 @@ function brandContext(input: ContentInput): string {
   return lines.join("\n") + "\n\n";
 }
 
+/**
+ * Başlığı üretilen içerikten türetir. Kullanıcının girdiği konuyu olduğu gibi
+ * yazmak, konu anlamsızsa ("bv vx vx cx c") başlığı da bozuyordu — üstelik
+ * model o konuyu zaten görmezden geliyor. Bu yüzden önce içerikteki anlamlı
+ * bir alan denenir, bulunamazsa konuya, o da yoksa marka adına düşülür.
+ */
+function deriveTitle(type: ContentType, meta: Record<string, unknown>, input: ContentInput): string {
+  const label = TYPE_LABELS[type];
+  const pick = (v: unknown): string | null => {
+    if (typeof v === "string" && v.trim().length > 2) return v.trim();
+    if (Array.isArray(v) && v.length > 0) {
+      const first = v[0];
+      if (typeof first === "string" && first.trim().length > 2) return first.trim();
+      if (first && typeof first === "object") {
+        const o = first as Record<string, unknown>;
+        for (const k of ["title", "headline", "text", "content"]) {
+          if (typeof o[k] === "string" && (o[k] as string).trim().length > 2) return (o[k] as string).trim();
+        }
+      }
+    }
+    return null;
+  };
+
+  // İçerik türüne göre en anlamlı alanı sırayla dene
+  for (const key of ["bestPick", "hook", "metaTitle", "h1", "headline", "headlines", "hookLines", "titles", "primaryText"]) {
+    const found = pick(meta[key]);
+    if (found) {
+      const clean = found.replace(/\s+/g, " ").slice(0, 70);
+      return `${label} — ${clean}${found.length > 70 ? "…" : ""}`;
+    }
+  }
+  const topic = (input.topic ?? "").trim();
+  return `${label} — ${topic.length > 2 ? topic : input.brandName}`;
+}
+
 export async function generateContent(
   type: ContentType,
   input: ContentInput
@@ -291,14 +326,22 @@ export async function generateContent(
       return { title: `${TYPE_LABELS[type]} — ${input.brandName}`, body: raw.trim() };
     }
     return {
-      title: `${TYPE_LABELS[type]} — ${input.topic ?? input.brandName}`,
+      title: deriveTitle(type, meta, input),
       body: JSON.stringify(meta, null, 2),
       meta,
     };
   }
 
+  // Düz metin tiplerinde ilk anlamlı satırı başlık olarak kullan
+  const firstLine = raw
+    .trim()
+    .split("\n")
+    .map((l) => l.replace(/^#+\s*/, "").trim())
+    .find((l) => l.length > 10);
   return {
-    title: `${TYPE_LABELS[type]} — ${input.topic ?? input.brandName}`,
+    title: firstLine
+      ? `${TYPE_LABELS[type]} — ${firstLine.slice(0, 70)}${firstLine.length > 70 ? "…" : ""}`
+      : `${TYPE_LABELS[type]} — ${input.brandName}`,
     body: raw.trim(),
   };
 }
