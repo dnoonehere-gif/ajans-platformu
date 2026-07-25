@@ -22,6 +22,8 @@ export type AuditAction =
   | "subscription.cancel"
   | "subscription.activate"
   | "subscription.plan_change"
+  | "subscription.trial_start"
+  | "subscription.trial_denied"
   // Review
   | "review.create"
   | "review.delete"

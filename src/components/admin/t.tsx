@@ -19,6 +19,9 @@ const DICT = {
     // Abonelik
     subscription: "Abonelik", trial: "Deneme", pastDue: "Gecikmiş",
     canceled: "İptal", expired: "Sona Erdi",
+    daysLeft: (n: number) => `${n} gün kaldı`,
+    sameIp: (n: number) => `Aynı IP: ${n} hesap`,
+    trialsActive: "Aktif Deneme", none: "Yok",
     // Genel bakış
     overview: "Genel Bakış", overviewSub: "Platform geneli istatistikler",
     user: "Kullanıcı", users: "Kullanıcılar", activeSub: "Aktif Abonelik",
@@ -59,6 +62,9 @@ const DICT = {
     role: "Role", membership: "Memberships", status: "Status", plan: "Plan",
     subscription: "Subscription", trial: "Trial", pastDue: "Past Due",
     canceled: "Canceled", expired: "Expired",
+    daysLeft: (n: number) => `${n} days left`,
+    sameIp: (n: number) => `Same IP: ${n} accounts`,
+    trialsActive: "Active Trials", none: "None",
     overview: "Overview", overviewSub: "Platform-wide statistics",
     user: "Users", users: "Users", activeSub: "Active Subscriptions",
     chatbotConv: "Chatbot Conversations", aiCost: "AI Cost (₺)",

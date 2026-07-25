@@ -5,6 +5,55 @@ import { getAuthUser } from "@/lib/auth-guard";
 import { auditFromRequest } from "@/server/audit/log";
 import { getUserPlanFeatures, isUnderLimit } from "@/lib/plan-guard";
 
+/**
+ * Denemenin reddedilme sebebini döndürür (yoksa null → deneme verilir).
+ * Katmanlar:
+ *   1. Kullanıcının zaten bir aboneliği (aktif/geçmiş) var mı?
+ *   2. Aynı normalize e-posta (gmail alias/nokta) daha önce deneme aldı mı?
+ *   3. Son 30 günde aynı IP'den zaten deneme alınmış mı?
+ */
+async function trialDenialReason(userId: string): Promise<string | null> {
+  const me = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { emailNormalized: true, signupIp: true },
+  });
+
+  // 1) Bu kullanıcı daha önce herhangi bir abonelik almış mı?
+  const priorSub = await prisma.subscription.findFirst({
+    where: { brand: { ownerId: userId } },
+    select: { id: true },
+  });
+  if (priorSub) return "already_had_subscription";
+
+  // 2) Aynı normalize e-postaya sahip BAŞKA bir hesap deneme kullanmış mı?
+  if (me?.emailNormalized) {
+    const aliasTrial = await prisma.subscription.findFirst({
+      where: {
+        trialEndsAt: { not: null },
+        brand: { owner: { emailNormalized: me.emailNormalized, id: { not: userId } } },
+      },
+      select: { id: true },
+    });
+    if (aliasTrial) return "duplicate_email";
+  }
+
+  // 3) Son 30 günde aynı IP'den deneme alınmış mı?
+  if (me?.signupIp) {
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const ipTrial = await prisma.subscription.findFirst({
+      where: {
+        trialEndsAt: { not: null },
+        createdAt: { gte: since },
+        brand: { owner: { signupIp: me.signupIp, id: { not: userId } } },
+      },
+      select: { id: true },
+    });
+    if (ipTrial) return "same_ip";
+  }
+
+  return null;
+}
+
 export async function POST(req: NextRequest) {
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
@@ -59,16 +108,17 @@ export async function POST(req: NextRequest) {
     entity: "Brand", entityId: brand.id, metadata: { name: brand.name, slug: brand.slug },
   }).catch(() => null);
 
-  // ── 7 günlük ücretsiz Profesyonel denemesi ──
+  // ── 7 günlük ücretsiz Profesyonel denemesi (suistimal korumalı) ──
   // Yeni kullanıcı denemeden 899₺ duvarı görüp kaçıyordu. Marka oluşunca
   // kartsız 7 günlük deneme başlar; trial-check cron'u süre dolunca kapatır.
-  // Kullanıcı başına BİR kez: daha önce hiç aboneliği (aktif/geçmiş) yoksa verilir.
+  // Deneme reddedilirse marka yine açılır, kullanıcı ödeme duvarına düşer.
   try {
-    const priorSub = await prisma.subscription.findFirst({
-      where: { brand: { ownerId: user.id } },
-      select: { id: true },
-    });
-    if (!priorSub) {
+    const denyReason = await trialDenialReason(user.id);
+    if (denyReason) {
+      auditFromRequest("subscription.trial_denied", user.id, {
+        entity: "Brand", entityId: brand.id, metadata: { reason: denyReason },
+      }).catch(() => null);
+    } else {
       const trialPlan = await prisma.plan.findUnique({ where: { slug: "profesyonel" } });
       if (trialPlan) {
         const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
@@ -83,6 +133,9 @@ export async function POST(req: NextRequest) {
             provider: null,
           },
         });
+        auditFromRequest("subscription.trial_start", user.id, {
+          entity: "Brand", entityId: brand.id, metadata: { planId: trialPlan.id },
+        }).catch(() => null);
       }
     }
   } catch (e) {

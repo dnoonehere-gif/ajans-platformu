@@ -4,7 +4,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendVerificationEmail, sendWelcomeEmail } from "@/lib/email";
 import { randomBytes } from "crypto";
-import { auditFromRequest } from "@/server/audit/log";
+import { auditFromRequest, getClientIp } from "@/server/audit/log";
+import { normalizeEmail } from "@/lib/email-normalize";
 import { rateLimit, getRateLimitKey, LIMITS } from "@/server/security/rate-limit";
 import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
@@ -43,8 +44,13 @@ export async function POST(req: NextRequest) {
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
+  const signupIp = await getClientIp();
   const user = await prisma.user.create({
-    data: { name, email, phone, passwordHash, globalRole: "CUSTOMER" },
+    data: {
+      name, email, phone, passwordHash, globalRole: "CUSTOMER",
+      emailNormalized: normalizeEmail(email),
+      signupIp: signupIp ?? null,
+    },
   });
 
   // E-posta doğrulama token'ı oluştur
