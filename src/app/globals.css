@@ -383,15 +383,48 @@ body {
   animation: nv-glow-pulse 2s ease-in-out infinite;
 }
 
+/* ── Duyuru çubuğu ─────────────────────────────────────────── */
+.nv-announce {
+  background: linear-gradient(90deg,
+    hsl(var(--primary)) 0%,
+    hsl(var(--primary) / 0.85) 50%,
+    hsl(var(--primary)) 100%);
+  background-size: 200% 100%;
+  animation: nv-announce-bg 6s ease infinite;
+}
+@keyframes nv-announce-bg {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+.nv-announce-shine {
+  background: linear-gradient(100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 80%);
+  transform: translateX(-100%);
+  animation: nv-announce-shine 4.5s ease-in-out infinite;
+}
+@keyframes nv-announce-shine {
+  0%   { transform: translateX(-100%); }
+  60%, 100% { transform: translateX(100%); }
+}
+.nv-announce-logo { animation: nv-glow-pulse 2.4s ease-in-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   .nv-blob, .nv-enter, .nv-live-dot { animation: none !important; }
   .nv-enter { opacity: 1; transform: none; }
+  .nv-announce, .nv-announce-shine, .nv-announce-logo { animation: none !important; }
+  .nv-announce-shine { display: none; }
 }
 
 [data-reduced-motion="true"] .nv-blob,
 [data-reduced-motion="true"] .nv-enter,
 [data-reduced-motion="true"] .nv-live-dot { animation: none !important; }
 [data-reduced-motion="true"] .nv-enter { opacity: 1; transform: none; }
+[data-reduced-motion="true"] .nv-announce,
+[data-reduced-motion="true"] .nv-announce-shine,
+[data-reduced-motion="true"] .nv-announce-logo { animation: none !important; }
+[data-reduced-motion="true"] .nv-announce-shine { display: none; }
 [data-reduced-motion="true"] .nv-card-hover { transition: none; }
 [data-reduced-motion="true"] .nv-card-hover:hover { transform: none; box-shadow: none; }
 [data-reduced-motion="true"] .nv-dots { display: none; }

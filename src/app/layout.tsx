@@ -5,6 +5,7 @@ import { MotionProvider } from "@/components/motion-provider";
 import { PostHogProvider } from "@/components/posthog-provider";
 import { SessionProvider } from "next-auth/react";
 import { CookieBanner } from "@/components/cookie-banner";
+import { AnnounceBar } from "@/components/announce-bar";
 import { LanguageProvider } from "@/components/language-provider";
 
 export const metadata: Metadata = {
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <PostHogProvider>
               <MotionProvider>
                 <LanguageProvider>
+                  <AnnounceBar />
                   {children}
                   <CookieBanner />
                 </LanguageProvider>

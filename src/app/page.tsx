@@ -246,7 +246,7 @@ export default function AnaSayfa() {
     <div className="min-h-screen bg-[#07070e] text-white selection:bg-violet-500/40">
 
       {/* ── Navbar ── */}
-      <nav className={`fixed top-0 z-50 w-full transition-all duration-300 ${scrolled ? "border-b border-white/[0.06] bg-[#07070e]/85 shadow-[0_4px_30px_rgba(0,0,0,0.4)] backdrop-blur-xl" : "bg-transparent"}`}>
+      <nav style={{ top: "var(--nv-announce-h, 0px)" }} className={`fixed z-50 w-full transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ${scrolled ? "border-b border-white/[0.06] bg-[#07070e]/85 shadow-[0_4px_30px_rgba(0,0,0,0.4)] backdrop-blur-xl" : "bg-transparent"}`}>
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2.5">
             <LogoMark size={32} />
