@@ -555,3 +555,139 @@ export function SubscriptionAgreementPDF({ data }: { data: SubscriptionAgreement
     </Document>
   );
 }
+
+// ─── 3. ÜCRETSİZ DENEME SÖZLEŞMESİ ──────────────────────────────────────────
+export interface TrialAgreementData {
+  name: string;
+  email: string;
+  planName: string;
+  trialDays: number;
+  startedAt: Date;
+  endsAt: Date;
+  brandName?: string;
+}
+
+export function TrialAgreementPDF({ data }: { data: TrialAgreementData }) {
+  const startDate = data.startedAt.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" });
+  const endDate = data.endsAt.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" });
+  const bold = { fontFamily: PDF_FONT_FAMILY, fontWeight: "bold" as const };
+
+  return (
+    <Document title="Novelya Ücretsiz Deneme Sözleşmesi" author="Novelya" language="tr">
+      <Page size="A4" style={styles.page}>
+        <PageHeader title="Ücretsiz Deneme Sözleşmesi" />
+
+        <Text style={styles.title}>ÜCRETSİZ DENEME SÖZLEŞMESİ</Text>
+        <Text style={styles.subtitle}>Kredi kartı gerektirmeyen, otomatik ücretlendirme içermeyen deneme koşulları · {startDate}</Text>
+
+        <Text style={styles.badge}>KİŞİYE ÖZEL — ÜCRETSİZ DENEME</Text>
+
+        <View style={styles.infoBox}>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Kullanıcı Adı Soyadı:</Text>
+            <Text style={styles.infoValue}>{data.name}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>E-posta:</Text>
+            <Text style={styles.infoValue}>{data.email}</Text>
+          </View>
+          {data.brandName && (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>İşletme / Marka:</Text>
+              <Text style={styles.infoValue}>{data.brandName}</Text>
+            </View>
+          )}
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Deneme Kapsamı:</Text>
+            <Text style={styles.infoValue}>{data.planName} planı özellikleri</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Deneme Süresi:</Text>
+            <Text style={styles.infoValue}>{data.trialDays} gün</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Başlangıç Tarihi:</Text>
+            <Text style={styles.infoValue}>{startDate}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Bitiş Tarihi:</Text>
+            <Text style={styles.infoValue}>{endDate}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Ücret:</Text>
+            <Text style={styles.infoValue}>0,00 ₺ — Ücretsiz</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Ödeme Yöntemi:</Text>
+            <Text style={styles.infoValue}>Gerekmez (kredi kartı istenmez)</Text>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>1. TARAFLAR</Text>
+          <Text style={styles.paragraph}>
+            <Text style={bold}>Hizmet Sağlayıcı:</Text> Novelya Yazılım Hizmetleri, novelya.com.tr, novelya@novelya.com.tr
+          </Text>
+          <Text style={styles.paragraph}>
+            <Text style={bold}>Kullanıcı:</Text> {data.name} ({data.email})
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>2. DENEMENİN KONUSU</Text>
+          <Text style={styles.paragraph}>
+            İşbu sözleşme, Kullanıcı'ya Novelya platformunun {data.planName} planına ait özelliklerin{" "}
+            {data.trialDays} gün boyunca <Text style={bold}>tamamen ücretsiz</Text> olarak kullanıma açılmasını düzenler.
+            Deneme süresi boyunca hiçbir ücret talep edilmez ve kredi kartı bilgisi istenmez.
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>3. OTOMATİK ÜCRETLENDİRME YOKTUR</Text>
+          <Text style={styles.paragraph}>
+            Deneme süresinin sonunda <Text style={bold}>otomatik olarak herhangi bir ücret tahsil edilmez</Text> ve abonelik
+            başlatılmaz. Süre dolduğunda ücretli özellikler kilitlenir; Kullanıcı dilerse bir plana abone olarak kullanmaya
+            devam edebilir. Devam etmek tamamen Kullanıcı'nın isteğine bağlıdır.
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>4. SÜRE SONUNDA VERİLER</Text>
+          <Text style={styles.paragraph}>
+            Deneme süresi bittiğinde Kullanıcı'nın oluşturduğu içerik ve veriler makul bir süre boyunca saklanır; Kullanıcı
+            bir plana abone olduğunda bu verilere kesintisiz erişmeye devam eder. Veri silme talepleri KVKK kapsamında
+            karşılanır.
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>5. İPTAL VE SORUMLULUK</Text>
+          <Text style={styles.paragraph}>
+            Kullanıcı deneme süresi içinde hesabını dilediği an, herhangi bir bedel ödemeden sonlandırabilir. Hizmet
+            "olduğu gibi" sunulur; Novelya deneme hizmetinin kesintisizliği konusunda taahhütte bulunmaz. İşbu belge
+            6698 sayılı KVKK ve ilgili mevzuata uygun olarak elektronik ortamda düzenlenmiştir.
+          </Text>
+        </View>
+
+        <View style={styles.signatureArea}>
+          <View style={styles.signatureBox}>
+            <Text style={styles.signatureLabel}>HİZMET SAĞLAYICI</Text>
+            <Text style={styles.signatureValue}>Novelya</Text>
+            <Text style={styles.signatureLabel}>novelya.com.tr</Text>
+          </View>
+          <View style={styles.signatureBox}>
+            <Text style={styles.signatureLabel}>KULLANICI (ELEKTRONİK KABUL)</Text>
+            <Text style={styles.signatureValue}>{data.name}</Text>
+            <Text style={styles.signatureLabel}>{data.email} · {startDate}</Text>
+          </View>
+        </View>
+
+        <View style={styles.footer} fixed>
+          <Text style={styles.footerText}>© {new Date().getFullYear()} Novelya — novelya.com.tr</Text>
+          <Text style={styles.footerText}>Bu belge elektronik olarak oluşturulmuş, yasal geçerliliği haizdir.</Text>
+          <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Sayfa ${pageNumber}/${totalPages}`} />
+        </View>
+      </Page>
+    </Document>
+  );
+}

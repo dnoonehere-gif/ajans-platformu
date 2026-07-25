@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth-guard";
 import { auditFromRequest } from "@/server/audit/log";
 import { getUserPlanFeatures, isUnderLimit } from "@/lib/plan-guard";
+import { grantTrial } from "@/server/trial/grant-trial";
 
 /**
  * Denemenin reddedilme sebebini döndürür (yoksa null → deneme verilir).
@@ -107,22 +108,10 @@ export async function POST(req: NextRequest) {
         entity: "Brand", entityId: brand.id, metadata: { reason: denyReason },
       }).catch(() => null);
     } else {
-      const trialPlan = await prisma.plan.findUnique({ where: { slug: "profesyonel" } });
-      if (trialPlan) {
-        const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-        await prisma.subscription.create({
-          data: {
-            brandId: brand.id,
-            planId: trialPlan.id,
-            status: "TRIALING",
-            startedAt: new Date(),
-            trialEndsAt,
-            endsAt: trialEndsAt,
-            provider: null,
-          },
-        });
+      const res = await grantTrial({ brandId: brand.id });
+      if (res.ok) {
         auditFromRequest("subscription.trial_start", user.id, {
-          entity: "Brand", entityId: brand.id, metadata: { planId: trialPlan.id },
+          entity: "Brand", entityId: brand.id, metadata: { planSlug: "profesyonel" },
         }).catch(() => null);
       }
     }

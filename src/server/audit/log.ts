@@ -49,6 +49,7 @@ export type AuditAction =
   | "qr.delete"
   // Admin
   | "admin.mail_send"
+  | "admin.trial_invite"
   | "admin.notification_send"
   | "admin.plan_seed"
   | "admin.user_delete";

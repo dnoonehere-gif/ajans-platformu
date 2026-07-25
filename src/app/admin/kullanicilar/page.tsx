@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { T, type AdminKey } from "@/components/admin/t";
 import { AssignPlan } from "@/components/admin/assign-plan";
+import { TrialInvite } from "@/components/admin/trial-invite";
 import type { GlobalRole } from "@prisma/client";
 
 const ROLE_KEYS: Record<GlobalRole, AdminKey> = { SUPER_ADMIN: "superAdmin", ADMIN: "admin", CUSTOMER: "customer", STAFF: "staff" };
@@ -72,9 +73,10 @@ export default async function KullanicilarPage() {
         </div>
       </div>
 
-      {/* Plan tanımlama */}
-      <div className="mb-6">
+      {/* Plan tanımlama + deneme daveti */}
+      <div className="mb-6 grid gap-4 xl:grid-cols-2">
         <AssignPlan />
+        <TrialInvite />
       </div>
 
       {/* Tablo */}

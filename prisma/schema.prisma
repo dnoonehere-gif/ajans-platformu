@@ -151,6 +151,22 @@ model EmailVerificationToken {
   @@index([email])
 }
 
+/// Admin'in gönderdiği ücretsiz deneme daveti. Alıcı bağlantıya tıklayıp
+/// denemeyi kendi aktive eder; admin manuel plan atamak zorunda kalmaz.
+model TrialInvite {
+  id        String    @id @default(cuid())
+  email     String
+  token     String    @unique
+  planSlug  String    @default("profesyonel")
+  days      Int       @default(7)
+  note      String?
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email])
+}
+
 /// Platform kullanıcısı (her rol için ortak temel)
 model User {
   id            String     @id @default(cuid())

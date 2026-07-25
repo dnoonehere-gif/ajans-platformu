@@ -204,6 +204,52 @@ export async function sendWelcomeEmail(
   }), attachments.length ? attachments : undefined);
 }
 
+/** Admin'in gönderdiği ücretsiz deneme daveti — alıcı butona tıklayıp kendi aktive eder. */
+export async function sendTrialInviteEmail(email: string, opts: {
+  token: string; days: number; planName: string; inviterNote?: string;
+}) {
+  const url = `${BASE_URL}/deneme?token=${opts.token}`;
+  await sendMail(email, `Novelya — ${opts.days} günlük ücretsiz denemeniz hazır 🎁`, layout({
+    preheader: `${opts.days} gün boyunca ${opts.planName} özellikleri ücretsiz — kredi kartı gerekmez.`,
+    body: `
+      ${heroIcon("🎁")}
+      ${h(`${opts.days} günlük ücretsiz deneme`)}
+      ${p(`Novelya'yı <strong style="color:${C.heading};">${opts.days} gün boyunca ücretsiz</strong> deneyebilmeniz için sizin adınıza <strong style="color:${C.heading};">${opts.planName}</strong> planı hazırladık.`)}
+      ${opts.inviterNote ? infoBox(`<p style="margin:0;font-size:13px;color:${C.textDim};line-height:1.6;">${opts.inviterNote}</p>`) : ""}
+      ${infoBox(`
+        <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${C.heading};">DENEME KOŞULLARI</p>
+        <p style="margin:0;font-size:12.5px;color:${C.textDim};line-height:1.7;">
+          • Süre: <strong style="color:${C.heading};">${opts.days} gün</strong><br/>
+          • Ücret: <strong style="color:${C.heading};">0 ₺ — kredi kartı istenmez</strong><br/>
+          • Süre sonunda otomatik ücret <strong style="color:${C.heading};">alınmaz</strong>
+        </p>
+      `)}
+      ${cta("Denemeyi Aktive Et", url)}
+      ${note("Bu davet bağlantısı <strong>7 gün</strong> geçerlidir. Butona tıkladığınızda deneme hesabınızda başlar ve deneme sözleşmeniz e-posta ile iletilir.")}
+    `,
+  }));
+}
+
+/** Deneme fiilen başladığında gönderilir — deneme sözleşmesi PDF eki ile. */
+export async function sendTrialStartedEmail(email: string, name: string, opts: {
+  days: number; endsAt: Date; planName: string;
+}, pdfBuffer?: Buffer) {
+  const attachments: Attachment[] = pdfBuffer
+    ? [{ filename: "Novelya-Deneme-Sozlesmesi.pdf", content: pdfBuffer }]
+    : [];
+  const endStr = opts.endsAt.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" });
+  await sendMail(email, `Denemeniz başladı — ${opts.days} gün ücretsiz 🚀`, layout({
+    preheader: `${opts.planName} özellikleri ${endStr} tarihine kadar açık.`,
+    body: `
+      ${heroIcon("🚀")}
+      ${h(`${name ? name + ", d" : "D"}enemeniz başladı!`)}
+      ${p(`Artık <strong style="color:${C.heading};">${opts.planName}</strong> planının tüm özellikleri <strong style="color:${C.heading};">${endStr}</strong> tarihine kadar açık. Kredi kartı gerekmez, süre sonunda otomatik ücret alınmaz.`)}
+      ${cta("Dashboard'a Git", `${BASE_URL}/dashboard`)}
+      ${note("Deneme sözleşmeniz bu e-postaya eklenmiştir. Lütfen saklayınız.")}
+    `,
+  }), attachments.length ? attachments : undefined);
+}
+
 export async function sendTeamInviteEmail(email: string, opts: {
   inviterName: string; brandName: string; role: string; token: string;
 }) {
