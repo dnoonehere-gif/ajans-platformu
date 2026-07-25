@@ -338,6 +338,25 @@ export default function AbonelikPage() {
                 </div>
               </div>
 
+              {/* Ücretsiz deneme bildirimi */}
+              {subscription.status === "TRIALING" && subscription.trialEndsAt && (() => {
+                const daysLeft = Math.max(0, Math.ceil((new Date(subscription.trialEndsAt).getTime() - Date.now()) / 86400000));
+                return (
+                  <div className="mt-4 rounded-xl border border-[hsl(var(--primary))]/30 bg-[hsl(var(--primary))]/5 p-4">
+                    <p className="text-sm font-semibold text-[hsl(var(--primary))]">
+                      {lang === "tr"
+                        ? `🎁 Ücretsiz deneme — ${daysLeft} gün kaldı`
+                        : `🎁 Free trial — ${daysLeft} day${daysLeft === 1 ? "" : "s"} left`}
+                    </p>
+                    <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                      {lang === "tr"
+                        ? `Deneme süren ${new Date(subscription.trialEndsAt).toLocaleDateString("tr-TR", { day: "2-digit", month: "long" })} tarihinde bitiyor. Kesintisiz devam etmek için aşağıdan bir plan seç.`
+                        : `Your trial ends on ${new Date(subscription.trialEndsAt).toLocaleDateString("en-US", { day: "2-digit", month: "long" })}. Pick a plan below to keep going without interruption.`}
+                    </p>
+                  </div>
+                );
+              })()}
+
               {/* İptal onay */}
               {showCancel && (
                 <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/5 p-4">

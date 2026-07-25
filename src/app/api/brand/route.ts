@@ -59,5 +59,36 @@ export async function POST(req: NextRequest) {
     entity: "Brand", entityId: brand.id, metadata: { name: brand.name, slug: brand.slug },
   }).catch(() => null);
 
+  // ── 7 günlük ücretsiz Profesyonel denemesi ──
+  // Yeni kullanıcı denemeden 899₺ duvarı görüp kaçıyordu. Marka oluşunca
+  // kartsız 7 günlük deneme başlar; trial-check cron'u süre dolunca kapatır.
+  // Kullanıcı başına BİR kez: daha önce hiç aboneliği (aktif/geçmiş) yoksa verilir.
+  try {
+    const priorSub = await prisma.subscription.findFirst({
+      where: { brand: { ownerId: user.id } },
+      select: { id: true },
+    });
+    if (!priorSub) {
+      const trialPlan = await prisma.plan.findUnique({ where: { slug: "profesyonel" } });
+      if (trialPlan) {
+        const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        await prisma.subscription.create({
+          data: {
+            brandId: brand.id,
+            planId: trialPlan.id,
+            status: "TRIALING",
+            startedAt: new Date(),
+            trialEndsAt,
+            endsAt: trialEndsAt,
+            provider: null,
+          },
+        });
+      }
+    }
+  } catch (e) {
+    // Deneme açılamazsa marka oluşturma yine de başarılı sayılır
+    console.error("Deneme aboneliği başlatılamadı:", e);
+  }
+
   return NextResponse.json({ brand }, { status: 201 });
 }
