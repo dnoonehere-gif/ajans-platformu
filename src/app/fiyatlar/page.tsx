@@ -14,6 +14,7 @@ const L = {
     heroT1: "Markanızı büyütün.",
     heroT2: "Her boyuta uygun fiyat.",
     heroDesc: "AI website, chatbot, yorum analizi, içerik üretimi — hepsi tek platformda.",
+    trialNote: "Tüm planlarda 7 gün ücretsiz deneme — kredi kartı gerekmez.",
     monthly: "Aylık",
     yearly: "Yıllık",
     noPlans: "Planlar henüz oluşturulmadı.",
@@ -37,6 +38,7 @@ const L = {
     support: { email: "E-posta destek", priority: "Öncelikli e-posta destek" },
     faqTitle: "Sıkça Sorulan Sorular",
     faq: [
+      { q: "Ücretsiz deneme var mı?", a: "Evet. Kayıt olup işletmenizi oluşturduğunuzda 7 gün boyunca Profesyonel plan özellikleri ücretsiz açılır. Kredi kartı istenmez ve süre sonunda otomatik ücret alınmaz." },
       { q: "Abonelik nasıl çalışır?", a: "Plan seçtikten sonra aylık veya yıllık olarak ödeme yaparsınız. İstediğiniz zaman plan değiştirebilirsiniz." },
       { q: "İstediğim zaman iptal edebilir miyim?", a: "Evet, istediğiniz zaman tek tıkla iptal edebilirsiniz. İptal sonrası dönem sonuna kadar kullanmaya devam edersiniz." },
       { q: "Plan yükseltmek/düşürmek nasıl çalışır?", a: "Dashboard'dan istediğiniz zaman plan değişikliği yapabilirsiniz. Kalan süre ücretine orantılı olarak hesaplanır." },
@@ -45,7 +47,7 @@ const L = {
       { q: "Kurumsal fiyatlandırma var mı?", a: "10'dan fazla marka veya özel entegrasyon ihtiyacınız için iletişime geçin, size özel teklif sunalım." },
     ],
     ctaTitle: "Hemen başlayın",
-    ctaDesc: "Markanızı büyütmek için doğru plan sizin için burada.",
+    ctaDesc: "7 gün ücretsiz deneyin, kredi kartı gerekmez. Markanızı büyütmek için doğru plan sizin için burada.",
     ctaBtn: "Ücretsiz Hesap Oluştur",
   },
   en: {
@@ -55,6 +57,7 @@ const L = {
     heroT1: "Grow your brand.",
     heroT2: "A price for every size.",
     heroDesc: "AI website, chatbot, review analysis, content generation — all in one platform.",
+    trialNote: "7-day free trial on all plans — no credit card required.",
     monthly: "Monthly",
     yearly: "Yearly",
     noPlans: "No plans created yet.",
@@ -78,6 +81,7 @@ const L = {
     support: { email: "Email support", priority: "Priority email support" },
     faqTitle: "Frequently Asked Questions",
     faq: [
+      { q: "Is there a free trial?", a: "Yes. When you sign up and create your business, Professional plan features are unlocked free for 7 days. No credit card required and no automatic charge when it ends." },
       { q: "How does the subscription work?", a: "After choosing a plan you pay monthly or yearly. You can change plans anytime." },
       { q: "Can I cancel anytime?", a: "Yes, cancel with one click whenever you want. You keep access until the end of the paid period." },
       { q: "How do upgrades/downgrades work?", a: "Change your plan from the dashboard anytime. Remaining time is prorated." },
@@ -86,7 +90,7 @@ const L = {
       { q: "Is there enterprise pricing?", a: "For 10+ brands or custom integrations, contact us for a tailored offer." },
     ],
     ctaTitle: "Get started now",
-    ctaDesc: "The right plan to grow your brand is right here.",
+    ctaDesc: "Try free for 7 days, no credit card required. The right plan to grow your brand is right here.",
     ctaBtn: "Create Free Account",
   },
 };
@@ -199,6 +203,9 @@ export default function PricingPage() {
           <p className="mx-auto max-w-xl text-lg text-slate-400">
             {sL.heroDesc}
           </p>
+          <div className="mx-auto mt-5 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-4 py-1.5 text-sm font-semibold text-emerald-300">
+            <span>🎁</span> {sL.trialNote}
+          </div>
 
           {/* Interval toggle */}
           <div className="mt-8 inline-flex items-center rounded-xl border border-white/10 bg-white/[0.04] p-1">
