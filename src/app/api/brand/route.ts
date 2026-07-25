@@ -7,15 +7,17 @@ import { getUserPlanFeatures, isUnderLimit } from "@/lib/plan-guard";
 
 /**
  * Denemenin reddedilme sebebini döndürür (yoksa null → deneme verilir).
- * Katmanlar:
+ * Katmanlar (yalnızca kesin sinyaller engeller):
  *   1. Kullanıcının zaten bir aboneliği (aktif/geçmiş) var mı?
  *   2. Aynı normalize e-posta (gmail alias/nokta) daha önce deneme aldı mı?
- *   3. Son 30 günde aynı IP'den zaten deneme alınmış mı?
+ *
+ * Aynı IP ise ENGELLENMEZ (aynı ofis/ev ağındaki gerçek müşterileri yanlışlıkla
+ * engellememek için). IP paylaşımı admin panelde ⚠ olarak yalnızca işaretlenir.
  */
 async function trialDenialReason(userId: string): Promise<string | null> {
   const me = await prisma.user.findUnique({
     where: { id: userId },
-    select: { emailNormalized: true, signupIp: true },
+    select: { emailNormalized: true },
   });
 
   // 1) Bu kullanıcı daha önce herhangi bir abonelik almış mı?
@@ -35,20 +37,6 @@ async function trialDenialReason(userId: string): Promise<string | null> {
       select: { id: true },
     });
     if (aliasTrial) return "duplicate_email";
-  }
-
-  // 3) Son 30 günde aynı IP'den deneme alınmış mı?
-  if (me?.signupIp) {
-    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const ipTrial = await prisma.subscription.findFirst({
-      where: {
-        trialEndsAt: { not: null },
-        createdAt: { gte: since },
-        brand: { owner: { signupIp: me.signupIp, id: { not: userId } } },
-      },
-      select: { id: true },
-    });
-    if (ipTrial) return "same_ip";
   }
 
   return null;
