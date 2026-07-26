@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, CheckCircle2, RefreshCw, ShieldCheck } from "lucide-react";
 import { useLang } from "@/components/language-provider";
+import { track } from "@/lib/fpixel";
 
 const L = {
   tr: {
@@ -101,6 +102,9 @@ export default function KayitPage() {
       loadCaptcha(); // token tek kullanımlık gibi davran, yenile
       return;
     }
+
+    // Meta Pixel: kayıt tamamlandı — reklam dönüşüm optimizasyonu bunu kullanır
+    track("CompleteRegistration");
 
     setDone(true);
     setLoading(false);
