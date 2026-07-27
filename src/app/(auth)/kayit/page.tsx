@@ -10,7 +10,7 @@ const L = {
   tr: {
     title: "Kayıt Ol",
     name: "Adınız Soyadınız",
-    phone: "05xx xxx xx xx",
+    phone: "05xx xxx xx xx (opsiyonel)",
     email: "ornek@email.com",
     password: "En az 8 karakter",
     strength: ["Çok zayıf", "Zayıf", "Orta", "Güçlü"],
@@ -28,7 +28,7 @@ const L = {
   en: {
     title: "Sign Up",
     name: "Full name",
-    phone: "Phone number",
+    phone: "Phone number (optional)",
     email: "you@example.com",
     password: "At least 8 characters",
     strength: ["Very weak", "Weak", "Medium", "Strong"],
@@ -147,7 +147,6 @@ export default function KayitPage() {
         <div>
           <input
             type="tel"
-            required
             placeholder={sL.phone}
             value={form.phone}
             onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}

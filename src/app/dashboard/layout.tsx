@@ -13,6 +13,7 @@ import { Breadcrumb } from "@/components/dashboard/breadcrumb";
 import { ThemeSwitcher, ThemeLabel, LogoutButton, UserName } from "@/components/dashboard/theme-switcher";
 import { NavClient } from "@/components/dashboard/nav-client";
 import { SubscriptionBanner } from "@/components/dashboard/subscription-banner";
+import { EmailVerifyBanner } from "@/components/dashboard/email-verify-banner";
 import { MobileSidebarToggle } from "@/components/dashboard/mobile-sidebar";
 import { AmbientBackground } from "@/components/dashboard/ambient-background";
 import { DashboardColorTheme } from "@/components/theme-provider";
@@ -22,15 +23,23 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const session = await auth();
   if (!session?.user) redirect("/giris");
 
-  // E-posta doğrulanmadan dashboard'a erişim yok. JWT yenilenmesini beklememek
-  // için doğrulama durumu DB'den taze okunur (kullanıcı doğrular doğrulamaz açılır).
+  // E-posta doğrulama: sert duvar yerine 1 günlük süre. Kayıttan sonra kullanıcı
+  // 24 saat dashboard'u kullanabilir (üstte uyarı bandıyla); süre dolar ve hâlâ
+  // doğrulanmamışsa hesap askıya alınır (erişim /dogrulama-bekleniyor'a döner).
+  // Durum DB'den taze okunur ki kullanıcı doğrular doğrulamaz bant/askı kalksın.
   const userId = (session.user as { id?: string }).id;
+  const GRACE_MS = 24 * 60 * 60 * 1000;
+  let emailWarnHours: number | null = null;
   if (userId) {
     const dbUser = await prisma.user.findUnique({
       where: { id: userId },
-      select: { emailVerified: true },
+      select: { emailVerified: true, createdAt: true },
     });
-    if (dbUser && !dbUser.emailVerified) redirect("/dogrulama-bekleniyor");
+    if (dbUser && !dbUser.emailVerified) {
+      const elapsed = Date.now() - dbUser.createdAt.getTime();
+      if (elapsed >= GRACE_MS) redirect("/dogrulama-bekleniyor"); // süre doldu → askıda
+      emailWarnHours = Math.max(1, Math.ceil((GRACE_MS - elapsed) / (60 * 60 * 1000)));
+    }
   }
 
   const user = session.user as { name?: string | null; email?: string | null; role?: string };
@@ -133,6 +142,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <NotificationBell />
             </div>
           </div>
+          {emailWarnHours !== null && <EmailVerifyBanner hoursLeft={emailWarnHours} />}
           <SubscriptionBanner />
           {children}
         </main>

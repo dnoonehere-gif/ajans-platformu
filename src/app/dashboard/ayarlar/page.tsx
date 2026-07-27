@@ -13,6 +13,12 @@ const L = {
     name: "Ad Soyad", namePh: "Adınız Soyadınız",
     emailReadonly: "E-posta (değiştirilemez)",
     save: "Kaydet",
+    emailVerified: "E-posta doğrulandı",
+    emailUnverified: "E-posta doğrulanmadı",
+    emailUnverifiedDesc: "Hesabının askıya alınmaması için e-postanı doğrula.",
+    resendVerify: "Doğrulama e-postasını tekrar gönder",
+    resendSending: "Gönderiliyor...",
+    resendSent: "Gönderildi, gelen kutunu kontrol et.",
     pwFields: { current: "Mevcut Şifre", next: "Yeni Şifre", confirm: "Yeni Şifre (Tekrar)" },
     updatePw: "Şifreyi Güncelle",
     twoFaOn: "İki faktörlü doğrulama aktif edildi!", twoFaOff: "2FA devre dışı bırakıldı.",
@@ -47,6 +53,12 @@ const L = {
     name: "Full Name", namePh: "Your full name",
     emailReadonly: "Email (cannot be changed)",
     save: "Save",
+    emailVerified: "Email verified",
+    emailUnverified: "Email not verified",
+    emailUnverifiedDesc: "Verify your email so your account isn't suspended.",
+    resendVerify: "Resend verification email",
+    resendSending: "Sending...",
+    resendSent: "Sent, check your inbox.",
     pwFields: { current: "Current Password", next: "New Password", confirm: "New Password (Repeat)" },
     updatePw: "Update Password",
     twoFaOn: "Two-factor authentication enabled!", twoFaOff: "2FA disabled.",
@@ -81,6 +93,8 @@ export default function AyarlarPage() {
   const sL = L[lang];
   const [tab, setTab] = useState<Tab>("profil");
   const [profil, setProfil] = useState({ name: "", email: "" });
+  const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent">("idle");
   const [sifre, setSifre] = useState({ current: "", next: "", confirm: "" });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
@@ -99,6 +113,7 @@ export default function AyarlarPage() {
       if (d.user) {
         setProfil({ name: d.user.name ?? "", email: d.user.email ?? "" });
         setTwoFaEnabled(d.user.twoFactorEnabled ?? false);
+        setEmailVerified(Boolean(d.user.emailVerified));
       }
     });
   }, []);
@@ -113,6 +128,16 @@ export default function AyarlarPage() {
     });
     setMsg(res.ok ? { type: "ok", text: sL.profileSaved } : { type: "err", text: sL.genericError });
     setSaving(false);
+  }
+
+  async function resendVerify() {
+    setResendState("sending");
+    try {
+      const res = await fetch("/api/auth/dogrulama-tekrar", { method: "POST" });
+      setResendState(res.ok ? "sent" : "idle");
+    } catch {
+      setResendState("idle");
+    }
   }
 
   async function savePassword(e: React.FormEvent) {
@@ -220,6 +245,29 @@ export default function AyarlarPage() {
             <label className="text-sm font-medium text-[hsl(var(--muted-foreground))]">{sL.emailReadonly}</label>
             <input className={`${inputCls} opacity-50 cursor-not-allowed`} disabled value={profil.email} readOnly />
           </div>
+
+          {/* E-posta doğrulama durumu */}
+          {emailVerified === true && (
+            <div className="flex items-center gap-2 rounded-xl bg-green-500/10 px-4 py-3 text-sm text-green-400">
+              <ShieldCheck className="h-4 w-4 shrink-0" />
+              <span className="font-medium">{sL.emailVerified}</span>
+            </div>
+          )}
+          {emailVerified === false && (
+            <div className="rounded-xl bg-amber-500/10 px-4 py-3 text-sm text-amber-500 dark:text-amber-300">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span className="font-medium">{sL.emailUnverified}</span>
+              </div>
+              <p className="mt-1 pl-6 text-xs opacity-90">{sL.emailUnverifiedDesc}</p>
+              <button type="button" onClick={resendVerify} disabled={resendState !== "idle"}
+                className="mt-2 ml-6 inline-flex items-center gap-1.5 rounded-lg bg-amber-500/20 px-3 py-1 text-xs font-semibold transition hover:bg-amber-500/30 disabled:opacity-60">
+                {resendState === "sending" && <Loader2 className="h-3 w-3 animate-spin" />}
+                {resendState === "sent" ? sL.resendSent : resendState === "sending" ? sL.resendSending : sL.resendVerify}
+              </button>
+            </div>
+          )}
+
           <button type="submit" disabled={saving}
             className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {sL.save}

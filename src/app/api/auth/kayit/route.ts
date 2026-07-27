@@ -16,7 +16,7 @@ import { verifyCaptcha } from "@/lib/captcha";
 const schema = z.object({
   name: z.string().min(2, "Ad en az 2 karakter olmalı"),
   email: z.string().email("Geçerli bir e-posta girin"),
-  phone: z.string().min(10, "Geçerli bir telefon numarası girin").max(20),
+  phone: z.string().max(20).optional().or(z.literal("")).transform((v) => v || undefined),
   password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
   captchaAnswer: z.string().min(1, "Güvenlik sorusunu yanıtlayın"),
   captchaToken: z.string().min(1),
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
   const signupIp = await getClientIp();
   const user = await prisma.user.create({
     data: {
-      name, email, phone, passwordHash, globalRole: "CUSTOMER",
+      name, email, phone: phone ?? null, passwordHash, globalRole: "CUSTOMER",
       emailNormalized: normalizeEmail(email),
       signupIp: signupIp ?? null,
     },
