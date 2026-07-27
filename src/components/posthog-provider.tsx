@@ -1,7 +1,8 @@
 "use client";
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_POSTHOG_KEY) {
@@ -29,11 +30,39 @@ function PostHogIdentify() {
   return null;
 }
 
+// App Router'da gezinme tam sayfa yenileme yapmaz; capture_pageview:false olduğu
+// için pathname/arama parametresi değişince $pageview'ı elle gönderiyoruz.
+// useSearchParams Suspense sınırı gerektirdiğinden iç bileşen sarmalanır.
+function PostHogPageviewInner() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const ph = usePostHog();
+
+  useEffect(() => {
+    if (!pathname || !ph) return;
+    let url = window.origin + pathname;
+    const qs = searchParams?.toString();
+    if (qs) url += `?${qs}`;
+    ph.capture("$pageview", { $current_url: url });
+  }, [pathname, searchParams, ph]);
+
+  return null;
+}
+
+function PostHogPageview() {
+  return (
+    <Suspense fallback={null}>
+      <PostHogPageviewInner />
+    </Suspense>
+  );
+}
+
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return <>{children}</>;
   return (
     <PHProvider client={posthog}>
       <PostHogIdentify />
+      <PostHogPageview />
       {children}
     </PHProvider>
   );

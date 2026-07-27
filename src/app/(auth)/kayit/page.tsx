@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Eye, EyeOff, Loader2, CheckCircle2, RefreshCw, ShieldCheck } from "lucide-react";
 import { useLang } from "@/components/language-provider";
 import { track } from "@/lib/fpixel";
+import posthog from "posthog-js";
 
 const L = {
   tr: {
@@ -103,8 +104,9 @@ export default function KayitPage() {
       return;
     }
 
-    // Meta Pixel: kayıt tamamlandı — reklam dönüşüm optimizasyonu bunu kullanır
+    // Dönüşüm olayları: Meta Pixel (reklam optimizasyonu) + PostHog (funnel ölçümü)
     track("CompleteRegistration");
+    try { posthog.capture("signup"); } catch { /* posthog kurulu değilse sessiz */ }
 
     setDone(true);
     setLoading(false);
