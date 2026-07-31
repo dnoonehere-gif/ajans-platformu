@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { LogoMark } from "@/components/logo";
 import { useLang, LanguageSwitcher } from "@/components/language-provider";
+import { ArrowRight } from "lucide-react";
 
 const SHELL_L = {
   tr: {
@@ -30,7 +31,10 @@ const SHELL_L = {
   },
 };
 
-/** Ortak pazarlama sayfası kabuğu: üst menü + zengin footer. (Koyu tema) */
+/**
+ * Ortak pazarlama sayfası kabuğu. Anasayfayla aynı dil: açık kırık-beyaz zemin,
+ * içerik yuvarlak beyaz kartlar hâlinde, üstte yüzen kapsül menü.
+ */
 export function PageShell({ children }: { children: React.ReactNode }) {
   const { lang } = useLang();
   const sL = SHELL_L[lang];
@@ -61,62 +65,66 @@ export function PageShell({ children }: { children: React.ReactNode }) {
       ],
     },
   ];
+
+  const navLinks = (
+    <>
+      <Link href="/#ozellikler" className="rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition hover:bg-neutral-900/[0.06] hover:text-neutral-900">{sL.features}</Link>
+      <Link href="/fiyatlar" className="rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition hover:bg-neutral-900/[0.06] hover:text-neutral-900">{sL.pricing}</Link>
+      <Link href="/sss" className="rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition hover:bg-neutral-900/[0.06] hover:text-neutral-900">{sL.faq}</Link>
+      <Link href="/iletisim" className="rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition hover:bg-neutral-900/[0.06] hover:text-neutral-900">{sL.contact}</Link>
+    </>
+  );
+
   return (
-    <div className="min-h-screen bg-[#07070e] text-slate-300 selection:bg-violet-500/40">
-      {/* Navbar */}
-      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#07070e]/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-2.5">
-            <LogoMark size={32} />
-            <span className="font-bold text-white">Novelya</span>
-          </Link>
-          <nav className="hidden items-center gap-6 text-sm font-medium text-slate-400 md:flex">
-            <Link href="/#ozellikler" className="transition hover:text-white">{sL.features}</Link>
-            <Link href="/fiyatlar" className="transition hover:text-white">{sL.pricing}</Link>
-            <Link href="/sss" className="transition hover:text-white">{sL.faq}</Link>
-            <Link href="/iletisim" className="transition hover:text-white">{sL.contact}</Link>
-          </nav>
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
-            <Link href="/giris" className="hidden text-sm font-semibold text-slate-300 transition hover:text-white sm:block">
-              {sL.login}
+    <div className="min-h-screen bg-[#eceae5] text-neutral-900 selection:bg-violet-300/60">
+      <div className="mx-auto max-w-[1400px] px-3 pb-3 sm:px-4 sm:pb-4">
+
+        {/* İçerik kartı — üstte yapışkan kapsül menü */}
+        <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_30px_80px_-40px_rgba(20,20,40,0.35)] sm:rounded-[36px]">
+          <header className="sticky top-0 z-40 flex items-center justify-between gap-4 border-b border-neutral-900/[0.06] bg-white/90 px-4 py-4 backdrop-blur-xl sm:px-7">
+            <Link href="/" className="flex shrink-0 items-center gap-2.5">
+              <LogoMark size={30} />
+              <span className="text-[15px] font-bold tracking-tight">Novelya</span>
             </Link>
-            <Link
-              href="/kayit"
-              className="rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-violet-500/25 transition hover:-translate-y-0.5 hover:shadow-violet-500/40"
-            >
-              {sL.signup}
-            </Link>
-          </div>
+
+            <nav className="hidden items-center rounded-full bg-neutral-900/[0.05] p-1 md:flex">{navLinks}</nav>
+
+            <div className="flex items-center gap-2 sm:gap-3">
+              <LanguageSwitcher />
+              <Link href="/giris" className="hidden text-sm font-medium text-neutral-600 transition hover:text-neutral-900 sm:block">
+                {sL.login}
+              </Link>
+              <Link
+                href="/kayit"
+                className="group inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800"
+              >
+                {sL.signup}
+                <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
+              </Link>
+            </div>
+          </header>
+
+          <main>{children}</main>
         </div>
-      </header>
 
-      {/* İçerik */}
-      <main>{children}</main>
-
-      {/* Footer */}
-      <footer className="border-t border-white/[0.06] bg-[#05050a]">
-        <div className="mx-auto max-w-6xl px-6 py-14">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            {/* Marka */}
-            <div className="col-span-2 md:col-span-1">
+        {/* Footer — ayrı beyaz kart */}
+        <footer className="mt-3 rounded-[28px] bg-white px-6 py-12 sm:mt-4 sm:rounded-[36px] sm:px-10">
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
               <div className="flex items-center gap-2.5">
-                <LogoMark size={32} />
-                <span className="font-bold text-white">Novelya</span>
+                <LogoMark size={30} />
+                <span className="text-[15px] font-bold tracking-tight">Novelya</span>
               </div>
-              <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
-                {sL.desc}
-              </p>
+              <p className="mt-4 max-w-xs text-sm leading-relaxed text-neutral-500">{sL.desc}</p>
             </div>
 
-            {/* Link kolonları */}
             {FOOTER_COLS.map((col) => (
               <div key={col.title}>
-                <p className="text-sm font-bold text-white">{col.title}</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-neutral-400">{col.title}</p>
                 <ul className="mt-4 space-y-2.5">
                   {col.links.map((l) => (
                     <li key={l.label}>
-                      <Link href={l.href} className="text-sm text-slate-500 transition hover:text-violet-400">
+                      <Link href={l.href} className="text-sm text-neutral-600 transition hover:text-violet-600">
                         {l.label}
                       </Link>
                     </li>
@@ -126,36 +134,38 @@ export function PageShell({ children }: { children: React.ReactNode }) {
             ))}
           </div>
 
-          <div className="mt-12 border-t border-white/[0.06] pt-6 text-sm text-slate-600">
-            <p>© {new Date().getFullYear()} Novelya. {sL.rights}</p>
-          </div>
-        </div>
-      </footer>
+          <div className="my-8 border-t border-dashed border-neutral-300" />
+          <p className="text-center text-xs text-neutral-400">
+            © {new Date().getFullYear()} Novelya. {sL.rights}
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }
 
-/** Yasal metinler için tutarlı tipografi sarmalayıcısı. (Koyu tema) */
+/** Yasal metinler için tutarlı tipografi sarmalayıcısı. (Açık tema) */
 export function LegalArticle({
   title, updated, children,
 }: { title: string; updated: string; children: React.ReactNode }) {
   const { lang } = useLang();
   const sL = SHELL_L[lang];
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16">
-      <div className="mb-10 border-b border-white/[0.08] pb-8">
-        <p className="text-sm font-semibold uppercase tracking-wider text-violet-400">{sL.legal}</p>
-        <h1 className="mt-2 text-3xl font-black text-white sm:text-4xl">{title}</h1>
-        <p className="mt-3 text-sm text-slate-500">{sL.updated} {updated}</p>
+    <div className="mx-auto max-w-3xl px-6 py-14 sm:py-20">
+      <div className="mb-10">
+        <p className="text-xs font-bold uppercase tracking-wider text-violet-600">{sL.legal}</p>
+        <h1 className="nv-display mt-3 text-4xl sm:text-5xl">{title}</h1>
+        <p className="mt-4 text-sm text-neutral-500">{sL.updated} {updated}</p>
+        <div className="mt-8 border-t border-dashed border-neutral-300" />
       </div>
       <article
-        className="space-y-5 text-[15px] leading-relaxed text-slate-400
-          [&_a]:font-medium [&_a]:text-violet-400 [&_a:hover]:underline
-          [&_h2]:mt-10 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-white
-          [&_h3]:mt-6 [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-white
+        className="space-y-5 text-[15px] leading-relaxed text-neutral-600
+          [&_a]:font-medium [&_a]:text-violet-600 [&_a:hover]:underline
+          [&_h2]:mt-10 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-neutral-900
+          [&_h3]:mt-6 [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-neutral-900
           [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5
           [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-5
-          [&_strong]:font-semibold [&_strong]:text-slate-200"
+          [&_strong]:font-semibold [&_strong]:text-neutral-900"
       >
         {children}
       </article>
