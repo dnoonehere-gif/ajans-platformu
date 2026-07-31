@@ -4,10 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { generateText } from "@/server/ai/anthropic";
 import { z } from "zod";
 import { getBrandPlanFeatures, getMonthlyAiContentCount, isUnderLimit } from "@/lib/plan-guard";
+import { assertPublicUrl, SsrfError } from "@/lib/ssrf";
 
 const schema = z.object({
   brandId: z.string(),
-  url: z.string().optional(),
+  url: z.string().url().optional(),
   keywords: z.string().optional(),
   pageTitle: z.string().optional(),
   pageDescription: z.string().optional(),
@@ -65,11 +66,23 @@ export async function POST(req: NextRequest) {
 
     let scrapedContent = "";
     if (url) {
+      // SSRF koruması: adres çözümlenip iç/özel IP'lere gitmediği doğrulanır,
+      // yönlendirmeler kapatılır (aksi hâlde 302 ile iç adrese sıçranabilir).
+      let safeUrl: string;
+      try {
+        safeUrl = await assertPublicUrl(url);
+      } catch (e) {
+        return NextResponse.json(
+          { error: e instanceof SsrfError ? e.message : "Adres taranamadı" },
+          { status: 400 }
+        );
+      }
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 8000);
-        const res = await fetch(url, {
+        const res = await fetch(safeUrl, {
           signal: controller.signal,
+          redirect: "manual",
           headers: { "User-Agent": "Novelya-SEO-Bot/1.0" },
         });
         clearTimeout(timeout);
