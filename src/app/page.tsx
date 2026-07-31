@@ -7,7 +7,8 @@ import {
   ArrowRight, Play, Users, UtensilsCrossed, MapPin, Building2, Menu, X,
   CalendarCheck, UserPlus, Mail, Send, Search, FileBarChart, Layers, Palette,
 } from "lucide-react";
-import { useLang, LanguageSwitcher } from "@/components/language-provider";
+import { useLang } from "@/components/language-provider";
+import { PublicControls } from "@/components/marketing/public-controls";
 
 const FEATURES = [
   { icon: Globe, title: "AI Web Sitesi Kurucu", desc: "Birkaç soruyu yanıtlayın, dakikalar içinde profesyonel kurumsal siteniz hazır olsun.", accent: "#8b5cf6", delay: 0 },
@@ -230,7 +231,7 @@ function SeqHeading({ pre, pill, desc }: { pre: string; pill: string; desc: stri
         </span>
       </h2>
       <p
-        className={`mx-auto mt-6 max-w-xl text-center text-[15px] leading-relaxed text-neutral-400 ${on ? "nv-drop" : "opacity-0"}`}
+        className={`mx-auto mt-6 max-w-xl text-center text-[15px] leading-relaxed text-[var(--mk-ink-mute)] ${on ? "nv-drop" : "opacity-0"}`}
         style={on ? { animationDelay: `${DESC_START}ms` } : undefined}
       >
         {desc}
@@ -282,18 +283,18 @@ export default function AnaSayfa() {
 
   const navLinks = (
     <>
-      <a href="#ozellikler" className="rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition hover:bg-neutral-900/[0.06] hover:text-neutral-900">{s.navFeatures}</a>
-      <a href="#nasil-calisir" className="rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition hover:bg-neutral-900/[0.06] hover:text-neutral-900">{s.navHow}</a>
-      <Link href="/fiyatlar" className="rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition hover:bg-neutral-900/[0.06] hover:text-neutral-900">{s.navPricing}</Link>
+      <a href="#ozellikler" className="rounded-full px-4 py-2 text-sm font-medium text-[var(--mk-ink-soft)] transition hover:bg-[var(--mk-chip)] hover:text-[var(--mk-ink)]">{s.navFeatures}</a>
+      <a href="#nasil-calisir" className="rounded-full px-4 py-2 text-sm font-medium text-[var(--mk-ink-soft)] transition hover:bg-[var(--mk-chip)] hover:text-[var(--mk-ink)]">{s.navHow}</a>
+      <Link href="/fiyatlar" className="rounded-full px-4 py-2 text-sm font-medium text-[var(--mk-ink-soft)] transition hover:bg-[var(--mk-chip)] hover:text-[var(--mk-ink)]">{s.navPricing}</Link>
     </>
   );
 
   return (
-    <div className="min-h-screen bg-[#eceae5] text-neutral-900 selection:bg-violet-300/60">
+    <div className="min-h-screen bg-[var(--mk-bg)] text-[var(--mk-ink)] selection:bg-violet-300/60">
       <div className="mx-auto max-w-[1400px] px-3 pb-3 sm:px-4 sm:pb-4">
 
         {/* ══ HERO — beyaz üst kart (nav + dev wordmark) + açık gri alt alan ══ */}
-        <section className="relative overflow-hidden rounded-[28px] bg-white shadow-[0_30px_80px_-40px_rgba(20,20,40,0.35)] sm:rounded-[36px]">
+        <section className="relative overflow-hidden rounded-[28px] bg-[var(--mk-surface)] shadow-[0_30px_80px_-40px_rgba(20,20,40,0.35)] sm:rounded-[36px]">
 
           {/* Nav */}
           <div className="flex items-center justify-between gap-4 px-4 pt-4 sm:px-7 sm:pt-6">
@@ -303,31 +304,31 @@ export default function AnaSayfa() {
             </Link>
 
             {/* kapsül menü */}
-            <div className="hidden items-center rounded-full bg-neutral-900/[0.05] p-1 md:flex">{navLinks}</div>
+            <div className="hidden items-center rounded-full bg-[var(--mk-chip)] p-1 md:flex">{navLinks}</div>
 
             <div className="flex items-center gap-2 sm:gap-3">
-              <Link href="/giris" className="hidden text-sm font-medium text-neutral-600 transition hover:text-neutral-900 sm:block">{s.navLogin}</Link>
-              <Link href="/kayit" className="group hidden items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800 sm:inline-flex">
+              <Link href="/giris" className="hidden text-sm font-medium text-[var(--mk-ink-soft)] transition hover:text-[var(--mk-ink)] sm:block">{s.navLogin}</Link>
+              <Link href="/kayit" className="group hidden items-center gap-2 rounded-full bg-[var(--mk-btn)] px-5 py-2.5 text-sm font-semibold text-[var(--mk-btn-ink)] transition hover:opacity-90 sm:inline-flex">
                 {s.navSignup}
                 <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
               </Link>
               <button onClick={() => setMenuOpen(!menuOpen)} aria-label="Menü"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900/[0.06] text-neutral-700 md:hidden">
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--mk-chip)] text-[var(--mk-ink-soft)] md:hidden">
                 {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
               </button>
             </div>
           </div>
 
           {menuOpen && (
-            <div className="mx-4 mt-4 flex flex-col gap-1 rounded-2xl bg-neutral-900/[0.04] p-2 md:hidden">
+            <div className="mx-4 mt-4 flex flex-col gap-1 rounded-2xl bg-[var(--mk-chip)] p-2 md:hidden">
               {navLinks}
               <Link href="/kayit" onClick={() => setMenuOpen(false)}
-                className="mt-1 rounded-full bg-neutral-900 py-2.5 text-center text-sm font-semibold text-white">{s.navSignup}</Link>
+                className="mt-1 rounded-full bg-[var(--mk-btn)] py-2.5 text-center text-sm font-semibold text-[var(--mk-btn-ink)]">{s.navSignup}</Link>
             </div>
           )}
 
           {/* Dev wordmark */}
-          <h1 className="px-3 pb-2 pt-8 text-center text-[clamp(3.2rem,15.2vw,12.5rem)] font-extrabold leading-[1.02] tracking-[-0.03em] text-neutral-900 sm:pt-10">
+          <h1 className="px-3 pb-2 pt-8 text-center text-[clamp(3.2rem,15.2vw,12.5rem)] font-extrabold leading-[1.02] tracking-[-0.03em] text-[var(--mk-ink)] sm:pt-10">
             NOVELYA<span className="text-violet-600">.</span>
           </h1>
 
@@ -345,7 +346,7 @@ export default function AnaSayfa() {
                 </div>
                 <div>
                   <p className="text-xl font-bold leading-none">120+</p>
-                  <p className="mt-1 text-xs text-neutral-500">{s.stats[0]}</p>
+                  <p className="mt-1 text-xs text-[var(--mk-ink-soft)]">{s.stats[0]}</p>
                 </div>
               </div>
             </div>
@@ -353,9 +354,9 @@ export default function AnaSayfa() {
             {/* Alt: açıklama + dairesel CTA */}
             <div className="relative mt-6 flex flex-col items-center gap-6 lg:mt-0 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-xs text-center lg:text-left">
-                <p className="text-[15px] leading-snug text-neutral-700">{s.heroDesc}</p>
+                <p className="text-[15px] leading-snug text-[var(--mk-ink-soft)]">{s.heroDesc}</p>
                 <p className="mt-1 text-[15px] font-semibold leading-snug">{s.heroDescBold}</p>
-                <Dotted className="mt-3 text-neutral-500" />
+                <Dotted className="mt-3 text-[var(--mk-ink-soft)]" />
               </div>
 
               <Link href="/kayit"
@@ -378,12 +379,12 @@ export default function AnaSayfa() {
         {/* ══ GÜVEN — başlık + beyaz kart ══ */}
         <section className="mt-3 sm:mt-4">
           <h2 className="nv-display px-2 pb-4 pt-6 text-4xl sm:text-5xl">{s.featBadge}<span className="text-violet-600">.</span></h2>
-          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[24px] bg-neutral-200 sm:rounded-[28px] lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[24px] bg-[var(--mk-line)] sm:rounded-[28px] lg:grid-cols-4">
             {s.stats.map((label, i) => (
-              <Reveal key={label} delay={i * 90} className="bg-white">
+              <Reveal key={label} delay={i * 90} className="bg-[var(--mk-surface)]">
               <div className="px-5 py-7 text-center">
                 <p className="text-3xl font-black tracking-tight sm:text-4xl">{["120+", "4.8★", "8.500+", "%90"][i]}</p>
-                <p className="mt-1.5 text-xs text-neutral-500">{label}</p>
+                <p className="mt-1.5 text-xs text-[var(--mk-ink-soft)]">{label}</p>
               </div>
               </Reveal>
             ))}
@@ -391,7 +392,7 @@ export default function AnaSayfa() {
         </section>
 
         {/* ══ ÖZELLİKLER — siyah bölüm ══ */}
-        <section id="ozellikler" className="mt-3 rounded-[28px] bg-neutral-950 px-5 py-14 text-white sm:mt-4 sm:rounded-[36px] sm:px-10 sm:py-20">
+        <section id="ozellikler" className="mt-3 rounded-[28px] bg-[var(--mk-invert)] px-5 py-14 text-white sm:mt-4 sm:rounded-[36px] sm:px-10 sm:py-20">
           <SeqHeading pre={s.featT1} pill={s.featGrad} desc={s.featDesc} />
 
           <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -402,7 +403,7 @@ export default function AnaSayfa() {
                 className={["lg:mt-0", "lg:mt-8", "lg:mt-16"][i % 3]}
               >
               <div
-                className="group h-full rounded-[22px] bg-neutral-900 p-6 transition duration-300 hover:-translate-y-1 hover:bg-neutral-800/90">
+                className="group h-full rounded-[22px] bg-[var(--mk-btn)] p-6 transition duration-300 hover:-translate-y-1 hover:opacity-90/90">
                 <div className="mb-5 flex items-center justify-between">
                   <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] transition group-hover:scale-110"
                     style={{ color: f.accent }}>
@@ -412,7 +413,7 @@ export default function AnaSayfa() {
                 </div>
                 <h3 className="text-lg font-bold leading-snug">{f.title}</h3>
                 <Dotted className="my-3 text-white" />
-                <p className="text-sm leading-relaxed text-neutral-400">{f.desc}</p>
+                <p className="text-sm leading-relaxed text-[var(--mk-ink-mute)]">{f.desc}</p>
               </div>
               </Reveal>
             ))}
@@ -427,11 +428,11 @@ export default function AnaSayfa() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((st, i) => (
               <Reveal key={st.num} delay={i * 110}>
-              <div className="h-full rounded-[22px] bg-white p-6">
+              <div className="h-full rounded-[22px] bg-[var(--mk-surface)] p-6">
                 <span className="nv-display block text-5xl text-violet-600">{st.num}</span>
-                <Dotted className="my-4 text-neutral-500" />
+                <Dotted className="my-4 text-[var(--mk-ink-soft)]" />
                 <h3 className="text-base font-bold">{st.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-neutral-500">{st.desc}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-[var(--mk-ink-soft)]">{st.desc}</p>
               </div>
               </Reveal>
             ))}
@@ -439,9 +440,9 @@ export default function AnaSayfa() {
         </section>
 
         {/* ══ CTA — siyah ══ */}
-        <section className="mt-3 overflow-hidden rounded-[28px] bg-neutral-950 px-6 py-16 text-center text-white sm:mt-4 sm:rounded-[36px] sm:py-24">
+        <section className="mt-3 overflow-hidden rounded-[28px] bg-[var(--mk-invert)] px-6 py-16 text-center text-white sm:mt-4 sm:rounded-[36px] sm:py-24">
           <h2 className="nv-display mx-auto max-w-3xl text-4xl sm:text-6xl">{s.ctaTitle}<span className="text-violet-500">.</span></h2>
-          <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-neutral-400">{s.ctaDesc}</p>
+          <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-[var(--mk-ink-mute)]">{s.ctaDesc}</p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/kayit" className="group inline-flex items-center gap-2 rounded-full bg-violet-600 px-8 py-4 text-base font-bold transition hover:bg-violet-500">
               {s.ctaBtn}
@@ -453,7 +454,7 @@ export default function AnaSayfa() {
           </div>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-2">
             {s.checks.map((c, i) => (
-              <span key={c} className="text-sm text-neutral-500">
+              <span key={c} className="text-sm text-[var(--mk-ink-soft)]">
                 {c} <span className="nv-index ml-1 text-white/20">/0{i + 1}</span>
               </span>
             ))}
@@ -461,14 +462,14 @@ export default function AnaSayfa() {
         </section>
 
         {/* ══ FOOTER ══ */}
-        <footer className="mt-3 rounded-[28px] bg-white px-6 py-12 sm:mt-4 sm:rounded-[36px] sm:px-10">
+        <footer className="mt-3 rounded-[28px] bg-[var(--mk-surface)] px-6 py-12 sm:mt-4 sm:rounded-[36px] sm:px-10">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <div className="flex items-center gap-2.5">
                 <LogoMark size={30} />
                 <span className="text-[15px] font-bold tracking-tight">Novelya</span>
               </div>
-              <p className="mt-4 max-w-xs text-sm leading-relaxed text-neutral-500">{s.fDesc}</p>
+              <p className="mt-4 max-w-xs text-sm leading-relaxed text-[var(--mk-ink-soft)]">{s.fDesc}</p>
             </div>
             {[
               { t: s.fProduct, links: [[s.navFeatures, "#ozellikler"], [s.navPricing, "/fiyatlar"], [s.navHow, "#nasil-calisir"]] },
@@ -476,19 +477,20 @@ export default function AnaSayfa() {
               { t: s.fLegal, links: [[s.fTerms, "/kullanim-sartlari"], [s.fPrivacy, "/gizlilik"], [s.fKvkk, "/kvkk"], [s.fCookies, "/cerez-politikasi"], [s.fRefund, "/iade-politikasi"]] },
             ].map((col) => (
               <div key={col.t}>
-                <p className="text-xs font-bold uppercase tracking-wider text-neutral-400">{col.t}</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-[var(--mk-ink-mute)]">{col.t}</p>
                 <ul className="mt-4 space-y-2.5">
                   {col.links.map(([label, href]) => (
                     <li key={label}>
-                      <Link href={href} className="text-sm text-neutral-600 transition hover:text-violet-600">{label}</Link>
+                      <Link href={href} className="text-sm text-[var(--mk-ink-soft)] transition hover:text-violet-600">{label}</Link>
                     </li>
                   ))}
                 </ul>
               </div>
             ))}
           </div>
-          <Dotted className="my-8 text-neutral-500" />
-          <p className="text-center text-xs text-neutral-400">
+          <Dotted className="my-8 text-[var(--mk-ink-soft)]" />
+          <div className="mb-6 flex justify-center"><PublicControls /></div>
+          <p className="text-center text-xs text-[var(--mk-ink-mute)]">
             © {new Date().getFullYear()} Novelya. {s.fRights}
           </p>
         </footer>

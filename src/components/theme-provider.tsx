@@ -5,16 +5,17 @@ import { useEffect } from "react";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  // Koyu/açık tema tercihi sadece dashboard ve admin'de geçerli;
-  // herkese açık sayfalar (landing, fiyatlar, site/*) hep açık temada kalır
-  const isApp = pathname.startsWith("/dashboard") || pathname.startsWith("/elrmgklmer");
+  // Yayınlanan müşteri siteleri (/site/*) marka kimliğini korumalı; onlar
+  // açık temada sabit kalır. Diğer tüm sayfalarda (landing dahil) kullanıcı
+  // koyu/açık modu seçebilir.
+  const isPublishedSite = pathname.startsWith("/site/");
 
   return (
     <NextThemes
       attribute="class"
       defaultTheme="light"
       enableSystem
-      forcedTheme={isApp ? undefined : "light"}
+      forcedTheme={isPublishedSite ? "light" : undefined}
     >
       {children}
     </NextThemes>
