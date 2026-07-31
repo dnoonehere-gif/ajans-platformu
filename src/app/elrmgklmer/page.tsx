@@ -81,7 +81,7 @@ export default async function AdminPage() {
         <div className="glass rounded-2xl overflow-hidden overflow-x-auto">
           <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-5 py-3">
             <p className="text-sm font-semibold"><T k="recentUsers" /></p>
-            <a href="/admin/kullanicilar" className="text-xs text-[hsl(var(--primary))] hover:underline"><T k="seeAll" /></a>
+            <a href="/elrmgklmer/kullanicilar" className="text-xs text-[hsl(var(--primary))] hover:underline"><T k="seeAll" /></a>
           </div>
           <div className="divide-y divide-[hsl(var(--border))]">
             {recentUsers.map((u) => (
@@ -105,7 +105,7 @@ export default async function AdminPage() {
         <div className="glass rounded-2xl overflow-hidden overflow-x-auto">
           <div className="flex items-center justify-between border-b border-[hsl(var(--border))] px-5 py-3">
             <p className="text-sm font-semibold"><T k="recentBrands" /></p>
-            <a href="/admin/markalar" className="text-xs text-[hsl(var(--primary))] hover:underline"><T k="seeAll" /></a>
+            <a href="/elrmgklmer/markalar" className="text-xs text-[hsl(var(--primary))] hover:underline"><T k="seeAll" /></a>
           </div>
           <div className="divide-y divide-[hsl(var(--border))]">
             {recentBrands.map((b) => {

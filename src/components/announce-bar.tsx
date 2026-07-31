@@ -27,7 +27,7 @@ const L = {
 };
 
 // Bu ön eklerle başlayan yollarda çubuk gösterilmez
-const HIDDEN_PREFIXES = ["/dashboard", "/admin", "/giris", "/kayit", "/sifremi", "/dogrulama"];
+const HIDDEN_PREFIXES = ["/dashboard", "/elrmgklmer", "/giris", "/kayit", "/sifremi", "/dogrulama"];
 
 export function AnnounceBar() {
   const { lang } = useLang();

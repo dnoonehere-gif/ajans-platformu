@@ -173,7 +173,7 @@ export function NavClient({ isAdmin }: { isAdmin: boolean }) {
             {lang === "en" ? "Management" : "Yönetim"}
           </p>
           <Link
-            href="/admin"
+            href="/elrmgklmer"
             className="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
           >
             <Shield className="h-4 w-4 shrink-0 text-purple-400" />

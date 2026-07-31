@@ -7,7 +7,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   // Koyu/açık tema tercihi sadece dashboard ve admin'de geçerli;
   // herkese açık sayfalar (landing, fiyatlar, site/*) hep açık temada kalır
-  const isApp = pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
+  const isApp = pathname.startsWith("/dashboard") || pathname.startsWith("/elrmgklmer");
 
   return (
     <NextThemes

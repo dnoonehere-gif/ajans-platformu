@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@/server/auth/auth";
 
 const PROTECTED: { pattern: RegExp; roles: string[] }[] = [
-  { pattern: /^\/admin/, roles: ["SUPER_ADMIN", "ADMIN"] },
+  { pattern: /^\/elrmgklmer/, roles: ["SUPER_ADMIN", "ADMIN"] },
   { pattern: /^\/dashboard/, roles: ["SUPER_ADMIN", "ADMIN", "CUSTOMER", "STAFF"] },
   { pattern: /^\/api\/brand/, roles: ["SUPER_ADMIN", "ADMIN", "CUSTOMER", "STAFF"] },
   { pattern: /^\/api\/content/, roles: ["SUPER_ADMIN", "ADMIN", "CUSTOMER", "STAFF"] },

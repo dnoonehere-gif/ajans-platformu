@@ -23,14 +23,14 @@ export function AdminNav() {
   const s = L[lang];
 
   const nav = [
-    { href: "/admin", label: s.overview, icon: LayoutDashboard },
-    { href: "/admin/kullanicilar", label: s.users, icon: Users },
-    { href: "/admin/markalar", label: s.brands, icon: Building2 },
-    { href: "/admin/paketler", label: s.plans, icon: Package },
-    { href: "/admin/odemeler", label: s.payments, icon: CreditCard },
-    { href: "/admin/ai", label: s.ai, icon: Brain },
-    { href: "/admin/chatbot", label: s.chatbot, icon: Bot },
-    { href: "/admin/loglar", label: s.logs, icon: ScrollText },
+    { href: "/elrmgklmer", label: s.overview, icon: LayoutDashboard },
+    { href: "/elrmgklmer/kullanicilar", label: s.users, icon: Users },
+    { href: "/elrmgklmer/markalar", label: s.brands, icon: Building2 },
+    { href: "/elrmgklmer/paketler", label: s.plans, icon: Package },
+    { href: "/elrmgklmer/odemeler", label: s.payments, icon: CreditCard },
+    { href: "/elrmgklmer/ai", label: s.ai, icon: Brain },
+    { href: "/elrmgklmer/chatbot", label: s.chatbot, icon: Bot },
+    { href: "/elrmgklmer/loglar", label: s.logs, icon: ScrollText },
   ];
 
   return (
