@@ -24,3 +24,6 @@ coverage
 .vscode
 
 .vercel
+
+# Yerel ajan/editör yapılandırması — depoya girmez
+.claude/

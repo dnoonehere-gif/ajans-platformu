@@ -42,6 +42,42 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        {/* Google'ın arama sonucunda rastgele bir sayfa görseli yerine markanın
+            logosunu ve adını göstermesi için yapılandırılmış veri. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Novelya",
+              alternateName: "Novelya Dijital Ajans",
+              url: "https://www.novelya.com.tr",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://www.novelya.com.tr/logo-512.png",
+                width: 512,
+                height: 512,
+              },
+              description:
+                "Türkiye'deki işletmeler için yapay zekâ destekli dijital ajans platformu: web sitesi, chatbot, içerik üretimi, yorum analizi ve müşteri yönetimi tek panelde.",
+              email: "novelya@novelya.com.tr",
+              areaServed: "TR",
+              sameAs: ["https://www.instagram.com/novelya.com.tr"],
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "Novelya",
+              url: "https://www.novelya.com.tr",
+            }),
+          }}
+        />
         <MetaPixel />
         <ThemeProvider>
           <SessionProvider>
