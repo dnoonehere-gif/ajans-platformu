@@ -252,10 +252,11 @@ export default function AnaSayfa() {
             <LogoMark size={32} />
             <span className="text-sm font-bold text-white">Novelya</span>
           </Link>
-          <div className="hidden items-center gap-8 md:flex">
-            <a href="#ozellikler" className="text-sm text-slate-400 transition hover:text-white">{s.navFeatures}</a>
-            <a href="#nasil-calisir" className="text-sm text-slate-400 transition hover:text-white">{s.navHow}</a>
-            <Link href="/fiyatlar" className="text-sm text-slate-400 transition hover:text-white">{s.navPricing}</Link>
+          {/* Yüzen kapsül menü — referans tasarımdaki gibi bağlantılar tek bir hapın içinde */}
+          <div className="hidden items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.04] p-1 backdrop-blur-md md:flex">
+            <a href="#ozellikler" className="rounded-full px-4 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/[0.07] hover:text-white">{s.navFeatures}</a>
+            <a href="#nasil-calisir" className="rounded-full px-4 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/[0.07] hover:text-white">{s.navHow}</a>
+            <Link href="/fiyatlar" className="rounded-full px-4 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/[0.07] hover:text-white">{s.navPricing}</Link>
           </div>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
@@ -316,43 +317,50 @@ export default function AnaSayfa() {
             {s.heroBadge}
           </div>
 
-          {/* Başlık */}
-          <h1 className="text-5xl font-black leading-[1.08] tracking-tight text-white md:text-7xl">
+          {/* Başlık — dev display tipografi (referans tasarımdaki iri, sıkı harf aralıklı dil) */}
+          <h1 className="nv-display text-[3.25rem] text-white sm:text-6xl md:text-8xl">
             {s.heroT1}{" "}
             <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent">
               {s.heroGrad}
             </span>{s.heroT2 ? " " + s.heroT2 : ""}
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-400 md:text-xl">
+          <p className="mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-slate-400 md:text-xl">
             {s.heroDesc}{" "}
             <strong className="font-semibold text-slate-200">{s.heroDescBold}</strong>
           </p>
 
-          {/* CTA butonları */}
-          <div className="pointer-events-auto mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+          {/* Noktalı ayraç */}
+          <div className="mx-auto mt-8 h-px w-56 border-t border-dashed border-white/20" />
+
+          {/* CTA — birincil hap + dairesel vurgu rozeti */}
+          <div className="pointer-events-auto mt-9 flex flex-col items-center gap-5 sm:flex-row sm:justify-center">
             <Link
               href="/kayit"
-              className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-4 text-base font-bold text-white shadow-[0_0_40px_-8px_rgba(139,92,246,0.6)] transition hover:-translate-y-0.5 hover:shadow-[0_0_60px_-8px_rgba(139,92,246,0.8)]"
+              className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-4 text-base font-bold text-white shadow-[0_0_40px_-8px_rgba(139,92,246,0.6)] transition hover:-translate-y-0.5 hover:shadow-[0_0_60px_-8px_rgba(139,92,246,0.8)]"
             >
               {s.heroCta}
               <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
             </Link>
             <Link
               href="/giris"
-              className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-8 py-4 text-base font-semibold text-slate-200 backdrop-blur transition hover:border-violet-400/30 hover:bg-white/[0.07]"
+              aria-label={s.heroDemo}
+              className="group flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full bg-violet-500/15 text-center text-[11px] font-bold leading-tight text-violet-200 ring-1 ring-violet-400/30 transition hover:bg-violet-500/25 hover:ring-violet-400/60"
             >
-              <Play className="h-4 w-4 text-violet-400" />
-              {s.heroDemo}
+              <span className="flex flex-col items-center gap-1">
+                <Play className="h-4 w-4 fill-violet-300 text-violet-300 transition group-hover:scale-110" />
+                {s.heroDemo}
+              </span>
             </Link>
           </div>
 
-          {/* Sosyal kanıt */}
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-            {s.checks.map((t) => (
+          {/* Güven satırı — numaralı indeks (referanstaki /01 /02 /03 dili) */}
+          <div className="mt-14 flex flex-wrap items-center justify-center gap-x-7 gap-y-3">
+            {s.checks.map((t, i) => (
               <div key={t} className="flex items-center gap-2 text-sm text-slate-400">
                 <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                 {t}
+                <span className="nv-index ml-1 text-white/25">/0{i + 1}</span>
               </div>
             ))}
           </div>

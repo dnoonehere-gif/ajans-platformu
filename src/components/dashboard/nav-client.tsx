@@ -126,9 +126,11 @@ export function NavClient({ isAdmin }: { isAdmin: boolean }) {
           key={item.href}
           href="/dashboard/abonelik"
           title={`${label(item)} — Planınıza dahil değil`}
-          className="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-[hsl(var(--muted-foreground)/0.5)] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--muted-foreground))]"
+          className="group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-[hsl(var(--muted-foreground)/0.5)] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--muted-foreground))]"
         >
-          <item.icon className="h-4 w-4 shrink-0 opacity-50" />
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--accent)/0.6)]">
+            <item.icon className="h-4 w-4 opacity-50" />
+          </span>
           <span className="flex-1">{label(item)}</span>
           <Lock className="h-3 w-3 opacity-60" />
         </Link>
@@ -140,15 +142,24 @@ export function NavClient({ isAdmin }: { isAdmin: boolean }) {
         key={item.href}
         href={item.href}
         ref={isActive ? activeRef : undefined}
-        className={`group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${
+        className={`group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition ${
           isActive
-            ? "bg-[hsl(var(--primary)/0.1)] text-[hsl(var(--primary))]"
+            ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-[0_8px_20px_-8px_hsl(var(--primary)/0.8)]"
             : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
         }`}
       >
-        <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[hsl(var(--primary))]" : ""}`} />
+        {/* İkon çipi — aktifken saydam beyaz kapsül, referans tasarımdaki gibi */}
+        <span
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-xl transition ${
+            isActive
+              ? "bg-[hsl(var(--primary-foreground)/0.2)]"
+              : "bg-[hsl(var(--accent))] group-hover:bg-[hsl(var(--primary)/0.12)]"
+          }`}
+        >
+          <item.icon className="h-4 w-4" />
+        </span>
         <span className="flex-1">{label(item)}</span>
-        <ChevronRight className={`h-3 w-3 transition ${isActive ? "opacity-40" : "opacity-0 group-hover:opacity-40"}`} />
+        <ChevronRight className={`h-3 w-3 transition ${isActive ? "opacity-70" : "opacity-0 group-hover:opacity-40"}`} />
       </Link>
     );
   }
@@ -174,9 +185,11 @@ export function NavClient({ isAdmin }: { isAdmin: boolean }) {
           </p>
           <Link
             href="/elrmgklmer"
-            className="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
+            className="group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
           >
-            <Shield className="h-4 w-4 shrink-0 text-purple-400" />
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--accent))] group-hover:bg-[hsl(var(--primary)/0.12)]">
+              <Shield className="h-4 w-4 text-purple-400" />
+            </span>
             <span className="flex-1">Admin Panel</span>
             <ChevronRight className="h-3 w-3 opacity-0 transition group-hover:opacity-40" />
           </Link>

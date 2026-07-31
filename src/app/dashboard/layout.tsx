@@ -53,10 +53,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className="flex min-h-screen bg-[hsl(var(--background))]">
         <AmbientBackground />
         {/* Sidebar — masaüstü */}
-        <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-[hsl(var(--border))] bg-[hsl(var(--card))] lg:flex">
+        <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-[hsl(var(--border)/0.5)] bg-[hsl(var(--card))] lg:flex">
 
           {/* Logo */}
-          <div className="flex h-16 items-center border-b border-[hsl(var(--border))] px-5">
+          <div className="flex h-16 items-center border-b border-[hsl(var(--border)/0.5)] px-5">
             <WhiteLabelLogo />
           </div>
 
@@ -82,7 +82,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
           {/* Kullanıcı */}
           <div className="border-t border-[hsl(var(--border))] p-3">
-            <div className="flex items-center gap-3 rounded-xl bg-[hsl(var(--accent)/0.5)] px-3 py-2.5">
+            <div className="flex items-center gap-3 rounded-2xl bg-[hsl(var(--accent)/0.6)] px-3 py-2.5">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary)/0.2)] text-xs font-bold text-[hsl(var(--primary))]">
                 {initials}
               </div>
@@ -100,7 +100,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {/* İçerik */}
         <main className="relative z-10 flex-1 min-h-screen overflow-auto lg:ml-64">
           {/* Topbar */}
-          <div className="sticky top-0 z-30 flex h-14 items-center border-b border-[hsl(var(--border))] bg-[hsl(var(--background)/0.8)] px-4 backdrop-blur gap-2">
+          <div className="sticky top-0 z-30 flex h-16 items-center border-b border-[hsl(var(--border)/0.5)] bg-[hsl(var(--background)/0.75)] px-4 backdrop-blur-xl gap-2">
             {/* Mobil hamburger + slide-in sidebar */}
             <MobileSidebarToggle>
               <div className="border-b border-[hsl(var(--border))] p-3">
@@ -122,7 +122,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
               {/* Kullanıcı */}
               <div className="border-t border-[hsl(var(--border))] p-3">
-                <div className="flex items-center gap-3 rounded-xl bg-[hsl(var(--accent)/0.5)] px-3 py-2.5">
+                <div className="flex items-center gap-3 rounded-2xl bg-[hsl(var(--accent)/0.6)] px-3 py-2.5">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary)/0.2)] text-xs font-bold text-[hsl(var(--primary))]">
                     {initials}
                   </div>
@@ -137,7 +137,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
               </div>
             </MobileSidebarToggle>
             <Breadcrumb />
-            <div className="ml-auto flex items-center gap-2">
+            {/* Sağ aksiyonlar — referans tasarımdaki yüzen kapsül grubu */}
+            <div className="ml-auto flex items-center gap-1 rounded-full border border-[hsl(var(--border)/0.6)] bg-[hsl(var(--card))] px-1.5 py-1 shadow-sm">
               <LanguageSwitcher />
               <NotificationBell />
             </div>
