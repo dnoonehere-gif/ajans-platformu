@@ -5,6 +5,20 @@ import { z } from "zod";
 import { notifyBrandOwner } from "@/server/notifications/send";
 import { rateLimit, getRateLimitKey, LIMITS } from "@/server/security/rate-limit";
 
+// Chatbot'un önerdiği rezervasyon verisi için katı şema (bkz. prompt injection)
+const reservationSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  phone: z.string().trim().max(30).optional().nullable(),
+  email: z.string().trim().email().max(120).optional().nullable().catch(null),
+  date: z.coerce.date().refine((d) => {
+    const now = Date.now();
+    return d.getTime() > now - 86400000 && d.getTime() < now + 365 * 86400000;
+  }, "geçersiz tarih"),
+  time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+  partySize: z.coerce.number().int().min(1).max(50).optional().default(1),
+  notes: z.string().trim().max(500).optional().nullable(),
+});
+
 const schema = z.object({
   message: z.string().min(1).max(1000),
   conversationId: z.string().nullish(),
@@ -91,17 +105,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ bra
       const resMatch = fullText.match(/:::RESERVATION:::\s*(\{[\s\S]*?\})\s*:::END_RESERVATION:::/);
       if (resMatch) {
         try {
-          const resData = JSON.parse(resMatch[1]);
-          if (resData.name && resData.date && resData.time) {
+          // Prompt injection savunması: modelin ürettiği JSON DOĞRULANMADAN
+          // veritabanına yazılmamalı. brandId ve reservationEnabled zaten
+          // sunucudan geliyor (model bunları etkileyemez); burada kalan
+          // alanlar şema ile sınırlandırılır.
+          const parsed = reservationSchema.safeParse(JSON.parse(resMatch[1]));
+          if (parsed.success) {
+            const resData = parsed.data;
             const newRes = await prisma.reservation.create({
               data: {
                 brandId,
                 name: resData.name,
                 phone: resData.phone || null,
                 email: resData.email || null,
-                date: new Date(resData.date),
+                date: resData.date,
                 time: resData.time,
-                partySize: resData.partySize || 1,
+                partySize: resData.partySize,
                 notes: resData.notes || null,
                 source: "chatbot",
                 conversationId: conversation!.id,
@@ -110,7 +129,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ bra
             notifyBrandOwner(brandId, {
               type: "reservation_new",
               title: `Chatbot rezervasyonu: ${resData.name}`,
-              body: `${resData.date} ${resData.time} — ${resData.partySize || 1} kişi`,
+              body: `${resData.date.toLocaleDateString("tr-TR")} ${resData.time} — ${resData.partySize} kişi`,
               data: { reservationId: newRes.id, source: "chatbot" },
             }).catch(() => {});
 
