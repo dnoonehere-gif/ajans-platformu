@@ -12,12 +12,13 @@ import React from "react";
 import { UserAgreementPDF } from "@/lib/pdf/contracts";
 import { refreshPdfFonts } from "@/lib/pdf/fonts";
 import { verifyCaptcha } from "@/lib/captcha";
+import { passwordSchema } from "@/lib/password";
 
 const schema = z.object({
   name: z.string().min(2, "Ad en az 2 karakter olmalı"),
   email: z.string().email("Geçerli bir e-posta girin"),
   phone: z.string().max(20).optional().or(z.literal("")).transform((v) => v || undefined),
-  password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
+  password: passwordSchema,
   captchaAnswer: z.string().min(1, "Güvenlik sorusunu yanıtlayın"),
   captchaToken: z.string().min(1),
 });

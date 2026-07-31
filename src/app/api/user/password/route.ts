@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth-guard";
+import { passwordSchema } from "@/lib/password";
 
 export async function PATCH(req: NextRequest) {
   const user = await getAuthUser();
@@ -11,7 +12,7 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json();
   const parsed = z.object({
     currentPassword: z.string().min(1),
-    newPassword: z.string().min(8, "Şifre en az 8 karakter olmalı"),
+    newPassword: passwordSchema,
   }).safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
 

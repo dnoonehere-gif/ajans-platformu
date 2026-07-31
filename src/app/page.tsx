@@ -189,6 +189,56 @@ function Orb({ className = "" }: { className?: string }) {
   );
 }
 
+/* Sıralı başlık animasyonu: satır yukarıdan düşer → vurgu hapı uzar →
+   içindeki yazı harf harf yandan gelir → açıklama yukarıdan düşer. */
+function SeqHeading({ pre, pill, desc }: { pre: string; pill: string; desc: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [on, setOn] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setOn(true); io.disconnect(); } },
+      { threshold: 0.3 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const PILL_START = 620;   // hap uzamaya başlar
+  const LETTER_START = 980; // harfler gelmeye başlar
+  const DESC_START = 1750;  // açıklama düşer
+
+  return (
+    <div ref={ref}>
+      <h2 className="nv-display mx-auto max-w-4xl text-center text-4xl sm:text-6xl">
+        <span className={`inline-block ${on ? "nv-drop" : "opacity-0"}`}>{pre}</span>{" "}
+        <span
+          className={`relative inline-block rounded-full bg-violet-500 px-5 pb-1.5 pt-0.5 text-neutral-950 ${on ? "nv-expand" : "opacity-0"}`}
+          style={on ? { animationDelay: `${PILL_START}ms` } : undefined}
+        >
+          {pill.split("").map((ch, i) => (
+            <span
+              key={i}
+              className={`inline-block ${on ? "nv-letter" : "opacity-0"}`}
+              style={on ? { animationDelay: `${LETTER_START + i * 34}ms` } : undefined}
+            >
+              {ch === " " ? " " : ch}
+            </span>
+          ))}
+        </span>
+      </h2>
+      <p
+        className={`mx-auto mt-6 max-w-xl text-center text-[15px] leading-relaxed text-neutral-400 ${on ? "nv-drop" : "opacity-0"}`}
+        style={on ? { animationDelay: `${DESC_START}ms` } : undefined}
+      >
+        {desc}
+      </p>
+    </div>
+  );
+}
+
 /* Görünür olunca kademeli giriş — referans videodaki kart kaskadı */
 function Reveal({ children, delay = 0, className = "" }: {
   children: React.ReactNode; delay?: number; className?: string;
@@ -256,7 +306,6 @@ export default function AnaSayfa() {
             <div className="hidden items-center rounded-full bg-neutral-900/[0.05] p-1 md:flex">{navLinks}</div>
 
             <div className="flex items-center gap-2 sm:gap-3">
-              <LanguageSwitcher />
               <Link href="/giris" className="hidden text-sm font-medium text-neutral-600 transition hover:text-neutral-900 sm:block">{s.navLogin}</Link>
               <Link href="/kayit" className="group hidden items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800 sm:inline-flex">
                 {s.navSignup}
@@ -278,7 +327,7 @@ export default function AnaSayfa() {
           )}
 
           {/* Dev wordmark */}
-          <h1 className="nv-display px-3 pt-8 text-center text-[clamp(3.2rem,15.5vw,13rem)] text-neutral-900 sm:pt-10">
+          <h1 className="px-3 pb-2 pt-8 text-center text-[clamp(3.2rem,15.2vw,12.5rem)] font-extrabold leading-[1.02] tracking-[-0.03em] text-neutral-900 sm:pt-10">
             NOVELYA<span className="text-violet-600">.</span>
           </h1>
 
@@ -299,13 +348,6 @@ export default function AnaSayfa() {
                   <p className="mt-1 text-xs text-neutral-500">{s.stats[0]}</p>
                 </div>
               </div>
-              <div className="space-y-1.5 text-right">
-                {s.checks.slice(0, 3).map((c, i) => (
-                  <p key={c} className="text-sm text-neutral-500">
-                    {c} <span className="nv-index ml-1 text-neutral-400">/0{i + 1}</span>
-                  </p>
-                ))}
-              </div>
             </div>
 
             {/* Alt: açıklama + dairesel CTA */}
@@ -317,9 +359,17 @@ export default function AnaSayfa() {
               </div>
 
               <Link href="/kayit"
-                className="group order-first flex h-32 w-32 shrink-0 flex-col items-center justify-center gap-1 rounded-full bg-violet-600 text-center text-[13px] font-bold leading-tight text-white shadow-[0_20px_45px_-15px_rgba(124,58,237,0.8)] transition hover:scale-105 hover:bg-violet-500 lg:order-none">
-                <Play className="h-4 w-4 fill-white" />
-                {s.heroCta}
+                className="group relative order-first grid h-36 w-36 shrink-0 place-items-center lg:order-none">
+                {/* dönen kesikli halka */}
+                <span className="nv-orb-rings absolute inset-0 rounded-full border-2 border-dashed border-violet-400/50" />
+                {/* gövde */}
+                <span className="absolute inset-[10px] rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 shadow-[0_22px_50px_-16px_rgba(109,40,217,0.85)] transition duration-300 group-hover:scale-[1.06]" />
+                <span className="relative z-10 flex flex-col items-center gap-1.5 px-4 text-center leading-tight text-white">
+                  <span className="text-[13px] font-extrabold">{s.heroCta}</span>
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 transition group-hover:translate-x-0.5">
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
+                </span>
               </Link>
             </div>
           </div>
@@ -342,11 +392,7 @@ export default function AnaSayfa() {
 
         {/* ══ ÖZELLİKLER — siyah bölüm ══ */}
         <section id="ozellikler" className="mt-3 rounded-[28px] bg-neutral-950 px-5 py-14 text-white sm:mt-4 sm:rounded-[36px] sm:px-10 sm:py-20">
-          <h2 className="nv-display mx-auto max-w-4xl text-center text-4xl sm:text-6xl">
-            {s.featT1}{" "}
-            <span className="rounded-full bg-violet-500 px-4 pb-1 text-neutral-950">{s.featGrad}</span>
-          </h2>
-          <p className="mx-auto mt-6 max-w-xl text-center text-[15px] leading-relaxed text-neutral-400">{s.featDesc}</p>
+          <SeqHeading pre={s.featT1} pill={s.featGrad} desc={s.featDesc} />
 
           <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {feats.map((f, i) => (

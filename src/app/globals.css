@@ -378,6 +378,27 @@ body {
   animation: nv-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Yukarıdan aşağı düşerek gelme */
+@keyframes nv-drop {
+  from { opacity: 0; transform: translateY(-38px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.nv-drop { animation: nv-drop 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Vurgu hapı: soldan sağa açılarak uzar (içerik sabit kalır) */
+@keyframes nv-expand {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+.nv-expand { animation: nv-expand 0.85s cubic-bezier(0.65, 0, 0.35, 1) both; }
+
+/* Harflerin yandan gelip yazılması */
+@keyframes nv-letter {
+  from { opacity: 0; transform: translateX(26px) rotate(6deg); }
+  to   { opacity: 1; transform: translateX(0) rotate(0); }
+}
+.nv-letter { animation: nv-letter 0.42s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
 /* Küre: gövde süzülür, yörünge halkaları sürekli döner */
 @keyframes nv-orb-float {
   0%, 100% { transform: translate(-50%, -50%) translateY(0); }
@@ -389,11 +410,16 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .nv-rise { animation: none; opacity: 1; transform: none; filter: none; }
+  .nv-drop, .nv-letter { animation: none; opacity: 1; transform: none; }
+  .nv-expand { animation: none; clip-path: none; }
   .nv-orb-body, .nv-orb-rings { animation: none; }
 }
 [data-reduced-motion="true"] .nv-rise {
   animation: none; opacity: 1; transform: none; filter: none;
 }
+[data-reduced-motion="true"] .nv-drop,
+[data-reduced-motion="true"] .nv-letter { animation: none; opacity: 1; transform: none; }
+[data-reduced-motion="true"] .nv-expand { animation: none; clip-path: none; }
 [data-reduced-motion="true"] .nv-orb-body,
 [data-reduced-motion="true"] .nv-orb-rings { animation: none; }
 

@@ -3,12 +3,13 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendPasswordChangedEmail } from "@/lib/email";
+import { passwordSchema } from "@/lib/password";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const parsed = z.object({
     token: z.string().min(1),
-    password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
+    password: passwordSchema,
   }).safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
 

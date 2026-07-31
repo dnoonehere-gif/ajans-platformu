@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Globe, Bot, Star, Sparkles, QrCode,
-  Users, Settings, Shield, ChevronRight, Building2, MapPin, CreditCard,
+  Users, Settings, ChevronRight, Building2, MapPin, CreditCard,
   UtensilsCrossed, Lock, Crown, Layers, FileBarChart, Send,
   Search, Mail, UserPlus, Receipt,
 } from "lucide-react";
@@ -95,7 +95,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-export function NavClient({ isAdmin }: { isAdmin: boolean }) {
+export function NavClient() {
   const pathname = usePathname();
   const { activeBrand } = useBrand();
   const { t, lang } = useLang();
@@ -178,23 +178,9 @@ export function NavClient({ isAdmin }: { isAdmin: boolean }) {
           </div>
         </div>
       ))}
-      {isAdmin && (
-        <div className="mt-4">
-          <p className="mb-1 px-3 text-[10px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground)/0.6)]">
-            {lang === "en" ? "Management" : "Yönetim"}
-          </p>
-          <Link
-            href="/elrmgklmer"
-            className="group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
-          >
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--accent))] group-hover:bg-[hsl(var(--primary)/0.12)]">
-              <Shield className="h-4 w-4 text-purple-400" />
-            </span>
-            <span className="flex-1">Admin Panel</span>
-            <ChevronRight className="h-3 w-3 opacity-0 transition group-hover:opacity-40" />
-          </Link>
-        </div>
-      )}
+      {/* Yönetim paneli bağlantısı KASITLI olarak gösterilmiyor.
+          Panele yalnızca doğrudan gizli URL ile gidilir ve middleware
+          SUPER_ADMIN/ADMIN rolü ister — linki bilmek tek başına yetmez. */}
     </nav>
   );
 }

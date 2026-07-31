@@ -43,7 +43,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   const user = session.user as { name?: string | null; email?: string | null; role?: string };
-  const isAdmin = user.role === "SUPER_ADMIN" || user.role === "ADMIN";
   const initials = (user.name ?? user.email ?? "K").slice(0, 2).toUpperCase();
 
   return (
@@ -66,7 +65,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
 
           {/* Nav */}
-          <NavClient isAdmin={isAdmin} />
+          <NavClient />
 
           {/* Tema seçici */}
           <div className="border-t border-[hsl(var(--border))]">
@@ -106,7 +105,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <div className="border-b border-[hsl(var(--border))] p-3">
                 <BrandSwitcher />
               </div>
-              <NavClient isAdmin={isAdmin} />
+              <NavClient />
 
               {/* Tema seçici */}
               <div className="border-t border-[hsl(var(--border))]">
