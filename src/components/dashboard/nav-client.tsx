@@ -95,7 +95,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-export function NavClient() {
+export function NavClient({ rail = false }: { rail?: boolean } = {}) {
   const pathname = usePathname();
   const { activeBrand } = useBrand();
   const { t, lang } = useLang();
@@ -126,13 +126,13 @@ export function NavClient() {
           key={item.href}
           href="/dashboard/abonelik"
           title={`${label(item)} — Planınıza dahil değil`}
-          className="group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-[hsl(var(--muted-foreground)/0.5)] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--muted-foreground))]"
+          className={`group/i flex items-center gap-3 rounded-2xl py-2.5 text-sm font-semibold text-[hsl(var(--muted-foreground)/0.5)] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--muted-foreground))] ${rail ? "justify-center px-2 group-hover:justify-start group-hover:px-3" : "px-3"}`}
         >
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--accent)/0.6)]">
             <item.icon className="h-4 w-4 opacity-50" />
           </span>
-          <span className="flex-1">{label(item)}</span>
-          <Lock className="h-3 w-3 opacity-60" />
+          <span className={rail ? "hidden flex-1 group-hover:block" : "flex-1"}>{label(item)}</span>
+          <Lock className={`h-3 w-3 opacity-60 ${rail ? "hidden group-hover:block" : ""}`} />
         </Link>
       );
     }
@@ -142,7 +142,10 @@ export function NavClient() {
         key={item.href}
         href={item.href}
         ref={isActive ? activeRef : undefined}
-        className={`group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition ${
+        title={rail ? label(item) : undefined}
+        className={`group/i flex items-center gap-3 rounded-2xl py-2.5 text-sm font-semibold transition ${
+          rail ? "justify-center px-2 group-hover:justify-start group-hover:px-3" : "px-3"
+        } ${
           isActive
             ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-[0_8px_20px_-8px_hsl(var(--primary)/0.8)]"
             : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
@@ -153,23 +156,23 @@ export function NavClient() {
           className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-xl transition ${
             isActive
               ? "bg-[hsl(var(--primary-foreground)/0.2)]"
-              : "bg-[hsl(var(--accent))] group-hover:bg-[hsl(var(--primary)/0.12)]"
+              : "bg-[hsl(var(--accent))] group-hover/i:bg-[hsl(var(--primary)/0.12)]"
           }`}
         >
           <item.icon className="h-4 w-4" />
         </span>
-        <span className="flex-1">{label(item)}</span>
-        <ChevronRight className={`h-3 w-3 transition ${isActive ? "opacity-70" : "opacity-0 group-hover:opacity-40"}`} />
+        <span className={rail ? "hidden flex-1 group-hover:block" : "flex-1"}>{label(item)}</span>
+        <ChevronRight className={`h-3 w-3 transition ${rail ? "hidden group-hover:block" : ""} ${isActive ? "opacity-70" : "opacity-0 group-hover/i:opacity-40"}`} />
       </Link>
     );
   }
 
   return (
-    <nav className="flex-1 overflow-y-auto p-3">
+    <nav className={`flex-1 overflow-y-auto ${rail ? "p-2 group-hover:p-3" : "p-3"}`}>
       {NAV_GROUPS.map((group, gi) => (
         <div key={gi} className={group.label ? "mt-4 first:mt-0" : ""}>
           {group.label && (
-            <p className="mb-1 px-3 text-[10px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground)/0.6)]">
+            <p className={`mb-1 px-3 text-[10px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground)/0.6)] ${rail ? "hidden group-hover:block" : ""}`}>
               {group.key ? t(`sidebar.${group.key}`) : group.label}
             </p>
           )}

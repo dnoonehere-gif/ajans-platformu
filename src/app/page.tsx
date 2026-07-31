@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Sparkles, Bot, BarChart3, QrCode, Globe, Star,
-  ArrowRight, Play, Users, UtensilsCrossed, MapPin, Building2, Menu, X,
+  ArrowRight, Play, Users, CheckCircle2, UtensilsCrossed, MapPin, Building2, Menu, X,
   CalendarCheck, UserPlus, Mail, Send, Search, FileBarChart, Layers, Palette,
 } from "lucide-react";
 import { useLang } from "@/components/language-provider";
@@ -373,6 +373,23 @@ export default function AnaSayfa() {
                 </span>
               </Link>
             </div>
+          </div>
+        </section>
+
+        {/* ══ GÜVEN ŞERİDİ — hero'nun hemen altında, numaralı ve ayraçlı ══ */}
+        <section className="mt-3 overflow-hidden rounded-[24px] bg-[var(--mk-surface)] sm:mt-4 sm:rounded-[28px]">
+          <div className="grid divide-y divide-dashed divide-[var(--mk-line)] sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x lg:divide-dashed">
+            {s.checks.map((c, i) => (
+              <Reveal key={c} delay={i * 90}>
+                <div className="flex items-center gap-3 px-6 py-5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-500/12 text-violet-600">
+                    <CheckCircle2 className="h-4 w-4" />
+                  </span>
+                  <span className="flex-1 text-sm font-semibold leading-snug">{c}</span>
+                  <span className="nv-index text-[var(--mk-ink-mute)]">/0{i + 1}</span>
+                </div>
+              </Reveal>
+            ))}
           </div>
         </section>
 

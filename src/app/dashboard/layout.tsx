@@ -52,28 +52,29 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className="flex min-h-screen bg-[hsl(var(--background))]">
         <AmbientBackground />
         {/* Sidebar — masaüstü */}
-        <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-[hsl(var(--border)/0.5)] bg-[hsl(var(--card))] lg:flex">
+        <aside
+          className="group fixed inset-y-0 left-0 z-40 hidden w-[76px] flex-col overflow-hidden border-r border-[hsl(var(--border)/0.5)] bg-[hsl(var(--card))] transition-[width] duration-300 ease-out hover:w-64 hover:shadow-[0_0_60px_-12px_hsl(var(--foreground)/0.25)] lg:flex">
 
           {/* Logo */}
-          <div className="flex h-16 items-center border-b border-[hsl(var(--border)/0.5)] px-5">
+          <div className="flex h-16 shrink-0 items-center justify-center border-b border-[hsl(var(--border)/0.5)] px-3 group-hover:justify-start group-hover:px-5">
             <WhiteLabelLogo />
           </div>
 
           {/* Marka seçici */}
-          <div className="border-b border-[hsl(var(--border))] p-3">
+          <div className="hidden border-b border-[hsl(var(--border))] p-3 group-hover:block">
             <BrandSwitcher />
           </div>
 
           {/* Nav */}
-          <NavClient />
+          <NavClient rail />
 
           {/* Tema seçici */}
-          <div className="border-t border-[hsl(var(--border))]">
-            <details className="group">
+          <div className="hidden border-t border-[hsl(var(--border))] group-hover:block">
+            <details className="group/t">
               <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:text-[hsl(var(--foreground))]">
                 <Palette className="h-4 w-4 shrink-0" />
                 <ThemeLabel />
-                <ChevronRight className="h-3 w-3 transition group-open:rotate-90" />
+                <ChevronRight className="h-3 w-3 transition group-open/t:rotate-90" />
               </summary>
               <ThemeSwitcher />
             </details>
@@ -81,15 +82,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
           {/* Kullanıcı */}
           <div className="border-t border-[hsl(var(--border))] p-3">
-            <div className="flex items-center gap-3 rounded-2xl bg-[hsl(var(--accent)/0.6)] px-3 py-2.5">
+            <div className="flex items-center gap-3 rounded-2xl bg-[hsl(var(--accent)/0.6)] px-2 py-2.5 group-hover:px-3">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary)/0.2)] text-xs font-bold text-[hsl(var(--primary))]">
                 {initials}
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="hidden min-w-0 flex-1 group-hover:block">
                 <p className="truncate text-xs font-semibold"><UserName name={user.name} /></p>
                 <p className="truncate text-[10px] text-[hsl(var(--muted-foreground))]">{user.email}</p>
               </div>
-              <form action={async () => { "use server"; await signOut({ redirectTo: `${process.env.NEXTAUTH_URL ?? ""}/giris` }); }}>
+              <form className="hidden group-hover:block" action={async () => { "use server"; await signOut({ redirectTo: `${process.env.NEXTAUTH_URL ?? ""}/giris` }); }}>
                 <LogoutButton />
               </form>
             </div>
@@ -97,7 +98,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </aside>
 
         {/* İçerik */}
-        <main className="relative z-10 flex-1 min-h-screen overflow-auto lg:ml-64">
+        <main className="relative z-10 flex-1 min-h-screen overflow-auto lg:ml-[76px]">
           {/* Topbar */}
           <div className="sticky top-0 z-30 flex h-16 items-center border-b border-[hsl(var(--border)/0.5)] bg-[hsl(var(--background)/0.75)] px-4 backdrop-blur-xl gap-2">
             {/* Mobil hamburger + slide-in sidebar */}
