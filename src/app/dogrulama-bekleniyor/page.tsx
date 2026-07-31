@@ -60,22 +60,22 @@ export default function VerificationPending() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#07070c] px-6">
+    <div className="flex min-h-screen items-center justify-center bg-[#eceae5] px-6">
       <div className="w-full max-w-md rounded-3xl border border-white/[0.08] bg-[#121218] p-8 text-center shadow-2xl">
         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600">
-          <MailCheck className="h-8 w-8 text-white" />
+          <MailCheck className="h-8 w-8 text-neutral-900" />
         </div>
-        <h1 className="text-xl font-bold text-white">{t.title}</h1>
-        <p className="mt-3 text-sm leading-relaxed text-slate-400">{t.desc}</p>
+        <h1 className="text-xl font-bold text-neutral-900">{t.title}</h1>
+        <p className="mt-3 text-sm leading-relaxed text-neutral-500">{t.desc}</p>
 
         {email && (
-          <div className="mt-5 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
-            <p className="text-xs text-slate-500">{t.sentTo}</p>
+          <div className="mt-5 rounded-xl border border-neutral-900/[0.07] bg-neutral-900/[0.03] px-4 py-3">
+            <p className="text-xs text-neutral-500">{t.sentTo}</p>
             <p className="mt-1 break-all text-sm font-semibold text-violet-300">{email}</p>
           </div>
         )}
 
-        <p className="mt-4 text-xs text-slate-500">{t.notReceived}</p>
+        <p className="mt-4 text-xs text-neutral-500">{t.notReceived}</p>
 
         {state === "sent" && <p className="mt-4 rounded-lg bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400">{t.sent}</p>}
         {state === "already" && <p className="mt-4 rounded-lg bg-violet-500/10 px-4 py-2 text-sm text-violet-300">{t.already}</p>}
@@ -84,7 +84,7 @@ export default function VerificationPending() {
         <button
           onClick={resend}
           disabled={state === "sending"}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-neutral-900 transition hover:opacity-90 disabled:opacity-60"
         >
           {state === "sending" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           {state === "sending" ? t.sending : t.resend}
@@ -94,14 +94,14 @@ export default function VerificationPending() {
             Doğrulama tamamlandıysa layout içeri alır, tamamlanmadıysa geri döner. */}
         <button
           onClick={() => { window.location.href = "/dashboard"; }}
-          className="mt-3 w-full rounded-xl border border-white/10 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/[0.04]"
+          className="mt-3 w-full rounded-xl border border-white/10 py-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-900/[0.04]"
         >
           {t.refresh}
         </button>
 
         <button
           onClick={() => signOut({ callbackUrl: "/giris" })}
-          className="mx-auto mt-5 flex items-center gap-1.5 text-xs text-slate-500 transition hover:text-slate-300"
+          className="mx-auto mt-5 flex items-center gap-1.5 text-xs text-neutral-500 transition hover:text-neutral-600"
         >
           <LogOut className="h-3.5 w-3.5" /> {t.logout}
         </button>
