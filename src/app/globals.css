@@ -367,6 +367,36 @@ body {
   color: hsl(var(--muted-foreground));
 }
 
+/* ─── GİRİŞ ANİMASYONLARI ───────────────────────────────────────
+   Referans videodaki hareket: kartlar alttan, hafif küçülmüş ve bulanık
+   gelip kademeli gecikmeyle yerine oturuyor.                           */
+@keyframes nv-rise {
+  from { opacity: 0; transform: translateY(52px) scale(0.97); filter: blur(12px); }
+  to   { opacity: 1; transform: translateY(0) scale(1);       filter: blur(0); }
+}
+.nv-rise {
+  animation: nv-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Küre: gövde süzülür, yörünge halkaları sürekli döner */
+@keyframes nv-orb-float {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50%      { transform: translate(-50%, -50%) translateY(-16px); }
+}
+@keyframes nv-orb-spin { to { transform: rotate(360deg); } }
+.nv-orb-body  { animation: nv-orb-float 7s ease-in-out infinite; }
+.nv-orb-rings { animation: nv-orb-spin 26s linear infinite; transform-origin: 50% 50%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nv-rise { animation: none; opacity: 1; transform: none; filter: none; }
+  .nv-orb-body, .nv-orb-rings { animation: none; }
+}
+[data-reduced-motion="true"] .nv-rise {
+  animation: none; opacity: 1; transform: none; filter: none;
+}
+[data-reduced-motion="true"] .nv-orb-body,
+[data-reduced-motion="true"] .nv-orb-rings { animation: none; }
+
 /* Metnin arkasındaki vurgu hapı (referanstaki highlight) */
 .nv-highlight {
   background: hsl(var(--primary) / 0.18);

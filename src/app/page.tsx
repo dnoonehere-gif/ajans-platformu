@@ -1,11 +1,11 @@
 "use client";
 import { LogoMark } from "@/components/logo";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Sparkles, Bot, BarChart3, QrCode, Globe, Star,
   ArrowRight, Play, Users, UtensilsCrossed, MapPin, Building2, Menu, X,
-  CalendarCheck, UserPlus, Mail, Send, Search, FileBarChart,
+  CalendarCheck, UserPlus, Mail, Send, Search, FileBarChart, Layers, Palette,
 } from "lucide-react";
 import { useLang, LanguageSwitcher } from "@/components/language-provider";
 
@@ -26,6 +26,8 @@ const FEATURES = [
   { icon: Send, title: "Sosyal Medya Planlayıcı", desc: "Instagram, Facebook ve LinkedIn paylaşımlarınızı planlayın, tek panelden yönetin.", accent: "#f472b6", delay: 780 },
   { icon: Search, title: "SEO Araçları", desc: "Sitenizi tarayın, rakip anahtar kelimeleri analiz edin, AI önerileri alın.", accent: "#4ade80", delay: 840 },
   { icon: FileBarChart, title: "Müşteri Raporları", desc: "Ajanslar için beyaz etiketli PDF raporlar; 9 metrik tek tıkla müşterinize hazır.", accent: "#c084fc", delay: 900 },
+  { icon: Layers, title: "Toplu İçerik Üretimi", desc: "Tek seferde onlarca gönderi üretin; şablonlarla planlayın, CSV olarak dışa aktarın.", accent: "#38bdf8", delay: 960 },
+  { icon: Palette, title: "White-Label", desc: "Kendi logonuz, renginiz ve alan adınızla sunun; platform tamamen sizin markanız görünür.", accent: "#fb7185", delay: 1020 },
 ];
 
 const STEPS = [
@@ -53,6 +55,8 @@ const FEATURES_EN = [
   { title: "Social Media Planner", desc: "Plan your Instagram, Facebook and LinkedIn posts from a single panel." },
   { title: "SEO Tools", desc: "Scan your site, analyze competitor keywords, get AI suggestions." },
   { title: "Client Reports", desc: "White-label PDF reports for agencies; 9 metrics ready for your client in one click." },
+  { title: "Batch Content", desc: "Generate dozens of posts at once; plan with templates and export as CSV." },
+  { title: "White-Label", desc: "Serve it under your own logo, colors and domain — the platform looks entirely like your brand." },
 ];
 
 const STEPS_EN = [
@@ -160,8 +164,8 @@ const L = {
 function Orb({ className = "" }: { className?: string }) {
   return (
     <div className={`pointer-events-none relative ${className}`} aria-hidden>
-      {/* yörünge halkaları */}
-      <svg viewBox="0 0 400 400" className="absolute inset-0 h-full w-full">
+      {/* yörünge halkaları — sürekli döner */}
+      <svg viewBox="0 0 400 400" className="nv-orb-rings absolute inset-0 h-full w-full">
         <ellipse cx="200" cy="200" rx="185" ry="70" fill="none" stroke="#8b5cf6" strokeOpacity="0.35" strokeWidth="1.5"
           transform="rotate(-18 200 200)" />
         <ellipse cx="200" cy="200" rx="175" ry="95" fill="none" stroke="#64748b" strokeOpacity="0.3" strokeWidth="1.5"
@@ -170,7 +174,7 @@ function Orb({ className = "" }: { className?: string }) {
           transform="rotate(6 200 200)" />
       </svg>
       {/* küre gövdesi */}
-      <div className="absolute left-1/2 top-1/2 h-[62%] w-[62%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+      <div className="nv-orb-body absolute left-1/2 top-1/2 h-[62%] w-[62%] rounded-full"
         style={{
           background:
             "radial-gradient(circle at 32% 28%, #f5f3ff 0%, #c4b5fd 18%, #8b5cf6 42%, #5b21b6 68%, #2e1065 100%)",
@@ -179,8 +183,37 @@ function Orb({ className = "" }: { className?: string }) {
         }}
       />
       {/* parlama */}
-      <div className="absolute left-1/2 top-1/2 h-[62%] w-[62%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+      <div className="nv-orb-body absolute left-1/2 top-1/2 h-[62%] w-[62%] rounded-full"
         style={{ background: "radial-gradient(circle at 30% 24%, rgba(255,255,255,0.55) 0%, transparent 38%)" }} />
+    </div>
+  );
+}
+
+/* Görünür olunca kademeli giriş — referans videodaki kart kaskadı */
+function Reveal({ children, delay = 0, className = "" }: {
+  children: React.ReactNode; delay?: number; className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setShown(true); io.disconnect(); } },
+      { threshold: 0.15, rootMargin: "0px 0px -60px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`${className} ${shown ? "nv-rise" : "opacity-0"}`}
+      style={shown ? { animationDelay: `${delay}ms` } : undefined}
+    >
+      {children}
     </div>
   );
 }
@@ -297,10 +330,12 @@ export default function AnaSayfa() {
           <h2 className="nv-display px-2 pb-4 pt-6 text-4xl sm:text-5xl">{s.featBadge}<span className="text-violet-600">.</span></h2>
           <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[24px] bg-neutral-200 sm:rounded-[28px] lg:grid-cols-4">
             {s.stats.map((label, i) => (
-              <div key={label} className="bg-white px-5 py-7 text-center">
+              <Reveal key={label} delay={i * 90} className="bg-white">
+              <div className="px-5 py-7 text-center">
                 <p className="text-3xl font-black tracking-tight sm:text-4xl">{["120+", "4.8★", "8.500+", "%90"][i]}</p>
                 <p className="mt-1.5 text-xs text-neutral-500">{label}</p>
               </div>
+              </Reveal>
             ))}
           </div>
         </section>
@@ -315,8 +350,13 @@ export default function AnaSayfa() {
 
           <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {feats.map((f, i) => (
-              <div key={f.title}
-                className="group rounded-[22px] bg-neutral-900 p-6 transition hover:bg-neutral-800/90">
+              <Reveal
+                key={f.title}
+                delay={(i % 3) * 110}
+                className={["lg:mt-0", "lg:mt-8", "lg:mt-16"][i % 3]}
+              >
+              <div
+                className="group h-full rounded-[22px] bg-neutral-900 p-6 transition duration-300 hover:-translate-y-1 hover:bg-neutral-800/90">
                 <div className="mb-5 flex items-center justify-between">
                   <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] transition group-hover:scale-110"
                     style={{ color: f.accent }}>
@@ -328,6 +368,7 @@ export default function AnaSayfa() {
                 <Dotted className="my-3 text-white" />
                 <p className="text-sm leading-relaxed text-neutral-400">{f.desc}</p>
               </div>
+              </Reveal>
             ))}
           </div>
         </section>
@@ -338,13 +379,15 @@ export default function AnaSayfa() {
             {s.stepsT1} <span className="text-violet-600">{s.stepsGrad}</span>
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((st) => (
-              <div key={st.num} className="rounded-[22px] bg-white p-6">
+            {steps.map((st, i) => (
+              <Reveal key={st.num} delay={i * 110}>
+              <div className="h-full rounded-[22px] bg-white p-6">
                 <span className="nv-display block text-5xl text-violet-600">{st.num}</span>
                 <Dotted className="my-4 text-neutral-500" />
                 <h3 className="text-base font-bold">{st.title}</h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-neutral-500">{st.desc}</p>
               </div>
+              </Reveal>
             ))}
           </div>
         </section>
