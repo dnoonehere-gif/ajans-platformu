@@ -1,88 +1,13 @@
 "use client";
 import { LogoMark } from "@/components/logo";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import {
   Sparkles, Bot, BarChart3, QrCode, Globe, Star,
-  ArrowRight, CheckCircle2, Zap, Shield, TrendingUp,
-  MessageSquare, Users, ChevronRight, Play,
-  UtensilsCrossed, MapPin, Building2, Menu, X,
+  ArrowRight, Play, Users, UtensilsCrossed, MapPin, Building2, Menu, X,
   CalendarCheck, UserPlus, Mail, Send, Search, FileBarChart,
 } from "lucide-react";
-import BorderGlow from "@/components/reactbits/border-glow";
-import ElectricBorder from "@/components/reactbits/electric-border";
 import { useLang, LanguageSwitcher } from "@/components/language-provider";
-
-// Canvas bileşeni — SSR kapalı, sadece istemcide yüklenir
-const DotField = dynamic(() => import("@/components/reactbits/dot-field"), { ssr: false });
-
-/* ── Scroll ile görünür olan sarmalayıcı ───────────────────── */
-function Reveal({ children, delay = 0, className = "" }: {
-  children: React.ReactNode; delay?: number; className?: string;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.1 });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      className={className}
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(28px)",
-        transition: `opacity 0.7s ease ${delay}ms, transform 0.7s ease ${delay}ms`,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-/* ── Özellik kartı ─────────────────────────────────────────── */
-function FeatureCard({ icon: Icon, title, desc, accent, delay }: {
-  icon: React.ElementType; title: string; desc: string; accent: string; delay: number;
-}) {
-  return (
-    <Reveal delay={delay}>
-      <div className="group relative h-full overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-violet-400/30 hover:bg-white/[0.05] hover:shadow-[0_8px_40px_-12px_rgba(139,92,246,0.35)]">
-        <div
-          className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 transition-transform duration-300 group-hover:scale-110"
-          style={{ background: `linear-gradient(135deg, ${accent}26, ${accent}0d)` }}
-        >
-          <Icon className="h-6 w-6" style={{ color: accent }} />
-        </div>
-        <h3 className="mb-2 text-base font-bold text-white">{title}</h3>
-        <p className="text-sm leading-relaxed text-slate-400">{desc}</p>
-        <div
-          className="absolute bottom-0 left-0 right-0 h-px scale-x-0 transition-transform duration-300 group-hover:scale-x-100"
-          style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }}
-        />
-      </div>
-    </Reveal>
-  );
-}
-
-/* ── Stat kartı ────────────────────────────────────────────── */
-function StatCard({ value, label, icon: Icon, delay }: {
-  value: string; label: string; icon: React.ElementType; delay: number;
-}) {
-  return (
-    <Reveal delay={delay}>
-      <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-6 py-7 transition hover:border-violet-400/25 hover:bg-white/[0.05]">
-        <Icon className="h-6 w-6 text-violet-400" />
-        <p className="text-3xl font-black text-white">{value}</p>
-        <p className="text-center text-sm text-slate-400">{label}</p>
-      </div>
-    </Reveal>
-  );
-}
 
 const FEATURES = [
   { icon: Globe, title: "AI Web Sitesi Kurucu", desc: "Birkaç soruyu yanıtlayın, dakikalar içinde profesyonel kurumsal siteniz hazır olsun.", accent: "#8b5cf6", delay: 0 },
@@ -230,415 +155,255 @@ const L = {
   },
 };
 
+/* ── Dekoratif küre — referans tasarımdaki 3B küreye karşılık gelen,
+      tamamen CSS/SVG ile üretilmiş katmanlı orb (harici görsel yok) ── */
+function Orb({ className = "" }: { className?: string }) {
+  return (
+    <div className={`pointer-events-none relative ${className}`} aria-hidden>
+      {/* yörünge halkaları */}
+      <svg viewBox="0 0 400 400" className="absolute inset-0 h-full w-full">
+        <ellipse cx="200" cy="200" rx="185" ry="70" fill="none" stroke="#8b5cf6" strokeOpacity="0.35" strokeWidth="1.5"
+          transform="rotate(-18 200 200)" />
+        <ellipse cx="200" cy="200" rx="175" ry="95" fill="none" stroke="#64748b" strokeOpacity="0.3" strokeWidth="1.5"
+          transform="rotate(22 200 200)" />
+        <ellipse cx="200" cy="200" rx="192" ry="45" fill="none" stroke="#a855f7" strokeOpacity="0.28" strokeWidth="1.5"
+          transform="rotate(6 200 200)" />
+      </svg>
+      {/* küre gövdesi */}
+      <div className="absolute left-1/2 top-1/2 h-[62%] w-[62%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle at 32% 28%, #f5f3ff 0%, #c4b5fd 18%, #8b5cf6 42%, #5b21b6 68%, #2e1065 100%)",
+          boxShadow:
+            "inset -18px -22px 60px rgba(20,10,50,0.75), inset 14px 16px 40px rgba(255,255,255,0.35), 0 40px 90px -30px rgba(109,40,217,0.55)",
+        }}
+      />
+      {/* parlama */}
+      <div className="absolute left-1/2 top-1/2 h-[62%] w-[62%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{ background: "radial-gradient(circle at 30% 24%, rgba(255,255,255,0.55) 0%, transparent 38%)" }} />
+    </div>
+  );
+}
+
+/* Noktalı ayraç */
+function Dotted({ className = "" }: { className?: string }) {
+  return <div className={`border-t border-dashed border-current opacity-25 ${className}`} />;
+}
+
 export default function AnaSayfa() {
-  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { lang } = useLang();
   const s = L[lang];
+  const feats = lang === "en" ? FEATURES.map((f, i) => ({ ...f, ...FEATURES_EN[i] })) : FEATURES;
+  const steps = lang === "en" ? STEPS.map((st, i) => ({ ...st, ...STEPS_EN[i] })) : STEPS;
 
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", fn);
-    return () => window.removeEventListener("scroll", fn);
-  }, []);
+  const navLinks = (
+    <>
+      <a href="#ozellikler" className="rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition hover:bg-neutral-900/[0.06] hover:text-neutral-900">{s.navFeatures}</a>
+      <a href="#nasil-calisir" className="rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition hover:bg-neutral-900/[0.06] hover:text-neutral-900">{s.navHow}</a>
+      <Link href="/fiyatlar" className="rounded-full px-4 py-2 text-sm font-medium text-neutral-600 transition hover:bg-neutral-900/[0.06] hover:text-neutral-900">{s.navPricing}</Link>
+    </>
+  );
 
   return (
-    <div className="min-h-screen bg-[#07070e] text-white selection:bg-violet-500/40">
+    <div className="min-h-screen bg-[#eceae5] text-neutral-900 selection:bg-violet-300/60">
+      <div className="mx-auto max-w-[1400px] px-3 pb-3 sm:px-4 sm:pb-4">
 
-      {/* ── Navbar ── */}
-      <nav style={{ top: "var(--nv-announce-h, 0px)" }} className={`fixed z-50 w-full transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ${scrolled ? "border-b border-white/[0.06] bg-[#07070e]/85 shadow-[0_4px_30px_rgba(0,0,0,0.4)] backdrop-blur-xl" : "bg-transparent"}`}>
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-2.5">
-            <LogoMark size={32} />
-            <span className="text-sm font-bold text-white">Novelya</span>
-          </Link>
-          {/* Yüzen kapsül menü — referans tasarımdaki gibi bağlantılar tek bir hapın içinde */}
-          <div className="hidden items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.04] p-1 backdrop-blur-md md:flex">
-            <a href="#ozellikler" className="rounded-full px-4 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/[0.07] hover:text-white">{s.navFeatures}</a>
-            <a href="#nasil-calisir" className="rounded-full px-4 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/[0.07] hover:text-white">{s.navHow}</a>
-            <Link href="/fiyatlar" className="rounded-full px-4 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-white/[0.07] hover:text-white">{s.navPricing}</Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
-            <Link href="/giris" className="hidden text-sm font-medium text-slate-300 transition hover:text-white sm:block">{s.navLogin}</Link>
-            <Link href="/kayit" className="hidden whitespace-nowrap rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 transition hover:opacity-90 hover:shadow-violet-500/40 sm:inline-flex">
-              {s.navSignup}
+        {/* ══ HERO — beyaz üst kart (nav + dev wordmark) + açık gri alt alan ══ */}
+        <section className="relative overflow-hidden rounded-[28px] bg-white shadow-[0_30px_80px_-40px_rgba(20,20,40,0.35)] sm:rounded-[36px]">
+
+          {/* Nav */}
+          <div className="flex items-center justify-between gap-4 px-4 pt-4 sm:px-7 sm:pt-6">
+            <Link href="/" className="flex shrink-0 items-center gap-2.5">
+              <LogoMark size={30} />
+              <span className="text-[15px] font-bold tracking-tight">Novelya</span>
             </Link>
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-slate-300 md:hidden"
-              aria-label="Menü"
-            >
-              {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-            </button>
-          </div>
-        </div>
-        {menuOpen && (
-          <div className="border-t border-white/[0.06] bg-[#0a0a14]/95 px-6 py-4 backdrop-blur-xl md:hidden">
-            <div className="flex flex-col gap-4">
-              <a href="#ozellikler" onClick={() => setMenuOpen(false)} className="text-sm text-slate-300">{s.navFeatures}</a>
-              <a href="#nasil-calisir" onClick={() => setMenuOpen(false)} className="text-sm text-slate-300">{s.navHow}</a>
-              <Link href="/fiyatlar" onClick={() => setMenuOpen(false)} className="text-sm text-slate-300">{s.navPricing}</Link>
-              <div className="mt-2 flex flex-col gap-2 border-t border-white/[0.06] pt-4">
-                <Link href="/giris" onClick={() => setMenuOpen(false)} className="rounded-xl border border-white/10 py-2.5 text-center text-sm font-medium text-slate-200">{s.navLogin}</Link>
-                <Link href="/kayit" onClick={() => setMenuOpen(false)} className="rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-2.5 text-center text-sm font-semibold text-white shadow-lg shadow-violet-500/25">{s.navSignup}</Link>
-              </div>
+
+            {/* kapsül menü */}
+            <div className="hidden items-center rounded-full bg-neutral-900/[0.05] p-1 md:flex">{navLinks}</div>
+
+            <div className="flex items-center gap-2 sm:gap-3">
+              <LanguageSwitcher />
+              <Link href="/giris" className="hidden text-sm font-medium text-neutral-600 transition hover:text-neutral-900 sm:block">{s.navLogin}</Link>
+              <Link href="/kayit" className="group hidden items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800 sm:inline-flex">
+                {s.navSignup}
+                <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
+              </Link>
+              <button onClick={() => setMenuOpen(!menuOpen)} aria-label="Menü"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900/[0.06] text-neutral-700 md:hidden">
+                {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              </button>
             </div>
           </div>
-        )}
-      </nav>
 
-      {/* ── Hero ── */}
-      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pt-16 text-center">
-        {/* DotField arka plan */}
-        <div className="pointer-events-none absolute inset-0">
-          <DotField
-            dotRadius={1.6}
-            dotSpacing={15}
-            bulgeStrength={55}
-            glowRadius={180}
-            sparkle
-            waveAmplitude={1.2}
-            gradientFrom="rgba(139, 92, 246, 0.4)"
-            gradientTo="rgba(99, 102, 241, 0.18)"
-            glowColor="#1b1233"
-            style={{ pointerEvents: "auto" }}
-          />
-          {/* Vinyet — kenarlarda karart, içerik okunur kalsın */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(7,7,14,0.55)_65%,#07070e_100%)]" />
-          {/* Üstten mor ışıma */}
-          <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-violet-600/15 blur-[120px]" />
-        </div>
+          {menuOpen && (
+            <div className="mx-4 mt-4 flex flex-col gap-1 rounded-2xl bg-neutral-900/[0.04] p-2 md:hidden">
+              {navLinks}
+              <Link href="/kayit" onClick={() => setMenuOpen(false)}
+                className="mt-1 rounded-full bg-neutral-900 py-2.5 text-center text-sm font-semibold text-white">{s.navSignup}</Link>
+            </div>
+          )}
 
-        <div className="pointer-events-none relative z-10 max-w-4xl">
-          {/* Badge */}
-          <div className="pointer-events-auto mb-6 inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-500/10 px-4 py-1.5 text-xs font-semibold text-violet-300 backdrop-blur">
-            <Zap className="h-3.5 w-3.5" />
-            {s.heroBadge}
-          </div>
-
-          {/* Başlık — dev display tipografi (referans tasarımdaki iri, sıkı harf aralıklı dil) */}
-          <h1 className="nv-display text-[3.25rem] text-white sm:text-6xl md:text-8xl">
-            {s.heroT1}{" "}
-            <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent">
-              {s.heroGrad}
-            </span>{s.heroT2 ? " " + s.heroT2 : ""}
+          {/* Dev wordmark */}
+          <h1 className="nv-display px-3 pt-8 text-center text-[clamp(3.2rem,15.5vw,13rem)] text-neutral-900 sm:pt-10">
+            NOVELYA<span className="text-violet-600">.</span>
           </h1>
 
-          <p className="mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-slate-400 md:text-xl">
-            {s.heroDesc}{" "}
-            <strong className="font-semibold text-slate-200">{s.heroDescBold}</strong>
-          </p>
+          {/* Alt alan: küre + meta */}
+          <div className="relative mt-[-2%] bg-gradient-to-b from-white via-[#f4f3f0] to-[#eeece7] px-4 pb-10 pt-4 sm:px-8">
+            <Orb className="mx-auto h-[260px] w-[260px] sm:h-[380px] sm:w-[380px] lg:h-[440px] lg:w-[440px]" />
 
-          {/* Noktalı ayraç */}
-          <div className="mx-auto mt-8 h-px w-56 border-t border-dashed border-white/20" />
-
-          {/* CTA — birincil hap + dairesel vurgu rozeti */}
-          <div className="pointer-events-auto mt-9 flex flex-col items-center gap-5 sm:flex-row sm:justify-center">
-            <Link
-              href="/kayit"
-              className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-4 text-base font-bold text-white shadow-[0_0_40px_-8px_rgba(139,92,246,0.6)] transition hover:-translate-y-0.5 hover:shadow-[0_0_60px_-8px_rgba(139,92,246,0.8)]"
-            >
-              {s.heroCta}
-              <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-            </Link>
-            <Link
-              href="/giris"
-              aria-label={s.heroDemo}
-              className="group flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full bg-violet-500/15 text-center text-[11px] font-bold leading-tight text-violet-200 ring-1 ring-violet-400/30 transition hover:bg-violet-500/25 hover:ring-violet-400/60"
-            >
-              <span className="flex flex-col items-center gap-1">
-                <Play className="h-4 w-4 fill-violet-300 text-violet-300 transition group-hover:scale-110" />
-                {s.heroDemo}
-              </span>
-            </Link>
-          </div>
-
-          {/* Güven satırı — numaralı indeks (referanstaki /01 /02 /03 dili) */}
-          <div className="mt-14 flex flex-wrap items-center justify-center gap-x-7 gap-y-3">
-            {s.checks.map((t, i) => (
-              <div key={t} className="flex items-center gap-2 text-sm text-slate-400">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                {t}
-                <span className="nv-index ml-1 text-white/25">/0{i + 1}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Mockup kartı — BorderGlow sarmalı */}
-        <div className="relative z-10 mt-20 w-full max-w-3xl">
-          <BorderGlow
-            backgroundColor="#0c0c16"
-            borderRadius={24}
-            glowColor="262 70 75"
-            glowIntensity={0.9}
-            colors={["#8b5cf6", "#e879f9", "#38bdf8"]}
-            animated
-          >
-            <div className="overflow-hidden rounded-3xl">
-              {/* Tarayıcı çubuğu */}
-              <div className="flex items-center gap-2 border-b border-white/[0.06] bg-white/[0.03] px-4 py-3">
-                <div className="h-3 w-3 rounded-full bg-red-400/80" />
-                <div className="h-3 w-3 rounded-full bg-yellow-400/80" />
-                <div className="h-3 w-3 rounded-full bg-green-400/80" />
-                <div className="ml-4 flex-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-1 text-left text-xs text-slate-500">
-                  novelya.com.tr/dashboard
-                </div>
-              </div>
-              {/* Dashboard önizleme */}
-              <div className="grid grid-cols-4 gap-0">
-                {/* Sidebar */}
-                <div className="col-span-1 space-y-2 border-r border-white/[0.06] bg-white/[0.02] p-4">
-                  <div className="flex h-8 w-full items-center gap-2 rounded-lg bg-violet-500/20 px-2">
-                    <div className="h-3 w-3 rounded bg-violet-400" />
-                    <div className="h-2 w-16 rounded bg-violet-400/50" />
-                  </div>
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className="flex h-7 w-full items-center gap-2 rounded-lg bg-white/[0.04] px-2">
-                      <div className="h-2.5 w-2.5 rounded bg-white/20" />
-                      <div className="h-1.5 rounded bg-white/10" style={{ width: `${40 + i * 8}%` }} />
-                    </div>
+            {/* Sol üst: sosyal kanıt / Sağ üst: numaralı indeks */}
+            <div className="pointer-events-none absolute inset-x-0 top-8 hidden items-start justify-between px-8 lg:flex">
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-2">
+                  {["#8b5cf6", "#6366f1", "#a855f7"].map((c) => (
+                    <span key={c} className="h-8 w-8 rounded-full border-2 border-white" style={{ background: c }} />
                   ))}
                 </div>
-                {/* İçerik */}
-                <div className="col-span-3 space-y-3 p-4">
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { label: "Toplam Yorum", value: "247", color: "text-violet-300 bg-violet-500/15" },
-                      { label: "Ort. Puan", value: "4.8★", color: "text-emerald-300 bg-emerald-500/15" },
-                      { label: "Bu Hafta", value: "+12", color: "text-sky-300 bg-sky-500/15" },
-                    ].map((c) => (
-                      <div key={c.label} className={`rounded-xl p-3 text-left ${c.color}`}>
-                        <p className="text-[10px] opacity-70">{c.label}</p>
-                        <p className="text-lg font-black">{c.value}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="space-y-1.5 rounded-xl bg-white/[0.03] p-3">
-                    {[80, 55, 90, 40, 70].map((w, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <div className="h-1.5 flex-1 rounded-full bg-white/[0.06]">
-                          <div className="h-full rounded-full bg-gradient-to-r from-violet-500 to-indigo-400" style={{ width: `${w}%` }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="rounded-xl bg-emerald-500/10 p-3 text-left">
-                    <div className="mb-2 flex items-center gap-2">
-                      <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-                      <span className="text-[10px] font-semibold text-emerald-300">AI Öneri</span>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="h-1.5 w-full rounded bg-emerald-400/25" />
-                      <div className="h-1.5 w-4/5 rounded bg-emerald-400/25" />
-                    </div>
-                  </div>
+                <div>
+                  <p className="text-xl font-bold leading-none">120+</p>
+                  <p className="mt-1 text-xs text-neutral-500">{s.stats[0]}</p>
                 </div>
               </div>
-            </div>
-          </BorderGlow>
-        </div>
-      </section>
-
-      {/* ── İstatistikler ── */}
-      <section className="relative px-6 py-20">
-        <div className="mx-auto max-w-4xl">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <StatCard value="120+" label={s.stats[0]} icon={Users} delay={0} />
-            <StatCard value="4.8★" label={s.stats[1]} icon={Star} delay={80} />
-            <StatCard value="8.500+" label={s.stats[2]} icon={MessageSquare} delay={160} />
-            <StatCard value="%90" label={s.stats[3]} icon={TrendingUp} delay={240} />
-          </div>
-        </div>
-      </section>
-
-      {/* ── Özellikler ── */}
-      <section id="ozellikler" className="relative px-6 py-24">
-        {/* Arka ışıma */}
-        <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[700px] -translate-x-1/2 rounded-full bg-indigo-600/10 blur-[130px]" />
-        <div className="relative mx-auto max-w-6xl">
-          <div className="mb-16 text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-500/10 px-4 py-1.5 text-xs font-semibold text-violet-300">
-              <Sparkles className="h-3.5 w-3.5" />
-              {s.featBadge}
-            </div>
-            <h2 className="text-4xl font-black text-white md:text-5xl">
-              {s.featT1}{" "}
-              <span className="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">
-                {s.featGrad}
-              </span>
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-slate-400">
-              {s.featDesc}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f, i) => (
-              <FeatureCard
-                key={f.title}
-                {...f}
-                title={lang === "en" ? FEATURES_EN[i].title : f.title}
-                desc={lang === "en" ? FEATURES_EN[i].desc : f.desc}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Nasıl Çalışır ── */}
-      <section id="nasil-calisir" className="relative px-6 py-24">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-16 text-center">
-            <h2 className="text-4xl font-black text-white md:text-5xl">
-              {s.stepsT1}{" "}
-              <span className="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">{s.stepsGrad}</span>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {STEPS.map((step, i) => (
-              <Reveal key={step.num} delay={i * 100} className="relative">
-                {i < STEPS.length - 1 && (
-                  <div className="absolute top-6 left-full z-0 hidden h-px w-6 bg-gradient-to-r from-violet-400/40 to-transparent lg:block" />
-                )}
-                <div className="relative z-10 h-full rounded-2xl border border-white/[0.07] bg-white/[0.03] p-6 transition hover:border-violet-400/25 hover:bg-white/[0.05]">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-violet-400/20 bg-gradient-to-br from-violet-500/20 to-indigo-500/10">
-                    <span className="text-lg font-black text-violet-300">{step.num}</span>
-                  </div>
-                  <h3 className="mb-2 font-bold text-white">{lang === "en" ? STEPS_EN[i].title : step.title}</h3>
-                  <p className="text-sm text-slate-400">{lang === "en" ? STEPS_EN[i].desc : step.desc}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Güven ── */}
-      <section className="px-6 py-20">
-        <div className="mx-auto max-w-4xl">
-          <Reveal>
-            <div className="rounded-3xl border border-white/[0.07] bg-gradient-to-br from-white/[0.04] to-transparent p-10">
-              <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-                {[
-                  { icon: Shield, ...s.trust[0] },
-                  { icon: Zap, ...s.trust[1] },
-                  { icon: MessageSquare, ...s.trust[2] },
-                ].map(({ icon: Icon, title, desc }) => (
-                  <div key={title} className="flex items-start gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/10">
-                      <Icon className="h-5 w-5 text-violet-300" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-white">{title}</p>
-                      <p className="mt-1 text-sm text-slate-400">{desc}</p>
-                    </div>
-                  </div>
+              <div className="space-y-1.5 text-right">
+                {s.checks.slice(0, 3).map((c, i) => (
+                  <p key={c} className="text-sm text-neutral-500">
+                    {c} <span className="nv-index ml-1 text-neutral-400">/0{i + 1}</span>
+                  </p>
                 ))}
               </div>
             </div>
-          </Reveal>
-        </div>
-      </section>
 
-      {/* ── CTA — ElectricBorder ── */}
-      <section className="px-6 py-24">
-        <div className="mx-auto max-w-3xl text-center">
-          <Reveal>
-            <ElectricBorder
-              color="#8b5cf6"
-              speed={0.8}
-              chaos={0.08}
-              style={{ borderRadius: 24 }}
-            >
-              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#12102a] to-[#0c0a1e] p-12">
-                {/* Arka plan deseni */}
-                <div className="absolute inset-0 opacity-[0.07]"
-                  style={{
-                    backgroundImage: `radial-gradient(circle at 25% 25%, white 1px, transparent 1px), radial-gradient(circle at 75% 75%, white 1px, transparent 1px)`,
-                    backgroundSize: "32px 32px",
-                  }}
-                />
-                <div className="relative z-10">
-                  <h2 className="text-4xl font-black text-white md:text-5xl">
-                    {s.ctaTitle}
-                  </h2>
-                  <p className="mx-auto mt-4 max-w-md text-slate-400">
-                    {s.ctaDesc}
-                  </p>
-                  <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-                    <Link
-                      href="/kayit"
-                      className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-4 text-base font-bold text-white shadow-[0_0_40px_-8px_rgba(139,92,246,0.6)] transition hover:-translate-y-0.5 hover:shadow-[0_0_60px_-8px_rgba(139,92,246,0.85)]"
-                    >
-                      {s.ctaBtn}
-                      <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-                    </Link>
-                    <Link
-                      href="/giris"
-                      className="flex items-center gap-2 rounded-2xl border border-white/15 px-8 py-4 text-base font-semibold text-white transition hover:bg-white/[0.06]"
-                    >
-                      {s.ctaLogin} <ChevronRight className="h-4 w-4" />
-                    </Link>
-                  </div>
+            {/* Alt: açıklama + dairesel CTA */}
+            <div className="relative mt-6 flex flex-col items-center gap-6 lg:mt-0 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-xs text-center lg:text-left">
+                <p className="text-[15px] leading-snug text-neutral-700">{s.heroDesc}</p>
+                <p className="mt-1 text-[15px] font-semibold leading-snug">{s.heroDescBold}</p>
+                <Dotted className="mt-3 text-neutral-500" />
+              </div>
+
+              <Link href="/kayit"
+                className="group order-first flex h-32 w-32 shrink-0 flex-col items-center justify-center gap-1 rounded-full bg-violet-600 text-center text-[13px] font-bold leading-tight text-white shadow-[0_20px_45px_-15px_rgba(124,58,237,0.8)] transition hover:scale-105 hover:bg-violet-500 lg:order-none">
+                <Play className="h-4 w-4 fill-white" />
+                {s.heroCta}
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ══ GÜVEN — başlık + beyaz kart ══ */}
+        <section className="mt-3 sm:mt-4">
+          <h2 className="nv-display px-2 pb-4 pt-6 text-4xl sm:text-5xl">{s.featBadge}<span className="text-violet-600">.</span></h2>
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[24px] bg-neutral-200 sm:rounded-[28px] lg:grid-cols-4">
+            {s.stats.map((label, i) => (
+              <div key={label} className="bg-white px-5 py-7 text-center">
+                <p className="text-3xl font-black tracking-tight sm:text-4xl">{["120+", "4.8★", "8.500+", "%90"][i]}</p>
+                <p className="mt-1.5 text-xs text-neutral-500">{label}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ══ ÖZELLİKLER — siyah bölüm ══ */}
+        <section id="ozellikler" className="mt-3 rounded-[28px] bg-neutral-950 px-5 py-14 text-white sm:mt-4 sm:rounded-[36px] sm:px-10 sm:py-20">
+          <h2 className="nv-display mx-auto max-w-4xl text-center text-4xl sm:text-6xl">
+            {s.featT1}{" "}
+            <span className="rounded-full bg-violet-500 px-4 pb-1 text-neutral-950">{s.featGrad}</span>
+          </h2>
+          <p className="mx-auto mt-6 max-w-xl text-center text-[15px] leading-relaxed text-neutral-400">{s.featDesc}</p>
+
+          <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {feats.map((f, i) => (
+              <div key={f.title}
+                className="group rounded-[22px] bg-neutral-900 p-6 transition hover:bg-neutral-800/90">
+                <div className="mb-5 flex items-center justify-between">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] transition group-hover:scale-110"
+                    style={{ color: f.accent }}>
+                    <f.icon className="h-5 w-5" />
+                  </span>
+                  <span className="nv-index text-white/25">/{String(i + 1).padStart(2, "0")}</span>
                 </div>
+                <h3 className="text-lg font-bold leading-snug">{f.title}</h3>
+                <Dotted className="my-3 text-white" />
+                <p className="text-sm leading-relaxed text-neutral-400">{f.desc}</p>
               </div>
-            </ElectricBorder>
-          </Reveal>
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
 
-      {/* ── Footer ── */}
-      <footer className="border-t border-white/[0.06] bg-[#05050a] px-6">
-        <div className="mx-auto max-w-6xl py-14">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            <div className="col-span-2 md:col-span-1">
+        {/* ══ ADIMLAR ══ */}
+        <section id="nasil-calisir" className="mt-3 sm:mt-4">
+          <h2 className="nv-display px-2 pb-4 pt-6 text-4xl sm:text-5xl">
+            {s.stepsT1} <span className="text-violet-600">{s.stepsGrad}</span>
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map((st) => (
+              <div key={st.num} className="rounded-[22px] bg-white p-6">
+                <span className="nv-display block text-5xl text-violet-600">{st.num}</span>
+                <Dotted className="my-4 text-neutral-500" />
+                <h3 className="text-base font-bold">{st.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-neutral-500">{st.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ══ CTA — siyah ══ */}
+        <section className="mt-3 overflow-hidden rounded-[28px] bg-neutral-950 px-6 py-16 text-center text-white sm:mt-4 sm:rounded-[36px] sm:py-24">
+          <h2 className="nv-display mx-auto max-w-3xl text-4xl sm:text-6xl">{s.ctaTitle}<span className="text-violet-500">.</span></h2>
+          <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-neutral-400">{s.ctaDesc}</p>
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link href="/kayit" className="group inline-flex items-center gap-2 rounded-full bg-violet-600 px-8 py-4 text-base font-bold transition hover:bg-violet-500">
+              {s.ctaBtn}
+              <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+            </Link>
+            <Link href="/giris" className="rounded-full border border-white/15 px-8 py-4 text-base font-semibold text-neutral-200 transition hover:bg-white/[0.06]">
+              {s.ctaLogin}
+            </Link>
+          </div>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-2">
+            {s.checks.map((c, i) => (
+              <span key={c} className="text-sm text-neutral-500">
+                {c} <span className="nv-index ml-1 text-white/20">/0{i + 1}</span>
+              </span>
+            ))}
+          </div>
+        </section>
+
+        {/* ══ FOOTER ══ */}
+        <footer className="mt-3 rounded-[28px] bg-white px-6 py-12 sm:mt-4 sm:rounded-[36px] sm:px-10">
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
               <div className="flex items-center gap-2.5">
-                <LogoMark size={32} />
-                <span className="font-bold text-white">Novelya</span>
+                <LogoMark size={30} />
+                <span className="text-[15px] font-bold tracking-tight">Novelya</span>
               </div>
-              <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
-                {s.fDesc}
-              </p>
+              <p className="mt-4 max-w-xs text-sm leading-relaxed text-neutral-500">{s.fDesc}</p>
             </div>
-
-            <div>
-              <p className="text-sm font-bold text-white">{s.fProduct}</p>
-              <ul className="mt-4 space-y-2.5 text-sm text-slate-500">
-                <li><a href="#ozellikler" className="transition hover:text-violet-400">{s.navFeatures}</a></li>
-                <li><a href="/fiyatlar" className="transition hover:text-violet-400">{s.navPricing}</a></li>
-                <li><a href="/kayit" className="transition hover:text-violet-400">{s.navSignup}</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <p className="text-sm font-bold text-white">{s.fCorp}</p>
-              <ul className="mt-4 space-y-2.5 text-sm text-slate-500">
-                <li><a href="/hakkimizda" className="transition hover:text-violet-400">{s.fAbout}</a></li>
-                <li><a href="/iletisim" className="transition hover:text-violet-400">{s.fContact}</a></li>
-                <li><a href="/sss" className="transition hover:text-violet-400">{s.fFaq}</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <p className="text-sm font-bold text-white">{s.fLegal}</p>
-              <ul className="mt-4 space-y-2.5 text-sm text-slate-500">
-                <li><a href="/kullanim-sartlari" className="transition hover:text-violet-400">{s.fTerms}</a></li>
-                <li><a href="/gizlilik" className="transition hover:text-violet-400">{s.fPrivacy}</a></li>
-                <li><a href="/kvkk" className="transition hover:text-violet-400">{s.fKvkk}</a></li>
-                <li><a href="/cerez-politikasi" className="transition hover:text-violet-400">{s.fCookies}</a></li>
-                <li><a href="/iade-politikasi" className="transition hover:text-violet-400">{s.fRefund}</a></li>
-              </ul>
-            </div>
+            {[
+              { t: s.fProduct, links: [[s.navFeatures, "#ozellikler"], [s.navPricing, "/fiyatlar"], [s.navHow, "#nasil-calisir"]] },
+              { t: s.fCorp, links: [[s.fAbout, "/hakkimizda"], [s.fContact, "/iletisim"], [s.fFaq, "/sss"]] },
+              { t: s.fLegal, links: [[s.fTerms, "/kullanim-sartlari"], [s.fPrivacy, "/gizlilik"], [s.fKvkk, "/kvkk"], [s.fCookies, "/cerez-politikasi"], [s.fRefund, "/iade-politikasi"]] },
+            ].map((col) => (
+              <div key={col.t}>
+                <p className="text-xs font-bold uppercase tracking-wider text-neutral-400">{col.t}</p>
+                <ul className="mt-4 space-y-2.5">
+                  {col.links.map(([label, href]) => (
+                    <li key={label}>
+                      <Link href={href} className="text-sm text-neutral-600 transition hover:text-violet-600">{label}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-
-          <div className="mt-12 border-t border-white/[0.06] pt-6 text-sm text-slate-600">
-            <p>© {new Date().getFullYear()} Novelya. {s.fRights}</p>
-          </div>
-        </div>
-      </footer>
+          <Dotted className="my-8 text-neutral-500" />
+          <p className="text-center text-xs text-neutral-400">
+            © {new Date().getFullYear()} Novelya. {s.fRights}
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }
