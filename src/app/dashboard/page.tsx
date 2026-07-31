@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { useLang } from "@/components/language-provider";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 
 interface KPIs {
@@ -199,7 +200,8 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 
 export default function DashboardPage() {
   const { activeBrand, brands } = useBrand();
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const { data: session } = useSession();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
@@ -253,25 +255,32 @@ export default function DashboardPage() {
     { name: t("dashboard.negative"), value: kpis.sentiment.negative, color: SENTIMENT_COLORS.negative },
   ].filter(d => d.value > 0) : [];
 
+  const firstName = ((session?.user as { name?: string } | undefined)?.name ?? "").trim().split(" ")[0];
+
   const maxRatingCount = Math.max(...(data?.ratingDist.map(r => r.count) ?? [1]), 1);
 
   return (
     <div className="p-6 lg:p-8">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between gap-4">
+      <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">
-            {activeBrand ? `${activeBrand.name}` : "Dashboard"}
+          <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
+            {firstName
+              ? (lang === "en" ? `Welcome, ${firstName}!` : `Hoş geldin, ${firstName}!`)
+              : (activeBrand?.name ?? "Dashboard")}
           </h1>
-          <p className="flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))]"><span className="nv-live-dot" />{t("dashboard.summary")}</p>
+          <p className="mt-1.5 flex items-center gap-2 text-sm text-[hsl(var(--muted-foreground))]">
+            <span className="nv-live-dot" />
+            {activeBrand ? activeBrand.name + " — " : ""}{t("dashboard.summary")}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => activeBrand && loadDashboard(activeBrand.id)} disabled={loading}
-            className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] px-3 py-2 text-sm transition hover:bg-[hsl(var(--accent))] disabled:opacity-50">
+            className="flex items-center gap-2 rounded-full border border-[hsl(var(--border))] px-4 py-2.5 text-sm font-medium transition hover:bg-[hsl(var(--accent))] disabled:opacity-50">
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> {t("dashboard.refresh")}
           </button>
           <button onClick={generateSummary} disabled={summaryLoading || !activeBrand}
-            className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-3 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
+            className="flex items-center gap-2 rounded-full bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-[hsl(var(--primary-foreground))] shadow-[0_10px_24px_-10px_hsl(var(--primary))] transition hover:opacity-90 disabled:opacity-50">
             {summaryLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             {t("dashboard.aiSummary")}
           </button>
@@ -291,12 +300,12 @@ export default function DashboardPage() {
           {/* KPI Cards */}
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {/* Toplam Yorum */}
-            <div className="glass nv-enter nv-enter-1 nv-card-hover rounded-2xl p-4">
+            <div className="nv-tint nv-enter nv-enter-1 nv-card-hover rounded-[22px] p-5">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{t("dashboard.totalReviews")}</span>
                 <Star className="h-4 w-4 text-yellow-400" />
               </div>
-              <p className="text-3xl font-bold">{kpis!.totalReviews}</p>
+              <p className="text-4xl font-black tracking-tight">{kpis!.totalReviews}</p>
               <div className="mt-1.5 flex items-center gap-1.5">
                 <ChangeChip value={kpis!.monthlyChange} />
                 <span className="text-xs text-[hsl(var(--muted-foreground))]">{t("dashboard.last30Days")}</span>
@@ -304,13 +313,13 @@ export default function DashboardPage() {
             </div>
 
             {/* Ortalama Puan */}
-            <div className="glass nv-enter nv-enter-2 nv-card-hover rounded-2xl p-4">
+            <div className="glass nv-enter nv-enter-2 nv-card-hover rounded-[22px] p-5">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{t("dashboard.avgRating")}</span>
                 <TrendingUp className="h-4 w-4 text-green-400" />
               </div>
               <div className="flex items-end gap-2">
-                <p className="text-3xl font-bold">{kpis!.avgRating?.toFixed(1) ?? "—"}</p>
+                <p className="text-4xl font-black tracking-tight">{kpis!.avgRating?.toFixed(1) ?? "—"}</p>
                 <p className="mb-1 text-sm text-[hsl(var(--muted-foreground))]">/ 5</p>
               </div>
               <div className="mt-1.5 flex">
@@ -321,12 +330,12 @@ export default function DashboardPage() {
             </div>
 
             {/* Bu Hafta */}
-            <div className="glass nv-enter nv-enter-3 nv-card-hover rounded-2xl p-4">
+            <div className="glass nv-enter nv-enter-3 nv-card-hover rounded-[22px] p-5">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{t("dashboard.thisWeek")}</span>
                 <TrendingUp className="h-4 w-4 text-blue-400" />
               </div>
-              <p className="text-3xl font-bold">{kpis!.reviewsLast7Count}</p>
+              <p className="text-4xl font-black tracking-tight">{kpis!.reviewsLast7Count}</p>
               <div className="mt-1.5 flex items-center gap-1.5">
                 <ChangeChip value={kpis!.weeklyChange} />
                 <span className="text-xs text-[hsl(var(--muted-foreground))]">{t("dashboard.vsLastWeek")}</span>
@@ -334,12 +343,12 @@ export default function DashboardPage() {
             </div>
 
             {/* Olumlu Oran */}
-            <div className="glass nv-enter nv-enter-4 nv-card-hover rounded-2xl p-4">
+            <div className="glass nv-enter nv-enter-4 nv-card-hover rounded-[22px] p-5">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">{t("dashboard.positiveRate")}</span>
                 <CheckCircle className="h-4 w-4 text-green-400" />
               </div>
-              <p className="text-3xl font-bold">
+              <p className="text-4xl font-black tracking-tight">
                 {sentimentTotal > 0 ? Math.round((kpis!.sentiment.positive / sentimentTotal) * 100) : 0}%
               </p>
               <div className="mt-2 h-1.5 w-full rounded-full bg-[hsl(var(--muted))]">
@@ -423,7 +432,7 @@ export default function DashboardPage() {
 
           {/* CRM Pipeline Mini Chart */}
           {extras && extras.crm.total > 0 && (
-            <div className="glass nv-card-hover rounded-2xl p-5">
+            <div className="glass nv-card-hover rounded-[22px] p-5">
               <div className="mb-3 flex items-center justify-between">
                 <p className="text-sm font-semibold">CRM Pipeline Durumu</p>
                 <Link href="/dashboard/crm" className="text-xs text-[hsl(var(--primary))] hover:underline">Detay →</Link>
@@ -470,7 +479,7 @@ export default function DashboardPage() {
 
           {/* 30-Day Trend Chart */}
           <LazySection fallback={<ChartSkeleton height="h-64" />}>
-          <div className="glass nv-enter nv-enter-6 nv-card-hover rounded-2xl p-5">
+          <div className="glass nv-enter nv-enter-6 nv-card-hover rounded-[22px] p-5">
             <div className="mb-4 flex items-center justify-between">
               <p className="text-sm font-semibold">{t("dashboard.trendTitle")}</p>
               <span className="text-xs text-[hsl(var(--muted-foreground))]">{kpis!.last30Count} {t("dashboard.reviewsInLast30")}</span>
@@ -498,7 +507,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
 
             {/* Rating Distribution */}
-            <div className="glass nv-card-hover rounded-2xl p-5">
+            <div className="glass nv-card-hover rounded-[22px] p-5">
               <p className="mb-4 text-sm font-semibold">{t("dashboard.ratingDist")}</p>
               <div className="space-y-2.5">
                 {data.ratingDist.map((r, i) => (
@@ -520,7 +529,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Sentiment Donut */}
-            <div className="glass nv-card-hover rounded-2xl p-5">
+            <div className="glass nv-card-hover rounded-[22px] p-5">
               <p className="mb-2 text-sm font-semibold">{t("dashboard.sentimentDist")}</p>
               {pieData.length === 0 ? (
                 <div className="flex h-40 items-center justify-center text-sm text-[hsl(var(--muted-foreground))]">{t("dashboard.noData")}</div>
@@ -549,7 +558,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Source Breakdown */}
-            <div className="glass nv-card-hover rounded-2xl p-5">
+            <div className="glass nv-card-hover rounded-[22px] p-5">
               <p className="mb-4 text-sm font-semibold">{t("dashboard.sourceDist")}</p>
               {data.sourceDist.length === 0 ? (
                 <div className="flex h-40 items-center justify-center text-sm text-[hsl(var(--muted-foreground))]">{t("dashboard.noData")}</div>
@@ -574,7 +583,7 @@ export default function DashboardPage() {
 
           {/* AI Performance */}
           {perf && (
-            <div className="glass nv-card-hover rounded-2xl p-5">
+            <div className="glass nv-card-hover rounded-[22px] p-5">
               <p className="mb-5 text-sm font-semibold">{t("dashboard.aiPerformance")}</p>
               <div className="flex flex-wrap items-start gap-8">
                 <ScoreRing value={perf.overallScore} label={t("dashboard.ringOverall")} color="#6366f1" />
