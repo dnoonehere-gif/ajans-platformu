@@ -7,6 +7,7 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { verifyTotp } from "@/server/security/totp";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -16,10 +17,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       name: "Kredensiyel",
-      credentials: { email: {}, password: {} },
+      credentials: { email: {}, password: {}, totp: {} },
       async authorize(credentials) {
         const identifier = String(credentials?.email ?? "").trim();
         const password = String(credentials?.password ?? "");
+        const totp = String(credentials?.totp ?? "").replace(/\s/g, "");
         if (!identifier || !password) return null;
 
         // E-posta, telefon veya kullanıcı adı (isim) ile giriş
@@ -40,6 +42,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const ok = await bcrypt.compare(password, user.passwordHash);
         if (!ok) return null;
+
+        // ── İki adımlı doğrulama ──
+        // 2FA açık olan hesaplarda şifre TEK BAŞINA yetmez; TOTP kodu da
+        // sunucuda doğrulanır. Daha önce 2FA uçları vardı ama girişte hiç
+        // zorlanmıyordu, yani özellik fiilen kapalıydı.
+        if (user.twoFactorEnabled) {
+          if (!user.twoFactorSecret) return null; // tutarsız kayıt: girişe izin verme
+          if (!totp) return null;                 // kod girilmemiş
+          if (!(await verifyTotp(totp, user.twoFactorSecret))) return null;
+        }
 
         return { id: user.id, email: user.email, name: user.name, role: user.globalRole };
       },

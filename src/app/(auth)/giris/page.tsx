@@ -18,6 +18,7 @@ const L = {
     expired: "Doğrulama linkinin süresi dolmuş. Lütfen tekrar kayıt olun.",
     identifier: "Kullanıcı adı, e-posta veya telefon",
     password: "Şifre",
+    totp: "İki adımlı doğrulama kodu (2FA açıksa)",
     error: "Kullanıcı bilgileri hatalı",
     submit: "Giriş Yap",
     forgot: "Şifrenizi mi unuttunuz?",
@@ -31,6 +32,7 @@ const L = {
     expired: "The verification link has expired. Please sign up again.",
     identifier: "Username, email or phone",
     password: "Password",
+    totp: "Two-factor code (if enabled)",
     error: "Invalid credentials",
     submit: "Sign In",
     forgot: "Forgot your password?",
@@ -46,6 +48,7 @@ function GirisForm() {
   const s = L[lang];
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [totp, setTotp] = useState("");
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -58,7 +61,7 @@ function GirisForm() {
     setLoading(true);
     setError("");
 
-    const res = await signIn("credentials", { email: identifier, password, redirect: false });
+    const res = await signIn("credentials", { email: identifier, password, totp, redirect: false });
 
     if (res?.error) {
       setError(s.error);
@@ -114,6 +117,22 @@ function GirisForm() {
           >
             {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
+        </div>
+
+        {/* İki adımlı doğrulama — yalnızca 2FA açık hesaplar doldurur.
+            Alanı her zaman göstermek, "bu hesapta 2FA var mı" bilgisini
+            sızdırmadan doğrulamayı mümkün kılar. */}
+        <div className="mb-5">
+          <input
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            placeholder={s.totp}
+            value={totp}
+            onChange={(e) => setTotp(e.target.value.replace(/\D/g, ""))}
+            className={`${lineInput} tracking-[0.3em]`}
+          />
         </div>
 
         {error && (
