@@ -666,16 +666,3 @@ body {
 [data-reduced-motion="true"] .nv-card-hover:hover { transform: none; box-shadow: none; }
 [data-reduced-motion="true"] .nv-dots { display: none; }
 [data-reduced-motion="true"] .nv-blob { display: none; }
-
-/* Auth ekranındaki gradyan bulutlar — yavaşça nefes alır */
-@keyframes nv-auth-drift {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50%      { transform: translate(-50%, -50%) scale(1.12) rotate(8deg); }
-}
-.nv-auth-glow  { animation: nv-auth-drift 18s ease-in-out infinite; }
-.nv-auth-glow-2 { animation: nv-auth-drift 24s ease-in-out infinite reverse; }
-@media (prefers-reduced-motion: reduce) {
-  .nv-auth-glow, .nv-auth-glow-2 { animation: none; }
-}
-[data-reduced-motion="true"] .nv-auth-glow,
-[data-reduced-motion="true"] .nv-auth-glow-2 { animation: none; }
