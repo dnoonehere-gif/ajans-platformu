@@ -19,7 +19,8 @@ const L = {
     expired: "Doğrulama linkinin süresi dolmuş. Lütfen tekrar kayıt olun.",
     identifier: "Kullanıcı adı, e-posta veya telefon",
     password: "Şifre",
-    totp: "İki adımlı doğrulama kodu (2FA açıksa)",
+    totp: "6 haneli kod",
+    totpToggle: "İki adımlı doğrulama kullanıyorum",
     error: "Kullanıcı bilgileri hatalı",
     oauthLinked: "Bu e-posta zaten şifreyle kayıtlı. Lütfen şifrenizle giriş yapın.",
     oauthFailed: "Google ile giriş tamamlanamadı. Lütfen tekrar deneyin.",
@@ -35,7 +36,8 @@ const L = {
     expired: "The verification link has expired. Please sign up again.",
     identifier: "Username, email or phone",
     password: "Password",
-    totp: "Two-factor code (if enabled)",
+    totp: "6-digit code",
+    totpToggle: "I use two-factor authentication",
     error: "Invalid credentials",
     oauthLinked: "This email is already registered with a password. Please sign in with your password.",
     oauthFailed: "Google sign-in could not be completed. Please try again.",
@@ -62,6 +64,7 @@ function GirisForm() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [totp, setTotp] = useState("");
+  const [totpAcik, setTotpAcik] = useState(false);
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -141,21 +144,32 @@ function GirisForm() {
           </button>
         </div>
 
-        {/* İki adımlı doğrulama — yalnızca 2FA açık hesaplar doldurur.
-            Alanı her zaman göstermek, "bu hesapta 2FA var mı" bilgisini
-            sızdırmadan doğrulamayı mümkün kılar. */}
-        <div className="mb-5">
-          <input
-            type="text"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={6}
-            placeholder={s.totp}
-            value={totp}
-            onChange={(e) => setTotp(e.target.value.replace(/\D/g, ""))}
-            className={`${lineInput} tracking-[0.3em]`}
-          />
-        </div>
+        {/* İki adımlı doğrulama — 2FA kullanmayanların formunu kalabalıklaştırmamak
+            için gizli. Alanı sadece isteyen açar; sunucu tarafındaki zorunluluk
+            hesabın twoFactorEnabled değerine göre işliyor. */}
+        {totpAcik ? (
+          <div className="mb-5">
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              autoFocus
+              placeholder={s.totp}
+              value={totp}
+              onChange={(e) => setTotp(e.target.value.replace(/\D/g, ""))}
+              className={lineInput}
+            />
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setTotpAcik(true)}
+            className="mb-5 text-xs font-medium text-gray-400 transition hover:text-violet-600"
+          >
+            {s.totpToggle}
+          </button>
+        )}
 
         {(error || oauthMesaj) && (
           <p className="mb-5 rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-600">{error || oauthMesaj}</p>
