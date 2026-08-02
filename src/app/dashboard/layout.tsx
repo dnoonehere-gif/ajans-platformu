@@ -61,7 +61,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
 
           {/* Marka seçici */}
-          <div className="hidden border-b border-[hsl(var(--border))] p-3 group-hover:block">
+          <div className="overflow-hidden border-b border-[hsl(var(--border))] p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
             <BrandSwitcher />
           </div>
 
@@ -69,7 +69,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <NavClient rail />
 
           {/* Tema seçici */}
-          <div className="hidden border-t border-[hsl(var(--border))] group-hover:block">
+          <div className="overflow-hidden border-t border-[hsl(var(--border))] opacity-0 transition-opacity duration-200 group-hover:opacity-100">
             <details className="group/t">
               <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:text-[hsl(var(--foreground))]">
                 <Palette className="h-4 w-4 shrink-0" />
@@ -86,11 +86,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary)/0.2)] text-xs font-bold text-[hsl(var(--primary))]">
                 {initials}
               </div>
-              <div className="hidden min-w-0 flex-1 group-hover:block">
+              <div className="min-w-0 flex-1 overflow-hidden whitespace-nowrap opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                 <p className="truncate text-xs font-semibold"><UserName name={user.name} /></p>
                 <p className="truncate text-[10px] text-[hsl(var(--muted-foreground))]">{user.email}</p>
               </div>
-              <form className="hidden group-hover:block" action={async () => { "use server"; await signOut({ redirectTo: `${process.env.NEXTAUTH_URL ?? ""}/giris` }); }}>
+              <form className="shrink-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100" action={async () => { "use server"; await signOut({ redirectTo: `${process.env.NEXTAUTH_URL ?? ""}/giris` }); }}>
                 <LogoutButton />
               </form>
             </div>
