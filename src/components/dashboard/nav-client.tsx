@@ -126,7 +126,7 @@ export function NavClient({ rail = false }: { rail?: boolean } = {}) {
           key={item.href}
           href="/dashboard/abonelik"
           title={`${label(item)} — Planınıza dahil değil`}
-          className={`group/i flex items-center gap-3 rounded-2xl py-2.5 text-sm font-semibold text-[hsl(var(--muted-foreground)/0.5)] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--muted-foreground))] ${rail ? "px-[22px] group-hover:px-3" : "px-3"}`}
+          className={`group/i flex items-center gap-3 rounded-2xl py-2.5 text-sm font-semibold text-[hsl(var(--muted-foreground)/0.5)] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--muted-foreground))] ${rail ? "w-[232px] px-[22px] group-hover:w-auto group-hover:px-3" : "px-3"}`}
         >
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--accent)/0.6)]">
             <item.icon className="h-4 w-4 opacity-50" />

@@ -1,7 +1,7 @@
 "use client";
 import { Suspense } from "react";
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -49,6 +49,14 @@ const L = {
 function GirisForm() {
   const router = useRouter();
   const params = useSearchParams();
+  const { status } = useSession();
+
+  // Oturum AÇIKKEN bu sayfada kalınmamalı: kullanıcı "Google ile devam et"e
+  // basarsa NextAuth yeni hesaba geçmek yerine o Google hesabını MEVCUT
+  // oturumun kullanıcısına bağlar (beklenen ama şaşırtıcı davranış).
+  useEffect(() => {
+    if (status === "authenticated") router.replace("/dashboard");
+  }, [status, router]);
   const { lang } = useLang();
   const s = L[lang];
   const [identifier, setIdentifier] = useState("");
