@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { Loader2, Plus, Trash2, Calendar, Instagram, Facebook, Linkedin, Twitter, Send } from "lucide-react";
 import { useLang } from "@/components/language-provider";
+import { PageLoading } from "@/components/ui/page-loading";
 
 const L = {
   tr: {
@@ -112,7 +113,7 @@ export default function SosyalMedyaPage() {
 
   const inp = "w-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-3 py-2.5 text-sm outline-none transition focus:border-[hsl(var(--primary))] focus:ring-2 focus:ring-[hsl(var(--primary)/0.2)]";
 
-  if (loading) return <div className="flex h-64 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-[hsl(var(--muted-foreground))]" /></div>;
+  if (loading) return <PageLoading />;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">

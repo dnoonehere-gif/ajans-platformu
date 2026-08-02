@@ -9,6 +9,7 @@ import {
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { ChatWidget } from "@/components/chatbot/chat-widget";
 import { useLang } from "@/components/language-provider";
+import { PageLoading } from "@/components/ui/page-loading";
 
 const L = {
   tr: {
@@ -502,9 +503,7 @@ export default function ChatbotPage() {
           </div>
 
           {loading ? (
-            <div className="flex h-32 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-[hsl(var(--primary))]" />
-            </div>
+            <PageLoading />
           ) : (
             <>
               {/* AYARLAR */}
@@ -797,9 +796,7 @@ export default function ChatbotPage() {
                   )}
 
                   {convLoading ? (
-                    <div className="flex h-32 items-center justify-center">
-                      <Loader2 className="h-6 w-6 animate-spin text-[hsl(var(--primary))]" />
-                    </div>
+                    <PageLoading />
                   ) : conversations.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 py-16 text-center">
                       <MessageSquare className="h-10 w-10 text-[hsl(var(--muted-foreground)/0.3)]" />
@@ -852,9 +849,7 @@ export default function ChatbotPage() {
               {tab === "reservations" && (
                 <div className="space-y-3">
                   {resLoading ? (
-                    <div className="flex h-32 items-center justify-center">
-                      <Loader2 className="h-6 w-6 animate-spin text-[hsl(var(--primary))]" />
-                    </div>
+                    <PageLoading />
                   ) : !chatbot?.reservationEnabled ? (
                     <div className="flex flex-col items-center gap-3 py-16 text-center">
                       <CalendarCheck className="h-10 w-10 text-[hsl(var(--muted-foreground)/0.3)]" />

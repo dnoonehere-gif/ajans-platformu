@@ -29,6 +29,8 @@ interface NavItem {
   key?: string;
   icon: React.ElementType;
   planKey?: keyof PlanFeatures;
+  /** Öğenin kendi kimlik rengi — üzerine gelince ikon bu renge döner. */
+  accent?: string;
 }
 
 interface NavGroup {
@@ -41,56 +43,56 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "",
     items: [
-      { href: "/dashboard", label: "Genel Bakış", key: "overview", icon: LayoutDashboard },
+      { href: "/dashboard", label: "Genel Bakış", key: "overview", icon: LayoutDashboard, accent: "#8b5cf6" },
     ],
   },
   {
     label: "Dijital Varlıklar", key: "digitalAssets",
     items: [
-      { href: "/dashboard/website", label: "Website Builder", key: "websiteBuilder", icon: Globe, planKey: "website" },
-      { href: "/dashboard/chatbot", label: "Chatbot", key: "chatbot", icon: Bot, planKey: "chatbot" },
-      { href: "/dashboard/menu", label: "Dijital Menü", key: "digitalMenu", icon: UtensilsCrossed },
+      { href: "/dashboard/website", label: "Website Builder", key: "websiteBuilder", icon: Globe, planKey: "website", accent: "#38bdf8" },
+      { href: "/dashboard/chatbot", label: "Chatbot", key: "chatbot", icon: Bot, planKey: "chatbot", accent: "#22d3ee" },
+      { href: "/dashboard/menu", label: "Dijital Menü", key: "digitalMenu", icon: UtensilsCrossed, accent: "#fb7185" },
     ],
   },
   {
     label: "Pazarlama", key: "marketing",
     items: [
-      { href: "/dashboard/content", label: "İçerik Üreticisi", key: "contentGenerator", icon: Sparkles },
-      { href: "/dashboard/batch-content", label: "Toplu İçerik", key: "batchContent", icon: Layers, planKey: "batchContent" as keyof PlanFeatures },
-      { href: "/dashboard/sosyal-medya", label: "Sosyal Medya", key: "socialMedia", icon: Send, planKey: "socialMedia" as keyof PlanFeatures },
-      { href: "/dashboard/email-kampanya", label: "E-posta Pazarlama", key: "emailMarketing", icon: Mail },
-      { href: "/dashboard/seo", label: "SEO Araçları", key: "seoTools", icon: Search, planKey: "seoContent" as keyof PlanFeatures },
+      { href: "/dashboard/content", label: "İçerik Üreticisi", key: "contentGenerator", icon: Sparkles, accent: "#e879f9" },
+      { href: "/dashboard/batch-content", label: "Toplu İçerik", key: "batchContent", icon: Layers, planKey: "batchContent" as keyof PlanFeatures, accent: "#818cf8" },
+      { href: "/dashboard/sosyal-medya", label: "Sosyal Medya", key: "socialMedia", icon: Send, planKey: "socialMedia" as keyof PlanFeatures, accent: "#f472b6" },
+      { href: "/dashboard/email-kampanya", label: "E-posta Pazarlama", key: "emailMarketing", icon: Mail, accent: "#fbbf24" },
+      { href: "/dashboard/seo", label: "SEO Araçları", key: "seoTools", icon: Search, planKey: "seoContent" as keyof PlanFeatures, accent: "#4ade80" },
     ],
   },
   {
     label: "Müşteri Yönetimi", key: "customerMgmt",
     items: [
-      { href: "/dashboard/google", label: "Google Business", key: "googleBusiness", icon: MapPin, planKey: "googleBusiness" },
-      { href: "/dashboard/reviews", label: "Yorum Analizi", key: "reviewAnalysis", icon: Star, planKey: "reviews" },
-      { href: "/dashboard/qr", label: "QR Geri Bildirim", key: "qrFeedback", icon: QrCode },
-      { href: "/dashboard/crm", label: "CRM & Pipeline", key: "crm", icon: UserPlus },
+      { href: "/dashboard/google", label: "Google Business", key: "googleBusiness", icon: MapPin, planKey: "googleBusiness", accent: "#4285F4" },
+      { href: "/dashboard/reviews", label: "Yorum Analizi", key: "reviewAnalysis", icon: Star, planKey: "reviews", accent: "#facc15" },
+      { href: "/dashboard/qr", label: "QR Geri Bildirim", key: "qrFeedback", icon: QrCode, accent: "#fb923c" },
+      { href: "/dashboard/crm", label: "CRM & Pipeline", key: "crm", icon: UserPlus, accent: "#a78bfa" },
     ],
   },
   {
     label: "Ajans", key: "agency",
     items: [
-      { href: "/dashboard/raporlar", label: "Müşteri Raporları", key: "clientReports", icon: FileBarChart, planKey: "clientReporting" as keyof PlanFeatures },
-      { href: "/dashboard/white-label", label: "White-Label", key: "whiteLabel", icon: Crown, planKey: "whiteLabel" as keyof PlanFeatures },
+      { href: "/dashboard/raporlar", label: "Müşteri Raporları", key: "clientReports", icon: FileBarChart, planKey: "clientReporting" as keyof PlanFeatures, accent: "#c084fc" },
+      { href: "/dashboard/white-label", label: "White-Label", key: "whiteLabel", icon: Crown, planKey: "whiteLabel" as keyof PlanFeatures, accent: "#f59e0b" },
     ],
   },
   {
     label: "Hesap", key: "account",
     items: [
-      { href: "/dashboard/abonelik", label: "Abonelik", key: "subscription", icon: CreditCard },
-      { href: "/dashboard/faturalar", label: "Faturalar", key: "invoices", icon: Receipt },
+      { href: "/dashboard/abonelik", label: "Abonelik", key: "subscription", icon: CreditCard, accent: "#34d399" },
+      { href: "/dashboard/faturalar", label: "Faturalar", key: "invoices", icon: Receipt, accent: "#60a5fa" },
     ],
   },
   {
     label: "",
     items: [
-      { href: "/dashboard/subeler", label: "Şubeler", key: "branches", icon: Building2 },
-      { href: "/dashboard/team", label: "Takım", key: "team", icon: Users },
-      { href: "/dashboard/ayarlar", label: "Ayarlar", key: "settings", icon: Settings },
+      { href: "/dashboard/subeler", label: "Şubeler", key: "branches", icon: Building2, accent: "#2dd4bf" },
+      { href: "/dashboard/team", label: "Takım", key: "team", icon: Users, accent: "#a855f7" },
+      { href: "/dashboard/ayarlar", label: "Ayarlar", key: "settings", icon: Settings, accent: "#94a3b8" },
     ],
   },
 ];
@@ -153,10 +155,11 @@ export function NavClient({ rail = false }: { rail?: boolean } = {}) {
       >
         {/* İkon çipi — aktifken saydam beyaz kapsül, referans tasarımdaki gibi */}
         <span
+          style={!isActive && item.accent ? ({ "--nv-i": item.accent } as React.CSSProperties) : undefined}
           className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${
             isActive
               ? "bg-[hsl(var(--primary-foreground)/0.2)]"
-              : "bg-[hsl(var(--accent))] group-hover/i:scale-110 group-hover/i:-rotate-6 group-hover/i:bg-[hsl(var(--primary)/0.18)] group-hover/i:text-[hsl(var(--primary))] group-hover/i:shadow-[0_4px_12px_-4px_hsl(var(--primary)/0.6)]"
+              : "bg-[hsl(var(--accent))] group-hover/i:scale-110 group-hover/i:-rotate-6 nv-nav-icon"
           }`}
         >
           <item.icon className="h-4 w-4" />

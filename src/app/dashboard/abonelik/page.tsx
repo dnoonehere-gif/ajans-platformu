@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { useLang } from "@/components/language-provider";
+import { PageLoading } from "@/components/ui/page-loading";
 
 const L = {
   tr: {
@@ -293,9 +294,7 @@ export default function AbonelikPage() {
       )}
 
       {loading ? (
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--primary))]" />
-        </div>
+        <PageLoading />
       ) : (
         <div className="space-y-6">
 

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { Loader2, Save, Crown, Palette, Globe, Image } from "lucide-react";
 import { useLang } from "@/components/language-provider";
+import { PageLoading } from "@/components/ui/page-loading";
 
 const L = {
   tr: {
@@ -134,9 +135,7 @@ export default function WhiteLabelPage() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-[hsl(var(--muted-foreground))]" />
-      </div>
+      <PageLoading />
     );
   }
 

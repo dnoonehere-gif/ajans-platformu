@@ -5,6 +5,7 @@ import { Globe, Sparkles, Loader2, ChevronRight, ChevronLeft, Check, Palette, Ph
 import Image from "next/image";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { useLang } from "@/components/language-provider";
+import { PageLoading } from "@/components/ui/page-loading";
 
 const L = {
   tr: {
@@ -194,9 +195,7 @@ export default function WebsitePage() {
 
   if (!activeBrand || checking) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-7 w-7 animate-spin text-[hsl(var(--primary))]" />
-      </div>
+      <PageLoading />
     );
   }
 

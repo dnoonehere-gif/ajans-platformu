@@ -9,6 +9,7 @@ import Link from "next/link";
 import { BlockRenderer } from "@/components/website/block-renderer";
 import type { Block } from "@/server/ai/website-generator";
 import { useLang } from "@/components/language-provider";
+import { PageLoading } from "@/components/ui/page-loading";
 
 const L = {
   tr: {
@@ -229,9 +230,7 @@ export default function WebsiteEditorPage({
 
   if (!website) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--primary))]" />
-      </div>
+      <PageLoading />
     );
   }
 

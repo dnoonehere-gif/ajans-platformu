@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { MapPin, Phone, Plus, Pencil, Trash2, Loader2, Check, X, Users, Building2 } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { useLang } from "@/components/language-provider";
+import { PageLoading } from "@/components/ui/page-loading";
 
 const L = {
   tr: {
@@ -170,9 +171,7 @@ export default function SubelerPage() {
 
       {/* Şube listesi */}
       {loading ? (
-        <div className="flex h-48 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--primary))]" />
-        </div>
+        <PageLoading />
       ) : branches.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-[hsl(var(--border))] py-20">
           <Building2 className="h-12 w-12 text-[hsl(var(--muted-foreground))/0.4]" />

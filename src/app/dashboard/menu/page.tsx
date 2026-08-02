@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import QRCode from "qrcode";
 import { useLang } from "@/components/language-provider";
+import { PageLoading } from "@/components/ui/page-loading";
 
 const L = {
   tr: {
@@ -265,7 +266,7 @@ export default function MenuPage() {
       </div>
 
       {loading ? (
-        <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--primary))]" /></div>
+        <PageLoading />
       ) : (
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
 

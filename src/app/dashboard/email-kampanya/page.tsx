@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { Loader2, Mail, Plus, Trash2, Users, Send, FileText } from "lucide-react";
 import { useLang } from "@/components/language-provider";
+import { PageLoading } from "@/components/ui/page-loading";
 
 const L = {
   tr: {
@@ -196,7 +197,7 @@ export default function EmailKampanyaPage() {
     FAILED: { text: "Başarısız", cls: "bg-red-500/10 text-red-500" },
   };
 
-  if (loading) return <div className="flex h-64 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-[hsl(var(--muted-foreground))]" /></div>;
+  if (loading) return <PageLoading />;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">

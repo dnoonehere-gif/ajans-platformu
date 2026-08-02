@@ -363,13 +363,7 @@ export default function AnaSayfa() {
                 </div>
               </div>
 
-              <div className="space-y-1.5 text-right">
-                {s.checks.slice(0, 3).map((c, i) => (
-                  <p key={c} className="text-[13px] text-[var(--mk-ink-soft)]">
-                    {c} <span className="nv-index ml-1.5 text-[var(--mk-ink-mute)]">/0{i + 1}</span>
-                  </p>
-                ))}
-              </div>
+
             </div>
 
             {/* Alt sıra: sol açıklama / sağ dairesel CTA — küreyle aynı hizada */}

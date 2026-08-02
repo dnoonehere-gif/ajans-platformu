@@ -7,6 +7,7 @@ import {
 import Image from "next/image";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { useLang } from "@/components/language-provider";
+import { PageLoading } from "@/components/ui/page-loading";
 
 const L = {
   tr: {
@@ -191,9 +192,7 @@ export default function QrPage() {
 
           {/* Liste */}
           {loading ? (
-            <div className="flex h-32 items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-[hsl(var(--primary))]" />
-            </div>
+            <PageLoading />
           ) : codes.length === 0 ? (
             <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-[hsl(var(--border))] py-10 text-center">
               <QrCode className="h-10 w-10 text-[hsl(var(--muted-foreground)/0.3)]" />

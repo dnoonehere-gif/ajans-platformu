@@ -739,3 +739,21 @@ body {
 @media (max-width: 768px) { .nv-magic-card::after { display: none; } }
 @media (prefers-reduced-motion: reduce) { .nv-magic-card::after { display: none; } }
 [data-reduced-motion="true"] .nv-magic-card::after { display: none; }
+
+/* Yükleme iskeleti — yumuşak nefes efekti (dönen çark yerine) */
+@keyframes nv-skeleton {
+  0%, 100% { opacity: .55; }
+  50%      { opacity: .9; }
+}
+.nv-skeleton { animation: nv-skeleton 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .nv-skeleton { animation: none; opacity: .7; } }
+[data-reduced-motion="true"] .nv-skeleton { animation: none; opacity: .7; }
+
+/* Sidebar menü ikonu — üzerine gelince öğenin kendi kimlik rengine döner */
+.nv-nav-icon { --nv-i: hsl(var(--primary)); }
+.group\/i:hover .nv-nav-icon {
+  color: var(--nv-i);
+  background: color-mix(in srgb, var(--nv-i) 18%, transparent);
+  box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--nv-i) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--nv-i) 45%, transparent);
+}

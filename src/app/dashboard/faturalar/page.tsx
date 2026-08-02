@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { useLang } from "@/components/language-provider";
+import { PageLoading } from "@/components/ui/page-loading";
 
 const L = {
   tr: {
@@ -237,9 +238,7 @@ export default function FaturalarPage() {
       {/* Invoice Table */}
       <div className="glass rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="flex h-48 items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--primary))]" />
-          </div>
+          <PageLoading />
         ) : invoices.length === 0 ? (
           <div className="flex h-48 flex-col items-center justify-center gap-3">
             <Receipt className="h-12 w-12 text-[hsl(var(--muted-foreground)/0.3)]" />
