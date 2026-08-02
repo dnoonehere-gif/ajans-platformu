@@ -715,3 +715,27 @@ body {
 }
 [data-reduced-motion="true"] .nv-btn:hover { transform: none; }
 [data-reduced-motion="true"] .nv-btn:hover::after { transform: translateX(-120%); }
+
+/* ─── MagicBento kenar parlaması ────────────────────────────────
+   İmleç yaklaştıkça kartın kenarında maskeli bir hâle belirir.   */
+.nv-magic-card { --nv-glow: 0; --nv-glow-x: 50%; --nv-glow-y: 50%; --nv-glow-rgb: 132,0,255; }
+.nv-magic-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: radial-gradient(320px circle at var(--nv-glow-x) var(--nv-glow-y),
+    rgba(var(--nv-glow-rgb), calc(var(--nv-glow) * .85)) 0%,
+    rgba(var(--nv-glow-rgb), calc(var(--nv-glow) * .35)) 32%,
+    transparent 62%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+}
+@media (max-width: 768px) { .nv-magic-card::after { display: none; } }
+@media (prefers-reduced-motion: reduce) { .nv-magic-card::after { display: none; } }
+[data-reduced-motion="true"] .nv-magic-card::after { display: none; }
