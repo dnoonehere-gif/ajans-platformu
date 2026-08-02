@@ -168,7 +168,7 @@ export function NavClient({ rail = false }: { rail?: boolean } = {}) {
   }
 
   return (
-    <nav className={`flex-1 overflow-y-auto overflow-x-hidden ${rail ? "p-2 group-hover:p-3" : "p-3"}`}>
+    <nav className={`nv-no-scrollbar flex-1 overflow-y-auto overflow-x-hidden ${rail ? "p-2 group-hover:p-3" : "p-3"}`}>
       {NAV_GROUPS.map((group, gi) => (
         <div key={gi} className={group.label ? "mt-4 first:mt-0" : ""}>
           {group.label && (

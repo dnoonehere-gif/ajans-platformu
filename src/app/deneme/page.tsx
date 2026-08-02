@@ -124,68 +124,68 @@ function DenemeInner() {
 
   const heading = (title: string, desc: string) => (
     <>
-      <h1 className="text-xl font-bold text-neutral-900">{title}</h1>
-      <p className="mt-3 text-sm leading-relaxed text-neutral-500">{desc}</p>
+      <h1 className="text-xl font-bold text-[var(--mk-ink)]">{title}</h1>
+      <p className="mt-3 text-sm leading-relaxed text-[var(--mk-ink-soft)]">{desc}</p>
     </>
   );
 
   if (loading) {
-    return <Shell icon={<Loader2 className="h-8 w-8 animate-spin text-neutral-900" />} iconClass="bg-white/10">
-      <p className="text-sm text-neutral-500">{t.loading}</p>
+    return <Shell icon={<Loader2 className="h-8 w-8 animate-spin text-[var(--mk-ink)]" />} iconClass="bg-white/10">
+      <p className="text-sm text-[var(--mk-ink-soft)]">{t.loading}</p>
     </Shell>;
   }
 
   // Sonuç ekranları
   if (result === "success") {
-    return <Shell icon={<CheckCircle2 className="h-8 w-8 text-neutral-900" />} iconClass="bg-gradient-to-br from-emerald-500 to-green-600">
+    return <Shell icon={<CheckCircle2 className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-gradient-to-br from-emerald-500 to-green-600">
       {heading(t.successTitle, t.successDesc)}
-      <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-neutral-900 transition hover:opacity-90">{t.goDashboard}</Link>
+      <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90">{t.goDashboard}</Link>
     </Shell>;
   }
   if (result === "no_brand") {
-    return <Shell icon={<Gift className="h-8 w-8 text-neutral-900" />} iconClass="bg-gradient-to-br from-violet-600 to-indigo-600">
+    return <Shell icon={<Gift className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-gradient-to-br from-violet-600 to-indigo-600">
       {heading(t.noBrandTitle, t.noBrandDesc)}
-      <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-neutral-900 transition hover:opacity-90">{t.goDashboard}</Link>
+      <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90">{t.goDashboard}</Link>
     </Shell>;
   }
   if (result === "already_active") {
-    return <Shell icon={<CheckCircle2 className="h-8 w-8 text-neutral-900" />} iconClass="bg-white/10">
+    return <Shell icon={<CheckCircle2 className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-white/10">
       {heading(t.alreadyActiveTitle, t.alreadyActiveDesc)}
-      <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-neutral-900 transition hover:opacity-90">{t.goDashboard}</Link>
+      <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90">{t.goDashboard}</Link>
     </Shell>;
   }
   if (result === "error") {
-    return <Shell icon={<XCircle className="h-8 w-8 text-neutral-900" />} iconClass="bg-red-500/80">
+    return <Shell icon={<XCircle className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-red-500/80">
       {heading(t.errorTitle, t.tryAgain)}
-      <button onClick={() => setResult(null)} className="mt-6 w-full rounded-xl border border-white/10 py-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-900/[0.04]">{t.activate}</button>
+      <button onClick={() => setResult(null)} className="mt-6 w-full rounded-xl border border-white/10 py-3 text-sm font-medium text-[var(--mk-ink-soft)] transition hover:bg-neutral-900/[0.04]">{t.activate}</button>
     </Shell>;
   }
 
   // Durum ekranları
   if (!status?.valid) {
-    return <Shell icon={<XCircle className="h-8 w-8 text-neutral-900" />} iconClass="bg-red-500/80">{heading(t.invalidTitle, t.invalidDesc)}</Shell>;
+    return <Shell icon={<XCircle className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-red-500/80">{heading(t.invalidTitle, t.invalidDesc)}</Shell>;
   }
   if (status.expired) {
-    return <Shell icon={<XCircle className="h-8 w-8 text-neutral-900" />} iconClass="bg-orange-500/80">{heading(t.expiredTitle, t.expiredDesc)}</Shell>;
+    return <Shell icon={<XCircle className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-orange-500/80">{heading(t.expiredTitle, t.expiredDesc)}</Shell>;
   }
   if (status.used) {
-    return <Shell icon={<CheckCircle2 className="h-8 w-8 text-neutral-900" />} iconClass="bg-white/10">{heading(t.usedTitle, t.usedDesc)}</Shell>;
+    return <Shell icon={<CheckCircle2 className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-white/10">{heading(t.usedTitle, t.usedDesc)}</Shell>;
   }
 
   const loginUrl = `/giris?callbackUrl=${encodeURIComponent(`/deneme?token=${token}`)}`;
 
   // Giriş gerekli
   if (!status.loggedIn) {
-    return <Shell icon={<Gift className="h-8 w-8 text-neutral-900" />} iconClass="bg-gradient-to-br from-violet-600 to-indigo-600">
+    return <Shell icon={<Gift className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-gradient-to-br from-violet-600 to-indigo-600">
       {heading(t.readyTitle(status.days ?? 7), t.readyDesc(status.planName ?? "Profesyonel", status.days ?? 7))}
       <div className="mt-5 rounded-xl border border-neutral-900/[0.07] bg-neutral-900/[0.03] px-4 py-3">
-        <p className="text-xs text-neutral-500">{t.loginNeeded}</p>
+        <p className="text-xs text-[var(--mk-ink-soft)]">{t.loginNeeded}</p>
         <p className="mt-1 break-all text-sm font-semibold text-violet-300">{status.email}</p>
       </div>
-      <Link href={loginUrl} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-neutral-900 transition hover:opacity-90">
+      <Link href={loginUrl} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90">
         <LogIn className="h-4 w-4" /> {t.loginBtn}
       </Link>
-      <p className="mt-4 text-xs text-neutral-500">
+      <p className="mt-4 text-xs text-[var(--mk-ink-soft)]">
         {t.registerHint}{" "}
         <Link href={`/kayit?callbackUrl=${encodeURIComponent(`/deneme?token=${token}`)}`} className="font-semibold text-violet-300 hover:underline">{t.registerBtn}</Link>
       </p>
@@ -194,29 +194,29 @@ function DenemeInner() {
 
   // Giriş var ama e-posta uyuşmuyor
   if (!status.emailMatches) {
-    return <Shell icon={<XCircle className="h-8 w-8 text-neutral-900" />} iconClass="bg-orange-500/80">
+    return <Shell icon={<XCircle className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-orange-500/80">
       {heading(t.mismatchTitle, t.mismatchDesc)}
       <div className="mt-5 rounded-xl border border-neutral-900/[0.07] bg-neutral-900/[0.03] px-4 py-3">
         <p className="mt-1 break-all text-sm font-semibold text-violet-300">{status.email}</p>
       </div>
-      <Link href={loginUrl} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-neutral-900 transition hover:opacity-90">
+      <Link href={loginUrl} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90">
         <LogIn className="h-4 w-4" /> {t.loginBtn}
       </Link>
     </Shell>;
   }
 
   // Hazır — aktive et
-  return <Shell icon={<Gift className="h-8 w-8 text-neutral-900" />} iconClass="bg-gradient-to-br from-violet-600 to-indigo-600">
+  return <Shell icon={<Gift className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-gradient-to-br from-violet-600 to-indigo-600">
     {heading(t.readyTitle(status.days ?? 7), t.readyDesc(status.planName ?? "Profesyonel", status.days ?? 7))}
     {status.note && (
       <div className="mt-4 rounded-xl border border-neutral-900/[0.07] bg-neutral-900/[0.03] px-4 py-3 text-left">
-        <p className="text-sm leading-relaxed text-neutral-600">{status.note}</p>
+        <p className="text-sm leading-relaxed text-[var(--mk-ink-soft)]">{status.note}</p>
       </div>
     )}
     <button
       onClick={activate}
       disabled={activating}
-      className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-neutral-900 transition hover:opacity-90 disabled:opacity-60"
+      className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90 disabled:opacity-60"
     >
       {activating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gift className="h-4 w-4" />}
       {activating ? t.activating : t.activate}

@@ -44,7 +44,7 @@ const L = {
   },
 };
 
-const inp = "w-full rounded-xl border border-white/10 bg-neutral-900/[0.04] px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20 placeholder:text-neutral-400";
+const inp = "w-full rounded-xl border border-white/10 bg-neutral-900/[0.04] px-4 py-3 text-sm text-[var(--mk-ink)] outline-none transition focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20 placeholder:text-[var(--mk-ink-mute)]";
 
 export default function IletisimPage() {
   const { lang } = useLang();
@@ -85,8 +85,8 @@ export default function IletisimPage() {
           <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/25 bg-violet-500/10 px-3 py-1 text-xs font-bold text-violet-300">
             <MessageSquare className="h-3.5 w-3.5" /> {sL.badge}
           </span>
-          <h1 className="mt-5 text-4xl font-black text-neutral-900 sm:text-5xl">{sL.title}</h1>
-          <p className="mt-4 text-lg text-neutral-500">
+          <h1 className="mt-5 text-4xl font-black text-[var(--mk-ink)] sm:text-5xl">{sL.title}</h1>
+          <p className="mt-4 text-lg text-[var(--mk-ink-soft)]">
             {sL.subtitle}
           </p>
         </div>
@@ -100,16 +100,16 @@ export default function IletisimPage() {
                   <c.icon className="h-5 w-5 text-violet-300" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-neutral-900">{c.title}</p>
+                  <p className="text-sm font-bold text-[var(--mk-ink)]">{c.title}</p>
                   {c.href ? (
                     <a href={c.href} className="mt-0.5 block text-sm text-violet-400 hover:underline">{c.value}</a>
                   ) : (
-                    <p className="mt-0.5 text-sm text-neutral-500">{c.value}</p>
+                    <p className="mt-0.5 text-sm text-[var(--mk-ink-soft)]">{c.value}</p>
                   )}
                 </div>
               </div>
             ))}
-            <div className="rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 p-5 text-neutral-900 shadow-[0_0_40px_-12px_rgba(139,92,246,0.5)]">
+            <div className="rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 p-5 text-[var(--mk-ink)] shadow-[0_0_40px_-12px_rgba(139,92,246,0.5)]">
               <HelpCircle className="h-6 w-6" />
               <p className="mt-3 font-bold">{sL.fastTitle}</p>
               <p className="mt-1 text-sm text-violet-100">
@@ -126,13 +126,13 @@ export default function IletisimPage() {
             {status === "sent" ? (
               <div className="flex h-full min-h-80 flex-col items-center justify-center rounded-3xl border border-emerald-400/20 bg-emerald-500/[0.06] p-10 text-center">
                 <CheckCircle2 className="h-14 w-14 text-emerald-400" />
-                <h2 className="mt-4 text-xl font-bold text-neutral-900">{sL.sentTitle}</h2>
-                <p className="mt-2 max-w-sm text-sm text-neutral-500">
+                <h2 className="mt-4 text-xl font-bold text-[var(--mk-ink)]">{sL.sentTitle}</h2>
+                <p className="mt-2 max-w-sm text-sm text-[var(--mk-ink-soft)]">
                   {sL.sentDesc}
                 </p>
                 <button
                   onClick={() => setStatus("idle")}
-                  className="mt-6 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-neutral-900 transition hover:bg-violet-700"
+                  className="mt-6 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-[var(--mk-ink)] transition hover:bg-violet-700"
                 >
                   {sL.sentBtn}
                 </button>
@@ -141,23 +141,23 @@ export default function IletisimPage() {
               <form onSubmit={submit} className="rounded-3xl border border-neutral-900/[0.08] bg-neutral-900/[0.03] p-6 sm:p-8">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="mb-1.5 block text-xs font-semibold text-neutral-600">{sL.fName}</label>
+                    <label className="mb-1.5 block text-xs font-semibold text-[var(--mk-ink-soft)]">{sL.fName}</label>
                     <input required className={inp} placeholder={sL.fNamePh} value={form.name}
                       onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-semibold text-neutral-600">{sL.fEmail}</label>
+                    <label className="mb-1.5 block text-xs font-semibold text-[var(--mk-ink-soft)]">{sL.fEmail}</label>
                     <input required type="email" className={inp} placeholder={sL.fEmailPh} value={form.email}
                       onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
                   </div>
                 </div>
                 <div className="mt-4">
-                  <label className="mb-1.5 block text-xs font-semibold text-neutral-600">{sL.fSubject}</label>
+                  <label className="mb-1.5 block text-xs font-semibold text-[var(--mk-ink-soft)]">{sL.fSubject}</label>
                   <input required className={inp} placeholder={sL.fSubjectPh} value={form.subject}
                     onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))} />
                 </div>
                 <div className="mt-4">
-                  <label className="mb-1.5 block text-xs font-semibold text-neutral-600">{sL.fMessage}</label>
+                  <label className="mb-1.5 block text-xs font-semibold text-[var(--mk-ink-soft)]">{sL.fMessage}</label>
                   <textarea required rows={5} className={inp + " resize-none"} placeholder={sL.fMessagePh}
                     value={form.message} onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))} />
                 </div>
@@ -169,7 +169,7 @@ export default function IletisimPage() {
                 <button
                   type="submit"
                   disabled={status === "sending"}
-                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3.5 text-sm font-bold text-neutral-900 shadow-[0_0_30px_-8px_rgba(139,92,246,0.5)] transition hover:-translate-y-0.5 disabled:opacity-60"
+                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3.5 text-sm font-bold text-[var(--mk-ink)] shadow-[0_0_30px_-8px_rgba(139,92,246,0.5)] transition hover:-translate-y-0.5 disabled:opacity-60"
                 >
                   {status === "sending" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   {status === "sending" ? sL.sending : sL.send}

@@ -56,7 +56,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           className="group fixed inset-y-0 left-0 z-40 hidden w-[76px] flex-col overflow-hidden border-r border-[hsl(var(--border)/0.5)] bg-[hsl(var(--card))] transition-[width] duration-300 ease-out hover:w-64 hover:shadow-[0_0_60px_-12px_hsl(var(--foreground)/0.25)] lg:flex">
 
           {/* Logo */}
-          <div className="flex h-16 shrink-0 items-center justify-center border-b border-[hsl(var(--border)/0.5)] px-3 group-hover:justify-start group-hover:px-5">
+          <div className="flex h-16 w-[232px] shrink-0 items-center overflow-hidden border-b border-[hsl(var(--border)/0.5)] px-[21px] [&_p]:opacity-0 [&_p]:transition-opacity group-hover:w-auto group-hover:px-5 group-hover:[&_p]:opacity-100">
             <WhiteLabelLogo />
           </div>
 

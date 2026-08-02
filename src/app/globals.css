@@ -666,3 +666,8 @@ body {
 [data-reduced-motion="true"] .nv-card-hover:hover { transform: none; box-shadow: none; }
 [data-reduced-motion="true"] .nv-dots { display: none; }
 [data-reduced-motion="true"] .nv-blob { display: none; }
+
+/* İkon rayındaki kaydırma çubuğu dar alanda çirkin duruyordu; gizlenir
+   (kaydırma çalışmaya devam eder). */
+.nv-no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.nv-no-scrollbar::-webkit-scrollbar { width: 0; height: 0; }

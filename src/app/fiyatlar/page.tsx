@@ -141,10 +141,10 @@ function fmt(cents: number) {
 function featLine(label: string, value: number | boolean | string, color: string) {
   if (value === false) return null;
   return (
-    <li key={label} className="flex items-center gap-2.5 text-sm text-neutral-600">
+    <li key={label} className="flex items-center gap-2.5 text-sm text-[var(--mk-ink-soft)]">
       <Check className="h-4 w-4 shrink-0" style={{ color }} />
       <span>{label}</span>
-      {typeof value === "number" && value > 0 && <span className="ml-auto text-xs font-semibold text-neutral-500">{value === -1 ? "∞" : value}</span>}
+      {typeof value === "number" && value > 0 && <span className="ml-auto text-xs font-semibold text-[var(--mk-ink-soft)]">{value === -1 ? "∞" : value}</span>}
     </li>
   );
 }
@@ -177,11 +177,11 @@ export default function PricingPage() {
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-500/10 px-4 py-1.5 text-xs font-semibold text-violet-700">
             {sL.badge}
           </div>
-          <h1 className="mb-4 text-4xl font-black tracking-tight text-neutral-900 lg:text-5xl">
+          <h1 className="mb-4 text-4xl font-black tracking-tight text-[var(--mk-ink)] lg:text-5xl">
             {sL.heroT1}<br />
             <span className="bg-gradient-to-r from-violet-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent">{sL.heroT2}</span>
           </h1>
-          <p className="mx-auto max-w-xl text-lg text-neutral-500">
+          <p className="mx-auto max-w-xl text-lg text-[var(--mk-ink-soft)]">
             {sL.heroDesc}
           </p>
           <div className="mx-auto mt-5 inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-4 py-1.5 text-sm font-semibold text-emerald-300">
@@ -192,16 +192,16 @@ export default function PricingPage() {
           <div className="mt-8 inline-flex items-center rounded-xl border border-white/10 bg-neutral-900/[0.04] p-1">
             <button
               onClick={() => setInterval("month")}
-              className={`rounded-lg px-5 py-2 text-sm font-medium transition ${interval === "month" ? "bg-white/10 text-neutral-900 shadow-sm" : "text-neutral-500 hover:text-neutral-700"}`}
+              className={`rounded-lg px-5 py-2 text-sm font-medium transition ${interval === "month" ? "bg-white/10 text-[var(--mk-ink)] shadow-sm" : "text-[var(--mk-ink-soft)] hover:text-[var(--mk-ink-soft)]"}`}
             >
               {sL.monthly}
             </button>
             <button
               onClick={() => setInterval("year")}
-              className={`relative rounded-lg px-5 py-2 text-sm font-medium transition ${interval === "year" ? "bg-white/10 text-neutral-900 shadow-sm" : "text-neutral-500 hover:text-neutral-700"}`}
+              className={`relative rounded-lg px-5 py-2 text-sm font-medium transition ${interval === "year" ? "bg-white/10 text-[var(--mk-ink)] shadow-sm" : "text-[var(--mk-ink-soft)] hover:text-[var(--mk-ink-soft)]"}`}
             >
               {sL.yearly}
-              <span className="absolute -top-2 -right-2 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[9px] font-bold text-neutral-900">-17%</span>
+              <span className="absolute -top-2 -right-2 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[9px] font-bold text-[var(--mk-ink)]">-17%</span>
             </button>
           </div>
         </div>
@@ -213,8 +213,8 @@ export default function PricingPage() {
           </div>
         ) : plans.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center gap-3 text-center">
-            <p className="text-neutral-500">{sL.noPlans}</p>
-            <p className="text-xs text-neutral-500">{sL.noPlansSub}</p>
+            <p className="text-[var(--mk-ink-soft)]">{sL.noPlans}</p>
+            <p className="text-xs text-[var(--mk-ink-soft)]">{sL.noPlansSub}</p>
           </div>
         ) : (
           <div className="relative grid gap-8 md:grid-cols-2 lg:grid-cols-4 md:gap-5">
@@ -225,10 +225,10 @@ export default function PricingPage() {
               const f = plan.features as PlanFeatures;
 
               const cardInner = (
-                <div className={`relative flex h-full flex-col rounded-3xl p-7 ${isPopular ? "bg-gradient-to-b from-violet-50 to-white" : "bg-white"}`}>
+                <div className={`relative flex h-full flex-col rounded-3xl p-7 ${isPopular ? "bg-gradient-to-b from-violet-50 to-white" : "bg-[var(--mk-surface)]"}`}>
                   {isPopular && (
                     <div className="absolute -top-3.5 left-1/2 z-10 -translate-x-1/2">
-                      <span className="rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-1 text-xs font-bold text-neutral-900 shadow-lg shadow-violet-500/40">
+                      <span className="rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-1 text-xs font-bold text-[var(--mk-ink)] shadow-lg shadow-violet-500/40">
                         {sL.popular}
                       </span>
                     </div>
@@ -241,10 +241,10 @@ export default function PricingPage() {
                   >
                     <Icon className="h-5 w-5" style={{ color: electricColor }} />
                   </div>
-                  <h2 className="text-xl font-bold text-neutral-900">{plan.name}</h2>
+                  <h2 className="text-xl font-bold text-[var(--mk-ink)]">{plan.name}</h2>
                   <div className="mt-3 flex items-end gap-1">
-                    <p className="text-4xl font-black text-neutral-900">{displayPrice(plan)}</p>
-                    <p className="mb-1 text-sm text-neutral-500">/{interval === "year" ? sL.perYear : sL.perMonth}</p>
+                    <p className="text-4xl font-black text-[var(--mk-ink)]">{displayPrice(plan)}</p>
+                    <p className="mb-1 text-sm text-[var(--mk-ink-soft)]">/{interval === "year" ? sL.perYear : sL.perMonth}</p>
                   </div>
                   {interval === "year" && (
                     <p className="mt-1 text-xs text-emerald-400">
@@ -256,8 +256,8 @@ export default function PricingPage() {
                     href="/kayit"
                     className={`mt-5 flex w-full items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition hover:opacity-90 ${
                       isPopular
-                        ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-neutral-900 shadow-lg shadow-violet-500/30"
-                        : "border border-white/10 text-neutral-700 hover:bg-neutral-900/[0.05]"
+                        ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-[var(--mk-ink)] shadow-lg shadow-violet-500/30"
+                        : "border border-white/10 text-[var(--mk-ink-soft)] hover:bg-neutral-900/[0.05]"
                     }`}
                   >
                     {sL.cta}
@@ -304,12 +304,12 @@ export default function PricingPage() {
 
         {/* SSS */}
         <div className="relative mt-24">
-          <h2 className="mb-8 text-center text-2xl font-bold text-neutral-900">{sL.faqTitle}</h2>
+          <h2 className="mb-8 text-center text-2xl font-bold text-[var(--mk-ink)]">{sL.faqTitle}</h2>
           <div className="mx-auto grid max-w-3xl gap-4 md:grid-cols-2">
             {sL.faq.map(({ q, a }) => (
               <div key={q} className="rounded-2xl border border-neutral-900/[0.08] bg-neutral-900/[0.03] p-5 transition hover:border-violet-400/20 hover:bg-neutral-900/[0.05]">
-                <p className="mb-2 text-sm font-semibold text-neutral-900">{q}</p>
-                <p className="text-sm leading-relaxed text-neutral-500">{a}</p>
+                <p className="mb-2 text-sm font-semibold text-[var(--mk-ink)]">{q}</p>
+                <p className="text-sm leading-relaxed text-[var(--mk-ink-soft)]">{a}</p>
               </div>
             ))}
           </div>
@@ -317,8 +317,8 @@ export default function PricingPage() {
 
         {/* CTA */}
         <div className="relative mt-16 rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-500/10 to-indigo-500/5 p-12 text-center">
-          <h2 className="mb-3 text-2xl font-bold text-neutral-900">{sL.ctaTitle}</h2>
-          <p className="mb-6 text-neutral-500">{sL.ctaDesc}</p>
+          <h2 className="mb-3 text-2xl font-bold text-[var(--mk-ink)]">{sL.ctaTitle}</h2>
+          <p className="mb-6 text-[var(--mk-ink-soft)]">{sL.ctaDesc}</p>
           <Link href="/kayit"
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-3 font-semibold text-white shadow-[0_0_40px_-8px_rgba(139,92,246,0.6)] transition hover:opacity-90">
             {sL.ctaBtn}
