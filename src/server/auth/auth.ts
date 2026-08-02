@@ -4,6 +4,8 @@
 // =============================================================
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
+import Apple from "next-auth/providers/apple";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
@@ -15,6 +17,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   pages: { signIn: "/giris" },
   providers: [
+    // ── Sosyal giriş ──
+    // Kimlik bilgisi tanımlı DEĞİLSE sağlayıcı hiç eklenmez; böylece eksik
+    // yapılandırmada giriş sayfası hata vermek yerine sadece butonu göstermez.
+    // NOT: allowDangerousEmailAccountLinking BİLEREK açılmadı — açık olsaydı,
+    // saldırgan kurbanın e-postasıyla (doğrulamadan) şifreli hesap açıp
+    // kurban Google ile girince o hesaba erişebilirdi.
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [Google({
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        })]
+      : []),
+    ...(process.env.APPLE_ID && process.env.APPLE_SECRET
+      ? [Apple({
+          clientId: process.env.APPLE_ID,
+          clientSecret: process.env.APPLE_SECRET,
+        })]
+      : []),
     Credentials({
       name: "Kredensiyel",
       credentials: { email: {}, password: {}, totp: {} },

@@ -6,6 +6,7 @@ import { Eye, EyeOff, Loader2, CheckCircle2, RefreshCw, ShieldCheck } from "luci
 import { useLang } from "@/components/language-provider";
 import { track } from "@/lib/fpixel";
 import posthog from "posthog-js";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 
 const L = {
   tr: {
@@ -133,6 +134,8 @@ export default function KayitPage() {
   return (
     <div className="rounded-xl bg-white p-8 shadow-2xl shadow-black/25">
       <h1 className="mb-8 text-lg font-bold text-gray-900">{sL.title}</h1>
+
+      <OAuthButtons />
 
       <form onSubmit={handleSubmit} className="space-y-7">
         <div>

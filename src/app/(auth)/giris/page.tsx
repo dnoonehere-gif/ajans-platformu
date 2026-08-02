@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLang } from "@/components/language-provider";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 
 const lineInput =
   "w-full border-0 border-b border-gray-300 bg-transparent px-0 py-2.5 text-[15px] text-gray-900 outline-none transition-colors hover:border-violet-500 focus:border-b-2 focus:border-violet-600 placeholder:text-gray-400 hover:placeholder:text-violet-400";
@@ -76,6 +77,8 @@ function GirisForm() {
   return (
     <div className="rounded-xl bg-white p-8 shadow-2xl shadow-black/25">
       <h1 className="mb-8 text-lg font-bold text-gray-900">{s.title}</h1>
+
+        <OAuthButtons />
 
       {basarili === "dogrulandi" && (
         <div className="mb-5 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">{s.verified}</div>
