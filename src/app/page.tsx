@@ -439,7 +439,7 @@ export default function AnaSayfa() {
                 className={["lg:mt-0", "lg:mt-8", "lg:mt-16"][i % 3]}
               >
               <div
-                className="group h-full rounded-[22px] bg-[var(--mk-btn)] p-6 transition duration-300 hover:-translate-y-1 hover:opacity-90/90">
+                className="group h-full rounded-[22px] bg-neutral-900 p-6 transition duration-300 hover:-translate-y-1 hover:bg-neutral-800">
                 <div className="mb-5 flex items-center justify-between">
                   <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] transition group-hover:scale-110"
                     style={{ color: f.accent }}>
@@ -449,7 +449,7 @@ export default function AnaSayfa() {
                 </div>
                 <h3 className="text-lg font-bold leading-snug">{f.title}</h3>
                 <Dotted className="my-3 text-white" />
-                <p className="text-sm leading-relaxed text-[var(--mk-ink-mute)]">{f.desc}</p>
+                <p className="text-sm leading-relaxed text-neutral-400">{f.desc}</p>
               </div>
               </Reveal>
             ))}
@@ -478,7 +478,7 @@ export default function AnaSayfa() {
         {/* ══ CTA — siyah ══ */}
         <section className="mt-3 overflow-hidden rounded-[28px] bg-[var(--mk-invert)] px-6 py-16 text-center text-white sm:mt-4 sm:rounded-[36px] sm:py-24">
           <h2 className="nv-display mx-auto max-w-3xl text-4xl sm:text-6xl">{s.ctaTitle}<span className="text-violet-500">.</span></h2>
-          <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-[var(--mk-ink-mute)]">{s.ctaDesc}</p>
+          <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-neutral-500">{s.ctaDesc}</p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/kayit" className="group inline-flex items-center gap-2 rounded-full bg-violet-600 px-8 py-4 text-base font-bold transition hover:bg-violet-500">
               {s.ctaBtn}
@@ -490,7 +490,7 @@ export default function AnaSayfa() {
           </div>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-2">
             {s.checks.map((c, i) => (
-              <span key={c} className="text-sm text-[var(--mk-ink-soft)]">
+              <span key={c} className="text-sm text-neutral-400">
                 {c} <span className="nv-index ml-1 text-white/20">/0{i + 1}</span>
               </span>
             ))}
