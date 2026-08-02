@@ -109,7 +109,7 @@ export default function IletisimPage() {
                 </div>
               </div>
             ))}
-            <div className="rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 p-5 text-[var(--mk-ink)] shadow-[0_0_40px_-12px_rgba(139,92,246,0.5)]">
+            <div className="rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 p-5 text-white shadow-[0_0_40px_-12px_rgba(139,92,246,0.5)]">
               <HelpCircle className="h-6 w-6" />
               <p className="mt-3 font-bold">{sL.fastTitle}</p>
               <p className="mt-1 text-sm text-violet-100">

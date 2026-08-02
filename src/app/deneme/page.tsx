@@ -130,32 +130,32 @@ function DenemeInner() {
   );
 
   if (loading) {
-    return <Shell icon={<Loader2 className="h-8 w-8 animate-spin text-[var(--mk-ink)]" />} iconClass="bg-white/10">
+    return <Shell icon={<Loader2 className="h-8 w-8 animate-spin text-violet-600" />} iconClass="bg-[var(--mk-chip)]">
       <p className="text-sm text-[var(--mk-ink-soft)]">{t.loading}</p>
     </Shell>;
   }
 
   // Sonuç ekranları
   if (result === "success") {
-    return <Shell icon={<CheckCircle2 className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-gradient-to-br from-emerald-500 to-green-600">
+    return <Shell icon={<CheckCircle2 className="h-8 w-8 text-violet-600" />} iconClass="bg-gradient-to-br from-emerald-500 to-green-600">
       {heading(t.successTitle, t.successDesc)}
       <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90">{t.goDashboard}</Link>
     </Shell>;
   }
   if (result === "no_brand") {
-    return <Shell icon={<Gift className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-gradient-to-br from-violet-600 to-indigo-600">
+    return <Shell icon={<Gift className="h-8 w-8 text-violet-600" />} iconClass="bg-gradient-to-br from-violet-600 to-indigo-600">
       {heading(t.noBrandTitle, t.noBrandDesc)}
       <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90">{t.goDashboard}</Link>
     </Shell>;
   }
   if (result === "already_active") {
-    return <Shell icon={<CheckCircle2 className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-white/10">
+    return <Shell icon={<CheckCircle2 className="h-8 w-8 text-violet-600" />} iconClass="bg-[var(--mk-chip)]">
       {heading(t.alreadyActiveTitle, t.alreadyActiveDesc)}
       <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90">{t.goDashboard}</Link>
     </Shell>;
   }
   if (result === "error") {
-    return <Shell icon={<XCircle className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-red-500/80">
+    return <Shell icon={<XCircle className="h-8 w-8 text-violet-600" />} iconClass="bg-red-500/80">
       {heading(t.errorTitle, t.tryAgain)}
       <button onClick={() => setResult(null)} className="mt-6 w-full rounded-xl border border-white/10 py-3 text-sm font-medium text-[var(--mk-ink-soft)] transition hover:bg-neutral-900/[0.04]">{t.activate}</button>
     </Shell>;
@@ -163,20 +163,20 @@ function DenemeInner() {
 
   // Durum ekranları
   if (!status?.valid) {
-    return <Shell icon={<XCircle className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-red-500/80">{heading(t.invalidTitle, t.invalidDesc)}</Shell>;
+    return <Shell icon={<XCircle className="h-8 w-8 text-violet-600" />} iconClass="bg-red-500/80">{heading(t.invalidTitle, t.invalidDesc)}</Shell>;
   }
   if (status.expired) {
-    return <Shell icon={<XCircle className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-orange-500/80">{heading(t.expiredTitle, t.expiredDesc)}</Shell>;
+    return <Shell icon={<XCircle className="h-8 w-8 text-violet-600" />} iconClass="bg-orange-500/80">{heading(t.expiredTitle, t.expiredDesc)}</Shell>;
   }
   if (status.used) {
-    return <Shell icon={<CheckCircle2 className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-white/10">{heading(t.usedTitle, t.usedDesc)}</Shell>;
+    return <Shell icon={<CheckCircle2 className="h-8 w-8 text-violet-600" />} iconClass="bg-[var(--mk-chip)]">{heading(t.usedTitle, t.usedDesc)}</Shell>;
   }
 
   const loginUrl = `/giris?callbackUrl=${encodeURIComponent(`/deneme?token=${token}`)}`;
 
   // Giriş gerekli
   if (!status.loggedIn) {
-    return <Shell icon={<Gift className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-gradient-to-br from-violet-600 to-indigo-600">
+    return <Shell icon={<Gift className="h-8 w-8 text-violet-600" />} iconClass="bg-gradient-to-br from-violet-600 to-indigo-600">
       {heading(t.readyTitle(status.days ?? 7), t.readyDesc(status.planName ?? "Profesyonel", status.days ?? 7))}
       <div className="mt-5 rounded-xl border border-neutral-900/[0.07] bg-neutral-900/[0.03] px-4 py-3">
         <p className="text-xs text-[var(--mk-ink-soft)]">{t.loginNeeded}</p>
@@ -194,7 +194,7 @@ function DenemeInner() {
 
   // Giriş var ama e-posta uyuşmuyor
   if (!status.emailMatches) {
-    return <Shell icon={<XCircle className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-orange-500/80">
+    return <Shell icon={<XCircle className="h-8 w-8 text-violet-600" />} iconClass="bg-orange-500/80">
       {heading(t.mismatchTitle, t.mismatchDesc)}
       <div className="mt-5 rounded-xl border border-neutral-900/[0.07] bg-neutral-900/[0.03] px-4 py-3">
         <p className="mt-1 break-all text-sm font-semibold text-violet-300">{status.email}</p>
@@ -206,7 +206,7 @@ function DenemeInner() {
   }
 
   // Hazır — aktive et
-  return <Shell icon={<Gift className="h-8 w-8 text-[var(--mk-ink)]" />} iconClass="bg-gradient-to-br from-violet-600 to-indigo-600">
+  return <Shell icon={<Gift className="h-8 w-8 text-violet-600" />} iconClass="bg-gradient-to-br from-violet-600 to-indigo-600">
     {heading(t.readyTitle(status.days ?? 7), t.readyDesc(status.planName ?? "Profesyonel", status.days ?? 7))}
     {status.note && (
       <div className="mt-4 rounded-xl border border-neutral-900/[0.07] bg-neutral-900/[0.03] px-4 py-3 text-left">

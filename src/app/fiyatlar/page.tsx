@@ -192,13 +192,13 @@ export default function PricingPage() {
           <div className="mt-8 inline-flex items-center rounded-xl border border-white/10 bg-neutral-900/[0.04] p-1">
             <button
               onClick={() => setInterval("month")}
-              className={`rounded-lg px-5 py-2 text-sm font-medium transition ${interval === "month" ? "bg-white/10 text-[var(--mk-ink)] shadow-sm" : "text-[var(--mk-ink-soft)] hover:text-[var(--mk-ink-soft)]"}`}
+              className={`rounded-lg px-5 py-2 text-sm font-medium transition ${interval === "month" ? "bg-[var(--mk-surface)] text-[var(--mk-ink)] shadow-sm" : "text-[var(--mk-ink-soft)] hover:text-[var(--mk-ink)]"}`}
             >
               {sL.monthly}
             </button>
             <button
               onClick={() => setInterval("year")}
-              className={`relative rounded-lg px-5 py-2 text-sm font-medium transition ${interval === "year" ? "bg-white/10 text-[var(--mk-ink)] shadow-sm" : "text-[var(--mk-ink-soft)] hover:text-[var(--mk-ink-soft)]"}`}
+              className={`relative rounded-lg px-5 py-2 text-sm font-medium transition ${interval === "year" ? "bg-[var(--mk-surface)] text-[var(--mk-ink)] shadow-sm" : "text-[var(--mk-ink-soft)] hover:text-[var(--mk-ink)]"}`}
             >
               {sL.yearly}
               <span className="absolute -top-2 -right-2 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[9px] font-bold text-[var(--mk-ink)]">-17%</span>
