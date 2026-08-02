@@ -194,12 +194,35 @@ model User {
   notifications   Notification[]
   supportTickets  SupportTicket[]
   auditLogs       AuditLog[]
+  accounts        Account[]
   sessions        Session[]
   apiKeys         ApiKey[]
 
   @@index([globalRole])
   @@index([emailNormalized])
   @@index([signupIp])
+}
+
+/// OAuth hesabı (NextAuth PrismaAdapter için ZORUNLU).
+/// Bu model yokken Google ile giriş `error=Configuration` veriyordu.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 /// Oturum (NextAuth uyumlu)

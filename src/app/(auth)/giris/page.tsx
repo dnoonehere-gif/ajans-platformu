@@ -21,6 +21,8 @@ const L = {
     password: "Şifre",
     totp: "İki adımlı doğrulama kodu (2FA açıksa)",
     error: "Kullanıcı bilgileri hatalı",
+    oauthLinked: "Bu e-posta zaten şifreyle kayıtlı. Lütfen şifrenizle giriş yapın.",
+    oauthFailed: "Google ile giriş tamamlanamadı. Lütfen tekrar deneyin.",
     submit: "Giriş Yap",
     forgot: "Şifrenizi mi unuttunuz?",
     noAccount: "Hesabınız yok mu?",
@@ -35,6 +37,8 @@ const L = {
     password: "Password",
     totp: "Two-factor code (if enabled)",
     error: "Invalid credentials",
+    oauthLinked: "This email is already registered with a password. Please sign in with your password.",
+    oauthFailed: "Google sign-in could not be completed. Please try again.",
     submit: "Sign In",
     forgot: "Forgot your password?",
     noAccount: "Don't have an account?",
@@ -56,6 +60,13 @@ function GirisForm() {
 
   const basarili = params.get("basarili");
   const hata = params.get("hata");
+  // NextAuth OAuth akışı hatayı ?error= ile geri gönderir; ham kodu değil
+  // kullanıcının anlayacağı mesajı gösteriyoruz.
+  const oauthErr = params.get("error");
+  const oauthMesaj =
+    oauthErr === "OAuthAccountNotLinked" ? s.oauthLinked
+    : oauthErr ? s.oauthFailed
+    : "";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -138,8 +149,8 @@ function GirisForm() {
           />
         </div>
 
-        {error && (
-          <p className="mb-5 rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-600">{error}</p>
+        {(error || oauthMesaj) && (
+          <p className="mb-5 rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-600">{error || oauthMesaj}</p>
         )}
 
         <button
