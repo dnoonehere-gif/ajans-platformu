@@ -165,27 +165,39 @@ const L = {
 function Orb({ className = "" }: { className?: string }) {
   return (
     <div className={`pointer-events-none relative ${className}`} aria-hidden>
-      {/* yörünge halkaları — sürekli döner */}
+      {/* Yörünge halkaları — sürekli döner */}
       <svg viewBox="0 0 400 400" className="nv-orb-rings absolute inset-0 h-full w-full">
-        <ellipse cx="200" cy="200" rx="185" ry="70" fill="none" stroke="#8b5cf6" strokeOpacity="0.35" strokeWidth="1.5"
-          transform="rotate(-18 200 200)" />
-        <ellipse cx="200" cy="200" rx="175" ry="95" fill="none" stroke="#64748b" strokeOpacity="0.3" strokeWidth="1.5"
-          transform="rotate(22 200 200)" />
-        <ellipse cx="200" cy="200" rx="192" ry="45" fill="none" stroke="#a855f7" strokeOpacity="0.28" strokeWidth="1.5"
-          transform="rotate(6 200 200)" />
+        <ellipse cx="200" cy="200" rx="188" ry="72" fill="none" stroke="#8b5cf6" strokeOpacity="0.45" strokeWidth="1.5" transform="rotate(-18 200 200)" />
+        <ellipse cx="200" cy="200" rx="178" ry="98" fill="none" stroke="#94a3b8" strokeOpacity="0.35" strokeWidth="1.5" transform="rotate(24 200 200)" />
+        <ellipse cx="200" cy="200" rx="194" ry="46" fill="none" stroke="#a855f7" strokeOpacity="0.35" strokeWidth="1.5" transform="rotate(6 200 200)" />
       </svg>
-      {/* küre gövdesi */}
-      <div className="nv-orb-body absolute left-1/2 top-1/2 h-[62%] w-[62%] rounded-full"
+
+      {/* Küre gövdesi + üzerinde akan organik damarlar */}
+      <div className="nv-orb-body absolute left-1/2 top-1/2 h-[64%] w-[64%] overflow-hidden rounded-full"
         style={{
           background:
-            "radial-gradient(circle at 32% 28%, #f5f3ff 0%, #c4b5fd 18%, #8b5cf6 42%, #5b21b6 68%, #2e1065 100%)",
+            "radial-gradient(circle at 32% 26%, #ede9fe 0%, #c4b5fd 16%, #8b5cf6 40%, #5b21b6 66%, #2e1065 100%)",
           boxShadow:
-            "inset -18px -22px 60px rgba(20,10,50,0.75), inset 14px 16px 40px rgba(255,255,255,0.35), 0 40px 90px -30px rgba(109,40,217,0.55)",
+            "inset -20px -24px 64px rgba(20,10,50,0.8), inset 16px 18px 44px rgba(255,255,255,0.38), 0 44px 96px -32px rgba(109,40,217,0.6)",
         }}
-      />
-      {/* parlama */}
-      <div className="nv-orb-body absolute left-1/2 top-1/2 h-[62%] w-[62%] rounded-full"
-        style={{ background: "radial-gradient(circle at 30% 24%, rgba(255,255,255,0.55) 0%, transparent 38%)" }} />
+      >
+        {/* Yüzeyde dolanan bantlar — küreye hacim/organik doku verir */}
+        <svg viewBox="0 0 200 200" className="absolute inset-0 h-full w-full opacity-70">
+          <defs>
+            <linearGradient id="nv-band" x1="0" y1="0" x2="1" y2="1">
+              <stop stopColor="#e9d5ff" stopOpacity="0.85" />
+              <stop offset="0.5" stopColor="#a78bfa" stopOpacity="0.45" />
+              <stop offset="1" stopColor="#4c1d95" stopOpacity="0.15" />
+            </linearGradient>
+          </defs>
+          <path d="M-10 118 C 40 78, 92 150, 210 96" fill="none" stroke="url(#nv-band)" strokeWidth="17" strokeLinecap="round" />
+          <path d="M-10 72 C 52 118, 118 44, 210 76" fill="none" stroke="url(#nv-band)" strokeWidth="11" strokeLinecap="round" opacity="0.7" />
+          <path d="M-10 156 C 56 128, 130 186, 210 140" fill="none" stroke="url(#nv-band)" strokeWidth="8" strokeLinecap="round" opacity="0.5" />
+        </svg>
+        {/* Üstten parlama */}
+        <div className="absolute inset-0"
+          style={{ background: "radial-gradient(circle at 30% 22%, rgba(255,255,255,0.6) 0%, transparent 40%)" }} />
+      </div>
     </div>
   );
 }
@@ -207,9 +219,9 @@ function SeqHeading({ pre, pill, desc }: { pre: string; pill: string; desc: stri
     return () => io.disconnect();
   }, []);
 
-  const PILL_START = 620;   // hap uzamaya başlar
-  const LETTER_START = 980; // harfler gelmeye başlar
-  const DESC_START = 1750;  // açıklama düşer
+  const PILL_START = 620;
+  const LETTER_START = 980;
+  const DESC_START = 1750;
 
   return (
     <div ref={ref}>
@@ -231,7 +243,7 @@ function SeqHeading({ pre, pill, desc }: { pre: string; pill: string; desc: stri
         </span>
       </h2>
       <p
-        className={`mx-auto mt-6 max-w-xl text-center text-[15px] leading-relaxed text-[var(--mk-ink-mute)] ${on ? "nv-drop" : "opacity-0"}`}
+        className={`mx-auto mt-6 max-w-xl text-center text-[15px] leading-relaxed text-neutral-400 ${on ? "nv-drop" : "opacity-0"}`}
         style={on ? { animationDelay: `${DESC_START}ms` } : undefined}
       >
         {desc}
@@ -328,20 +340,21 @@ export default function AnaSayfa() {
           )}
 
           {/* Dev wordmark */}
-          <h1 className="px-3 pb-2 pt-8 text-center text-[clamp(3.2rem,15.2vw,12.5rem)] font-extrabold leading-[1.02] tracking-[-0.03em] text-[var(--mk-ink)] sm:pt-10">
+          <h1 className="px-3 pt-6 text-center text-[clamp(3rem,14.5vw,11.5rem)] font-extrabold leading-[0.98] tracking-[-0.035em] text-[var(--mk-ink)] sm:pt-8">
             NOVELYA<span className="text-violet-600">.</span>
           </h1>
 
-          {/* Alt alan: küre + meta */}
-          <div className="relative mt-[-2%] bg-gradient-to-b from-white via-[#f4f3f0] to-[#eeece7] px-4 pb-10 pt-4 sm:px-8">
-            <Orb className="mx-auto h-[260px] w-[260px] sm:h-[380px] sm:w-[380px] lg:h-[440px] lg:w-[440px]" />
+          {/* Alt alan: küre yazının üstüne biner, meta bilgiler kürenin iki yanında */}
+          <div className="relative bg-gradient-to-b from-[var(--mk-surface)] via-[var(--mk-surface)] to-[var(--mk-bg)] px-4 pb-8 sm:px-8">
+            {/* Küre — negatif üst boşlukla wordmark'a bindirilir (referanstaki gibi) */}
+            <Orb className="pointer-events-none mx-auto -mt-[16%] h-[300px] w-[300px] sm:-mt-[14%] sm:h-[420px] sm:w-[420px] lg:-mt-[12%] lg:h-[500px] lg:w-[500px]" />
 
-            {/* Sol üst: sosyal kanıt / Sağ üst: numaralı indeks */}
-            <div className="pointer-events-none absolute inset-x-0 top-8 hidden items-start justify-between px-8 lg:flex">
+            {/* Kürenin iki yanı: sol sosyal kanıt / sağ numaralı indeks */}
+            <div className="pointer-events-none absolute inset-x-0 top-[16%] hidden items-start justify-between px-8 lg:flex xl:px-12">
               <div className="flex items-center gap-3">
                 <div className="flex -space-x-2">
                   {["#8b5cf6", "#6366f1", "#a855f7"].map((c) => (
-                    <span key={c} className="h-8 w-8 rounded-full border-2 border-white" style={{ background: c }} />
+                    <span key={c} className="h-8 w-8 rounded-full border-2 border-[var(--mk-surface)]" style={{ background: c }} />
                   ))}
                 </div>
                 <div>
@@ -349,22 +362,28 @@ export default function AnaSayfa() {
                   <p className="mt-1 text-xs text-[var(--mk-ink-soft)]">{s.stats[0]}</p>
                 </div>
               </div>
+
+              <div className="space-y-1.5 text-right">
+                {s.checks.slice(0, 3).map((c, i) => (
+                  <p key={c} className="text-[13px] text-[var(--mk-ink-soft)]">
+                    {c} <span className="nv-index ml-1.5 text-[var(--mk-ink-mute)]">/0{i + 1}</span>
+                  </p>
+                ))}
+              </div>
             </div>
 
-            {/* Alt: açıklama + dairesel CTA */}
-            <div className="relative mt-6 flex flex-col items-center gap-6 lg:mt-0 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-xs text-center lg:text-left">
+            {/* Alt sıra: sol açıklama / sağ dairesel CTA — küreyle aynı hizada */}
+            <div className="relative -mt-[14%] flex flex-col items-center gap-8 sm:-mt-[12%] lg:-mt-[10%] lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-[280px] text-center lg:text-left">
                 <p className="text-[15px] leading-snug text-[var(--mk-ink-soft)]">{s.heroDesc}</p>
                 <p className="mt-1 text-[15px] font-semibold leading-snug">{s.heroDescBold}</p>
                 <Dotted className="mt-3 text-[var(--mk-ink-soft)]" />
               </div>
 
               <Link href="/kayit"
-                className="group relative order-first grid h-36 w-36 shrink-0 place-items-center lg:order-none">
-                {/* dönen kesikli halka */}
+                className="group relative grid h-[132px] w-[132px] shrink-0 place-items-center">
                 <span className="nv-orb-rings absolute inset-0 rounded-full border-2 border-dashed border-violet-400/50" />
-                {/* gövde */}
-                <span className="absolute inset-[10px] rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 shadow-[0_22px_50px_-16px_rgba(109,40,217,0.85)] transition duration-300 group-hover:scale-[1.06]" />
+                <span className="absolute inset-[9px] rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 shadow-[0_22px_50px_-16px_rgba(109,40,217,0.85)] transition duration-300 group-hover:scale-[1.06]" />
                 <span className="relative z-10 flex flex-col items-center gap-1.5 px-4 text-center leading-tight text-white">
                   <span className="text-[13px] font-extrabold">{s.heroCta}</span>
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 transition group-hover:translate-x-0.5">
