@@ -132,7 +132,7 @@ export default function IletisimPage() {
                 </p>
                 <button
                   onClick={() => setStatus("idle")}
-                  className="mt-6 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-[var(--mk-ink)] transition hover:bg-violet-700"
+                  className="mt-6 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700"
                 >
                   {sL.sentBtn}
                 </button>
@@ -169,7 +169,7 @@ export default function IletisimPage() {
                 <button
                   type="submit"
                   disabled={status === "sending"}
-                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3.5 text-sm font-bold text-[var(--mk-ink)] shadow-[0_0_30px_-8px_rgba(139,92,246,0.5)] transition hover:-translate-y-0.5 disabled:opacity-60"
+                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3.5 text-sm font-bold text-white shadow-[0_0_30px_-8px_rgba(139,92,246,0.5)] transition hover:-translate-y-0.5 disabled:opacity-60"
                 >
                   {status === "sending" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   {status === "sending" ? sL.sending : sL.send}

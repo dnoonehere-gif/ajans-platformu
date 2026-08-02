@@ -116,7 +116,7 @@ export default function SssPage() {
               key={c}
               onClick={() => { setCat(c); setOpen(null); }}
               className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                activeCat === c ? "bg-violet-600 text-[var(--mk-ink)] shadow-lg shadow-violet-500/30" : "border border-white/10 bg-neutral-900/[0.04] text-[var(--mk-ink-soft)] hover:bg-neutral-900/[0.06] hover:text-[var(--mk-ink)]"
+                activeCat === c ? "bg-violet-600 text-white shadow-lg shadow-violet-500/30" : "border border-white/10 bg-neutral-900/[0.04] text-[var(--mk-ink-soft)] hover:bg-neutral-900/[0.06] hover:text-[var(--mk-ink)]"
               }`}
             >
               {c}
@@ -149,11 +149,11 @@ export default function SssPage() {
         </div>
 
         {/* Yardımcı olmadı mı */}
-        <div className="mx-auto mt-12 max-w-3xl rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-50 to-white p-8 text-center text-[var(--mk-ink)]">
+        <div className="mx-auto mt-12 max-w-3xl rounded-3xl border border-violet-400/20 bg-violet-500/[0.07] p-8 text-center text-[var(--mk-ink)]">
           <MessageSquare className="mx-auto h-8 w-8 text-violet-300" />
           <h2 className="mt-3 text-xl font-bold">{sL.notFoundTitle}</h2>
           <p className="mt-2 text-sm text-[var(--mk-ink-soft)]">{sL.notFoundDesc}</p>
-          <Link href="/iletisim" className="mt-5 inline-block rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-3 text-sm font-bold text-[var(--mk-ink)] shadow-[0_0_30px_-8px_rgba(139,92,246,0.5)] transition hover:-translate-y-0.5">
+          <Link href="/iletisim" className="mt-5 inline-block rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-[0_0_30px_-8px_rgba(139,92,246,0.5)] transition hover:-translate-y-0.5">
             {sL.contact}
           </Link>
         </div>

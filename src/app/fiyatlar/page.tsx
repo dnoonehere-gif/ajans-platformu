@@ -225,10 +225,10 @@ export default function PricingPage() {
               const f = plan.features as PlanFeatures;
 
               const cardInner = (
-                <div className={`relative flex h-full flex-col rounded-3xl p-7 ${isPopular ? "bg-gradient-to-b from-violet-50 to-white" : "bg-[var(--mk-surface)]"}`}>
+                <div className={`relative flex h-full flex-col rounded-3xl p-7 ${isPopular ? "bg-violet-500/[0.07]" : "bg-[var(--mk-surface)]"}`}>
                   {isPopular && (
                     <div className="absolute -top-3.5 left-1/2 z-10 -translate-x-1/2">
-                      <span className="rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-1 text-xs font-bold text-[var(--mk-ink)] shadow-lg shadow-violet-500/40">
+                      <span className="rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-1 text-xs font-bold text-white shadow-lg shadow-violet-500/40">
                         {sL.popular}
                       </span>
                     </div>
@@ -256,7 +256,7 @@ export default function PricingPage() {
                     href="/kayit"
                     className={`mt-5 flex w-full items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition hover:opacity-90 ${
                       isPopular
-                        ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-[var(--mk-ink)] shadow-lg shadow-violet-500/30"
+                        ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/30"
                         : "border border-white/10 text-[var(--mk-ink-soft)] hover:bg-neutral-900/[0.05]"
                     }`}
                   >

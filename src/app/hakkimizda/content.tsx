@@ -109,7 +109,7 @@ export function HakkimizdaContent() {
       {/* Misyon & Vizyon */}
       <section className="px-6 py-16">
         <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-2">
-          <div className="rounded-3xl bg-gradient-to-br from-violet-600 to-indigo-700 p-8 text-[var(--mk-ink)] shadow-[0_0_50px_-12px_rgba(139,92,246,0.5)]">
+          <div className="rounded-3xl bg-gradient-to-br from-violet-600 to-indigo-700 p-8 text-white shadow-[0_0_50px_-12px_rgba(139,92,246,0.5)]">
             <Target className="h-8 w-8" />
             <h2 className="mt-4 text-2xl font-bold">{s.missionTitle}</h2>
             <p className="mt-3 leading-relaxed text-violet-100">{s.missionDesc}</p>
@@ -150,12 +150,12 @@ export function HakkimizdaContent() {
 
       {/* CTA */}
       <section className="px-6 py-20">
-        <div className="mx-auto max-w-4xl rounded-3xl border border-violet-400/20 bg-gradient-to-br from-violet-50 to-white p-10 text-center sm:p-14">
+        <div className="mx-auto max-w-4xl rounded-3xl border border-violet-400/20 bg-violet-500/[0.07] p-10 text-center sm:p-14">
           <Users className="mx-auto h-10 w-10 text-violet-300" />
           <h2 className="mt-4 text-3xl font-black text-[var(--mk-ink)]">{s.ctaTitle}</h2>
           <p className="mx-auto mt-3 max-w-md text-[var(--mk-ink-soft)]">{s.ctaDesc}</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/kayit" className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-4 font-bold text-[var(--mk-ink)] shadow-[0_0_40px_-8px_rgba(139,92,246,0.6)] transition hover:-translate-y-0.5">
+            <Link href="/kayit" className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-4 font-bold text-white shadow-[0_0_40px_-8px_rgba(139,92,246,0.6)] transition hover:-translate-y-0.5">
               {s.ctaPrimary} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
             </Link>
             <Link href="/iletisim" className="rounded-2xl border border-white/15 px-8 py-4 font-semibold text-[var(--mk-ink)] transition hover:bg-neutral-900/[0.05]">

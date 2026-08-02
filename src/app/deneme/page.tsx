@@ -139,19 +139,19 @@ function DenemeInner() {
   if (result === "success") {
     return <Shell icon={<CheckCircle2 className="h-8 w-8 text-violet-600" />} iconClass="bg-gradient-to-br from-emerald-500 to-green-600">
       {heading(t.successTitle, t.successDesc)}
-      <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90">{t.goDashboard}</Link>
+      <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-white transition hover:opacity-90">{t.goDashboard}</Link>
     </Shell>;
   }
   if (result === "no_brand") {
     return <Shell icon={<Gift className="h-8 w-8 text-violet-600" />} iconClass="bg-gradient-to-br from-violet-600 to-indigo-600">
       {heading(t.noBrandTitle, t.noBrandDesc)}
-      <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90">{t.goDashboard}</Link>
+      <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-white transition hover:opacity-90">{t.goDashboard}</Link>
     </Shell>;
   }
   if (result === "already_active") {
     return <Shell icon={<CheckCircle2 className="h-8 w-8 text-violet-600" />} iconClass="bg-[var(--mk-chip)]">
       {heading(t.alreadyActiveTitle, t.alreadyActiveDesc)}
-      <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90">{t.goDashboard}</Link>
+      <Link href="/dashboard" className="mt-6 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-white transition hover:opacity-90">{t.goDashboard}</Link>
     </Shell>;
   }
   if (result === "error") {
@@ -182,7 +182,7 @@ function DenemeInner() {
         <p className="text-xs text-[var(--mk-ink-soft)]">{t.loginNeeded}</p>
         <p className="mt-1 break-all text-sm font-semibold text-violet-300">{status.email}</p>
       </div>
-      <Link href={loginUrl} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90">
+      <Link href={loginUrl} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-white transition hover:opacity-90">
         <LogIn className="h-4 w-4" /> {t.loginBtn}
       </Link>
       <p className="mt-4 text-xs text-[var(--mk-ink-soft)]">
@@ -199,7 +199,7 @@ function DenemeInner() {
       <div className="mt-5 rounded-xl border border-neutral-900/[0.07] bg-neutral-900/[0.03] px-4 py-3">
         <p className="mt-1 break-all text-sm font-semibold text-violet-300">{status.email}</p>
       </div>
-      <Link href={loginUrl} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90">
+      <Link href={loginUrl} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-white transition hover:opacity-90">
         <LogIn className="h-4 w-4" /> {t.loginBtn}
       </Link>
     </Shell>;
@@ -216,7 +216,7 @@ function DenemeInner() {
     <button
       onClick={activate}
       disabled={activating}
-      className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-[var(--mk-ink)] transition hover:opacity-90 disabled:opacity-60"
+      className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
     >
       {activating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gift className="h-4 w-4" />}
       {activating ? t.activating : t.activate}
