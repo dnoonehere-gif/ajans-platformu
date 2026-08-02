@@ -96,7 +96,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
               </Link>
               <Link
                 href="/kayit"
-                className="group inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-[var(--mk-btn)] px-5 py-2.5 text-sm font-semibold text-[var(--mk-btn-ink)] transition hover:opacity-90"
+                className="nv-btn nv-btn-ghost group inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-[var(--mk-btn)] px-5 py-2.5 text-sm font-semibold text-[var(--mk-btn-ink)] transition hover:opacity-90"
               >
                 {sL.signup}
                 <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />

@@ -153,10 +153,10 @@ export function NavClient({ rail = false }: { rail?: boolean } = {}) {
       >
         {/* İkon çipi — aktifken saydam beyaz kapsül, referans tasarımdaki gibi */}
         <span
-          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-xl transition ${
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${
             isActive
               ? "bg-[hsl(var(--primary-foreground)/0.2)]"
-              : "bg-[hsl(var(--accent))] group-hover/i:bg-[hsl(var(--primary)/0.12)]"
+              : "bg-[hsl(var(--accent))] group-hover/i:scale-110 group-hover/i:-rotate-6 group-hover/i:bg-[hsl(var(--primary)/0.18)] group-hover/i:text-[hsl(var(--primary))] group-hover/i:shadow-[0_4px_12px_-4px_hsl(var(--primary)/0.6)]"
           }`}
         >
           <item.icon className="h-4 w-4" />

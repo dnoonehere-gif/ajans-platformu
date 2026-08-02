@@ -15,6 +15,7 @@ import { useBrand } from "@/components/dashboard/brand-provider";
 import { useLang } from "@/components/language-provider";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { BlurLoading } from "@/components/ui/blur-loader";
 
 interface KPIs {
   totalReviews: number; avgRating: number | null; prevAvgRating: number | null;
@@ -287,11 +288,10 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-10 w-10 animate-spin text-[hsl(var(--primary))]" />
-        </div>
-      ) : !data ? null : (
+      {!data ? (
+        loading ? <div className="h-64" /> : null
+      ) : (
+        <BlurLoading loading={loading} className="space-y-5">
         <div className="space-y-5">
 
           {/* Onboarding */}
@@ -693,6 +693,7 @@ export default function DashboardPage() {
           </div>
 
         </div>
+        </BlurLoading>
       )}
     </div>
   );

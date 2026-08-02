@@ -320,7 +320,7 @@ export default function AnaSayfa() {
 
             <div className="flex items-center gap-2 sm:gap-3">
               <Link href="/giris" className="hidden text-sm font-medium text-[var(--mk-ink-soft)] transition hover:text-[var(--mk-ink)] sm:block">{s.navLogin}</Link>
-              <Link href="/kayit" className="group hidden items-center gap-2 rounded-full bg-[var(--mk-btn)] px-5 py-2.5 text-sm font-semibold text-[var(--mk-btn-ink)] transition hover:opacity-90 sm:inline-flex">
+              <Link href="/kayit" className="nv-btn nv-btn-ghost group hidden items-center gap-2 rounded-full bg-[var(--mk-btn)] px-5 py-2.5 text-sm font-semibold text-[var(--mk-btn-ink)] transition hover:opacity-90 sm:inline-flex">
                 {s.navSignup}
                 <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
               </Link>
@@ -335,7 +335,7 @@ export default function AnaSayfa() {
             <div className="mx-4 mt-4 flex flex-col gap-1 rounded-2xl bg-[var(--mk-chip)] p-2 md:hidden">
               {navLinks}
               <Link href="/kayit" onClick={() => setMenuOpen(false)}
-                className="mt-1 rounded-full bg-[var(--mk-btn)] py-2.5 text-center text-sm font-semibold text-[var(--mk-btn-ink)]">{s.navSignup}</Link>
+                className="nv-btn nv-btn-ghost mt-1 rounded-full bg-[var(--mk-btn)] py-2.5 text-center text-sm font-semibold text-[var(--mk-btn-ink)]">{s.navSignup}</Link>
             </div>
           )}
 
@@ -381,7 +381,7 @@ export default function AnaSayfa() {
               </div>
 
               <Link href="/kayit"
-                className="group relative grid h-[132px] w-[132px] shrink-0 place-items-center">
+                className="nv-btn group relative grid h-[132px] w-[132px] shrink-0 place-items-center rounded-full">
                 <span className="nv-orb-rings absolute inset-0 rounded-full border-2 border-dashed border-violet-400/50" />
                 <span className="absolute inset-[9px] rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 shadow-[0_22px_50px_-16px_rgba(109,40,217,0.85)] transition duration-300 group-hover:scale-[1.06]" />
                 <span className="relative z-10 flex flex-col items-center gap-1.5 px-4 text-center leading-tight text-white">
@@ -392,23 +392,6 @@ export default function AnaSayfa() {
                 </span>
               </Link>
             </div>
-          </div>
-        </section>
-
-        {/* ══ GÜVEN ŞERİDİ — hero'nun hemen altında, numaralı ve ayraçlı ══ */}
-        <section className="mt-3 overflow-hidden rounded-[24px] bg-[var(--mk-surface)] sm:mt-4 sm:rounded-[28px]">
-          <div className="grid divide-y divide-dashed divide-[var(--mk-line)] sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x lg:divide-dashed">
-            {s.checks.map((c, i) => (
-              <Reveal key={c} delay={i * 90}>
-                <div className="flex items-center gap-3 px-6 py-5">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-500/12 text-violet-600">
-                    <CheckCircle2 className="h-4 w-4" />
-                  </span>
-                  <span className="flex-1 text-sm font-semibold leading-snug">{c}</span>
-                  <span className="nv-index text-[var(--mk-ink-mute)]">/0{i + 1}</span>
-                </div>
-              </Reveal>
-            ))}
           </div>
         </section>
 
@@ -480,11 +463,11 @@ export default function AnaSayfa() {
           <h2 className="nv-display mx-auto max-w-3xl text-4xl sm:text-6xl">{s.ctaTitle}<span className="text-violet-500">.</span></h2>
           <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-neutral-500">{s.ctaDesc}</p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/kayit" className="group inline-flex items-center gap-2 rounded-full bg-violet-600 px-8 py-4 text-base font-bold transition hover:bg-violet-500">
+            <Link href="/kayit" className="nv-btn nv-btn-primary group inline-flex items-center gap-2 rounded-full bg-violet-600 px-8 py-4 text-base font-bold transition hover:bg-violet-500">
               {s.ctaBtn}
               <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
             </Link>
-            <Link href="/giris" className="rounded-full border border-white/15 px-8 py-4 text-base font-semibold text-neutral-200 transition hover:bg-white/[0.06]">
+            <Link href="/giris" className="nv-btn nv-btn-ghost rounded-full border border-white/15 px-8 py-4 text-base font-semibold text-neutral-200 transition hover:bg-white/[0.06]">
               {s.ctaLogin}
             </Link>
           </div>

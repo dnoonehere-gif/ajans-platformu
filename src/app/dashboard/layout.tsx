@@ -2,7 +2,7 @@ import { auth } from "@/server/auth/auth";
 import { prisma } from "@/lib/prisma";
 
 import { redirect } from "next/navigation";
-import { Palette, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { BrandProvider } from "@/components/dashboard/brand-provider";
 import { WhiteLabelProvider } from "@/components/dashboard/white-label-provider";
 import { WhiteLabelLogo } from "@/components/dashboard/white-label-logo";
@@ -10,7 +10,7 @@ import { BrandSwitcher } from "@/components/dashboard/brand-switcher";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { LanguageSwitcher } from "@/components/language-provider";
 import { Breadcrumb } from "@/components/dashboard/breadcrumb";
-import { ThemeSwitcher, ThemeLabel, LogoutButton, UserName } from "@/components/dashboard/theme-switcher";
+import { LogoutButton, UserName } from "@/components/dashboard/theme-switcher";
 import { NavClient } from "@/components/dashboard/nav-client";
 import { SubscriptionBanner } from "@/components/dashboard/subscription-banner";
 import { EmailVerifyBanner } from "@/components/dashboard/email-verify-banner";
@@ -61,24 +61,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
 
           {/* Marka seçici */}
-          <div className="overflow-hidden border-b border-[hsl(var(--border))] p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+          <div className="w-[232px] shrink-0 overflow-hidden border-b border-[hsl(var(--border))] p-2 group-hover:w-auto group-hover:p-3">
             <BrandSwitcher />
           </div>
 
           {/* Nav */}
           <NavClient rail />
 
-          {/* Tema seçici */}
-          <div className="overflow-hidden border-t border-[hsl(var(--border))] opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-            <details className="group/t">
-              <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:text-[hsl(var(--foreground))]">
-                <Palette className="h-4 w-4 shrink-0" />
-                <ThemeLabel />
-                <ChevronRight className="h-3 w-3 transition group-open/t:rotate-90" />
-              </summary>
-              <ThemeSwitcher />
-            </details>
-          </div>
+          {/* Tema seçici Ayarlar > Görünüm sekmesine taşındı */}
 
           {/* Kullanıcı */}
           <div className="border-t border-[hsl(var(--border))] p-3">
@@ -108,17 +98,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               </div>
               <NavClient />
 
-              {/* Tema seçici */}
-              <div className="border-t border-[hsl(var(--border))]">
-                <details className="group">
-                  <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 text-sm font-medium text-[hsl(var(--muted-foreground))] transition hover:text-[hsl(var(--foreground))]">
-                    <Palette className="h-4 w-4 shrink-0" />
-                    <ThemeLabel />
-                    <ChevronRight className="h-3 w-3 transition group-open:rotate-90" />
-                  </summary>
-                  <ThemeSwitcher />
-                </details>
-              </div>
+              {/* Tema seçici Ayarlar > Görünüm sekmesine taşındı */}
 
               {/* Kullanıcı */}
               <div className="border-t border-[hsl(var(--border))] p-3">

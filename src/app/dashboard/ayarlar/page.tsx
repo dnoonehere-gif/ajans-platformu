@@ -1,12 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Loader2, Save, User, Lock, ShieldCheck, ShieldOff, CheckCircle2, AlertCircle, Smartphone } from "lucide-react";
+import { Loader2, Save, User, Lock, ShieldCheck, ShieldOff, CheckCircle2, AlertCircle, Smartphone , Palette} from "lucide-react";
 import { useLang } from "@/components/language-provider";
+import { ThemeSwitcher } from "@/components/dashboard/theme-switcher";
 
 const L = {
   tr: {
     title: "Ayarlar", subtitle: "Hesap bilgilerinizi ve güvenlik ayarlarınızı yönetin",
-    tabs: { profil: "Profil", sifre: "Şifre", guvenlik: "Güvenlik" },
+    tabs: { profil: "Profil", sifre: "Şifre", guvenlik: "Güvenlik", gorunum: "Görünüm" },
     profileSaved: "Profil güncellendi.", genericError: "Hata oluştu.",
     pwMismatch: "Şifreler eşleşmiyor.", pwShort: "Şifre en az 8 karakter olmalı.",
     pwSaved: "Şifre güncellendi.", errShort: "Hata.",
@@ -46,7 +47,7 @@ const L = {
   },
   en: {
     title: "Settings", subtitle: "Manage your account details and security settings",
-    tabs: { profil: "Profile", sifre: "Password", guvenlik: "Security" },
+    tabs: { profil: "Profile", sifre: "Password", guvenlik: "Security", gorunum: "Appearance" },
     profileSaved: "Profile updated.", genericError: "Something went wrong.",
     pwMismatch: "Passwords do not match.", pwShort: "Password must be at least 8 characters.",
     pwSaved: "Password updated.", errShort: "Error.",
@@ -86,7 +87,7 @@ const L = {
   },
 };
 
-type Tab = "profil" | "sifre" | "guvenlik";
+type Tab = "profil" | "sifre" | "guvenlik" | "gorunum";
 
 export default function AyarlarPage() {
   const { lang } = useLang();
@@ -207,6 +208,7 @@ export default function AyarlarPage() {
     { key: "profil", label: sL.tabs.profil, icon: User },
     { key: "sifre", label: sL.tabs.sifre, icon: Lock },
     { key: "guvenlik", label: sL.tabs.guvenlik, icon: ShieldCheck },
+    { key: "gorunum", label: sL.tabs.gorunum, icon: Palette },
   ];
 
   return (
@@ -295,6 +297,26 @@ export default function AyarlarPage() {
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />} {sL.updatePw}
           </button>
         </form>
+      )}
+
+      {/* ─── Görünüm (tema) — sidebar'dan buraya taşındı ─── */}
+      {tab === "gorunum" && (
+        <div className="glass rounded-2xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--primary)/0.12)]">
+              <Palette className="h-6 w-6 text-[hsl(var(--primary))]" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold">{sL.tabs.gorunum}</h3>
+              <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
+                {lang === "en"
+                  ? "Choose the panel color theme and light/dark mode."
+                  : "Panelin renk temasını ve açık/koyu modunu seçin."}
+              </p>
+              <div className="mt-4"><ThemeSwitcher /></div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ─── Güvenlik (2FA) ─── */}
