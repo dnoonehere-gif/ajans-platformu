@@ -1,14 +1,20 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Globe, Sparkles, Loader2, ChevronRight, ChevronLeft, Check, Palette, Phone, Building2, ImageIcon } from "lucide-react";
+import { Globe, Sparkles, Loader2, ChevronRight, ChevronLeft, Check, Palette, Phone, Building2, ImageIcon, Pencil, ExternalLink, Trash2 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { useLang } from "@/components/language-provider";
 import { PageLoading } from "@/components/ui/page-loading";
 
 const L = {
   tr: {
+    libraryTitle: "Web Siteniz",
+    published: "Yayında", draft: "Taslak",
+    edit: "Düzenle", view: "Siteyi Gör", regenerate: "Yeniden Oluştur", remove: "Kaldır",
+    removeConfirm: "Site kalıcı olarak silinecek. Emin misiniz?",
+    regenerateNote: "Yeniden oluştur, mevcut sitenin üzerine yazar. İçeriğini kaybetmek istemiyorsan önce Dışa Aktar ile yedek al.",
     steps: ["Sektör", "Renk", "Logo", "İletişim", "Brief"],
     briefTitle: "Son birkaç soru",
     briefSub: "Bunları doldurdukça site sizin işletmenize özel çıkar. Boş bıraktıklarınız için yapay zekâ bilgi uydurmaz.",
@@ -49,6 +55,11 @@ const L = {
     generate: "AI ile Oluştur",
   },
   en: {
+    libraryTitle: "Your Website",
+    published: "Live", draft: "Draft",
+    edit: "Edit", view: "View Site", regenerate: "Regenerate", remove: "Remove",
+    removeConfirm: "The site will be permanently deleted. Are you sure?",
+    regenerateNote: "Regenerating overwrites the current site. Export a backup first if you want to keep it.",
     steps: ["Industry", "Color", "Logo", "Contact", "Brief"],
     briefTitle: "A few last questions",
     briefSub: "The more you fill in, the more the site fits your business. Anything left blank will not be invented by the AI.",
@@ -152,22 +163,35 @@ export default function WebsitePage() {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
 
-  // Mevcut website varsa editöre yönlendir
+  // Mevcut site varsa KÜTÜPHANE gösterilir.
+  //
+  // Önceden burada editöre otomatik yönlendirme vardı; editördeki geri tuşu
+  // bu sayfaya dönünce anında editöre geri fırlatılıyor ve "geri dönmüyor"
+  // gibi görünüyordu. Artık sitenin üstünde düzenle/gör/kaldır seçenekleri
+  // duruyor, sihirbaz yalnızca site yokken veya "yeniden oluştur" denince açılır.
+  const [mevcutSite, setMevcutSite] = useState<{ id: string; title: string; isPublished: boolean; subdomain?: string } | null>(null);
+  const [yenidenOlustur, setYenidenOlustur] = useState(false);
+  const [siliniyor, setSiliniyor] = useState(false);
+
   useEffect(() => {
     if (!activeBrand) { setChecking(false); return; }
     setChecking(true);
     fetch(`/api/website/${activeBrand.id}`)
       .then((r) => r.json())
-      .then((d) => {
-        if (d.website?.id) {
-          router.replace(`/dashboard/website/editor/${d.website.id}`);
-        } else {
-          setChecking(false);
-        }
-      })
-      .catch(() => setChecking(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeBrand?.id, router]);
+      .then((d) => setMevcutSite(d.website ?? null))
+      .catch(() => setMevcutSite(null))
+      .finally(() => setChecking(false));
+  }, [activeBrand?.id]);
+
+  async function siteyiKaldir() {
+    if (!activeBrand || !mevcutSite) return;
+    if (!confirm(sL.removeConfirm)) return;
+    setSiliniyor(true);
+    const res = await fetch(`/api/website/${activeBrand.id}`, { method: "DELETE" });
+    setSiliniyor(false);
+    if (res.ok) { setMevcutSite(null); setYenidenOlustur(false); setStep(1); }
+    else setError(sL.genericError);
+  }
 
   const [sector, setSector] = useState("");
   const [customSector, setCustomSector] = useState("");
@@ -277,6 +301,65 @@ export default function WebsitePage() {
           </p>
           <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">{sL.takesTime}</p>
         </div>
+      </div>
+    );
+  }
+
+  // ── Kütüphane: site zaten varsa sihirbaz yerine bu görünür ──────────
+  if (mevcutSite && !yenidenOlustur) {
+    const adres = mevcutSite.subdomain
+      ? `https://${mevcutSite.subdomain}.novelya.com.tr`
+      : `/site/${activeBrand.slug ?? ""}`;
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-10">
+        <div className="mb-8 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[hsl(var(--primary)/0.12)]">
+            <Globe className="h-5 w-5 text-[hsl(var(--primary))]" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold">{sL.libraryTitle}</h1>
+            <p className="text-sm text-[hsl(var(--muted-foreground))]">{activeBrand.name}</p>
+          </div>
+        </div>
+
+        <div className="glass rounded-3xl p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold">{mevcutSite.title}</h2>
+              <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{adres}</p>
+            </div>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${mevcutSite.isPublished
+              ? "bg-green-500/12 text-green-500"
+              : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]"}`}>
+              {mevcutSite.isPublished ? sL.published : sL.draft}
+            </span>
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Link href={`/dashboard/website/editor/${mevcutSite.id}`}
+              className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">
+              <Pencil className="h-4 w-4" /> {sL.edit}
+            </Link>
+            {mevcutSite.isPublished && (
+              <a href={adres} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] px-5 py-2.5 text-sm transition hover:bg-[hsl(var(--accent))]">
+                <ExternalLink className="h-4 w-4" /> {sL.view}
+              </a>
+            )}
+            <button onClick={() => { setYenidenOlustur(true); setStep(1); }}
+              className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] px-5 py-2.5 text-sm transition hover:bg-[hsl(var(--accent))]">
+              <Sparkles className="h-4 w-4" /> {sL.regenerate}
+            </button>
+            <button onClick={siteyiKaldir} disabled={siliniyor}
+              className="ml-auto flex items-center gap-2 rounded-xl border border-red-500/30 px-5 py-2.5 text-sm text-red-400 transition hover:bg-red-500/10 disabled:opacity-50">
+              {siliniyor ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />} {sL.remove}
+            </button>
+          </div>
+        </div>
+
+        {error && <p className="mt-4 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-red-400">{error}</p>}
+
+        <p className="mt-4 text-xs text-[hsl(var(--muted-foreground))]">{sL.regenerateNote}</p>
       </div>
     );
   }

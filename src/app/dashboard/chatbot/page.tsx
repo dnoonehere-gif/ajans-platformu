@@ -959,7 +959,7 @@ export default function ChatbotPage() {
                         <div className="flex items-center gap-2 rounded-xl bg-[hsl(var(--muted)/0.5)] px-4 py-3">
                           <code className="flex-1 truncate text-xs">{origin}/chat/{brandSlug}</code>
                           <button
-                            onClick={() => copyText(`${origin}/chat/${brandId}`, "link")}
+                            onClick={() => copyText(`${origin}/chat/${brandSlug}`, "link")}
                             className="shrink-0 flex items-center gap-1 rounded-lg border border-[hsl(var(--border))] px-2.5 py-1.5 text-xs transition hover:bg-[hsl(var(--accent))]"
                           >
                             {copied === "link" ? <><Check className="h-3 w-3 text-green-400" /> {sL.copied}</> : <><Copy className="h-3 w-3" /> {sL.copy}</>}

@@ -5,7 +5,7 @@ import { Search, Phone, MapPin, Star, Loader2, ChevronRight } from "lucide-react
 
 interface MenuItem {
   id: string; name: string; description?: string | null;
-  price?: number | null; imageUrl?: string | null;
+  price?: number | null; imageUrl?: string | null; isAvailable?: boolean;
   isPopular: boolean; allergens: string[];
 }
 interface MenuCategory { id: string; name: string; emoji?: string | null; description?: string | null; items: MenuItem[] }
@@ -119,7 +119,7 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
 
             <div className="space-y-3">
               {category.items.map(item => (
-                <div key={item.id} className="flex gap-3 rounded-2xl bg-white p-4 shadow-sm">
+                <div key={item.id} className={`flex gap-3 rounded-2xl bg-white p-4 shadow-sm ${item.isAvailable === false ? "opacity-55" : ""}`}>
                   {item.imageUrl && (
                     <Image src={item.imageUrl} alt={item.name} width={80} height={80}
                       className="h-20 w-20 shrink-0 rounded-xl object-cover" unoptimized />
@@ -128,7 +128,12 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <h3 className="font-bold text-gray-900">{item.name}</h3>
-                        {item.isPopular && (
+                        {item.isAvailable === false && (
+                          <span className="inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-[10px] font-bold text-gray-600">
+                            Tükendi
+                          </span>
+                        )}
+                        {item.isPopular && item.isAvailable !== false && (
                           <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
                             <Star className="h-2.5 w-2.5" /> Popüler
                           </span>

@@ -53,3 +53,27 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ bran
   });
   return NextResponse.json({ website: updated });
 }
+
+/**
+ * Siteyi tamamen kaldırır.
+ *
+ * Kütüphaneden "Kaldır" için gerekli. Sayfalar Website'a cascade bağlı
+ * olduğu için tek silme yeterli; ancak yayındaki bir site kazara silinmesin
+ * diye çağıranın onayı arayüzde alınır.
+ */
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ brandId: string }> }) {
+  const user = await getAuthUser(req);
+  if (!user) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+
+  const { brandId } = await params;
+
+  // Sahiplik: kullanıcı yalnızca kendi markasının sitesini silebilir.
+  const website = await prisma.website.findFirst({
+    where: { brandId, brand: { ownerId: user.id } },
+    select: { id: true },
+  });
+  if (!website) return NextResponse.json({ error: "Site bulunamadı" }, { status: 404 });
+
+  await prisma.website.delete({ where: { id: website.id } });
+  return NextResponse.json({ deleted: true });
+}

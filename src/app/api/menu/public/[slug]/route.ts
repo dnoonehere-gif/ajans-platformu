@@ -12,7 +12,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
         include: {
           categories: {
             orderBy: { order: "asc" },
-            include: { items: { where: { isAvailable: true }, orderBy: { order: "asc" } } },
+            // Tükenen ürün menüden SİLİNMEZ. Müşteri "bu mekânda bu var mı" diye
+            // bakarken ürünün yok olması kafa karıştırıyor ve işletme ürünü geri
+            // eklemek zorunda kalıyordu; artık "Tükendi" olarak gösteriliyor.
+            include: { items: { orderBy: [{ isAvailable: "desc" }, { order: "asc" }] } },
           },
         },
       },
