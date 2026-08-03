@@ -27,7 +27,18 @@ const L = {
 };
 
 // Bu ön eklerle başlayan yollarda çubuk gösterilmez
-const HIDDEN_PREFIXES = ["/dashboard", "/elrmgklmer", "/giris", "/kayit", "/sifremi", "/dogrulama"];
+/**
+ * Duyuru çubuğu YALNIZCA Novelya'nın kendi pazarlama sayfalarında görünür.
+ *
+ * Önceden kara liste vardı ve müşteriye ait sayfalar (yayınlanan web sitesi,
+ * QR menü, QR geri bildirim, chat) listede olmadığı için Novelya reklamı
+ * müşterinin kendi sayfasının tepesinde çıkıyordu. Beyaz listeye çevrildi:
+ * yeni eklenen her rota varsayılan olarak REKLAMSIZ olur.
+ */
+const MARKETING_PATHS = new Set([
+  "/", "/fiyatlar", "/hakkimizda", "/sss", "/iletisim", "/deneme",
+  "/kvkk", "/gizlilik", "/kullanim-sartlari", "/iade-politikasi", "/cerez-politikasi",
+]);
 
 export function AnnounceBar() {
   const { lang } = useLang();
@@ -40,7 +51,7 @@ export function AnnounceBar() {
     setDismissed(sessionStorage.getItem("nv-announce-dismissed") === "1");
   }, []);
 
-  const hidden = dismissed || HIDDEN_PREFIXES.some((p) => pathname.startsWith(p));
+  const hidden = dismissed || !MARKETING_PATHS.has(pathname);
 
   // Sabit konumlu navbar'ların (landing) çubuğun altına inmesi için yükseklik
   // CSS değişkeni olarak yayınlanır. Çubuk yoksa 0.
