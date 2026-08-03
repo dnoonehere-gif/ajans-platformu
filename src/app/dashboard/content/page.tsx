@@ -9,6 +9,7 @@ import Link from "next/link";
 import type { ContentType } from "@prisma/client";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { useLang } from "@/components/language-provider";
+import { ContentResult } from "@/components/dashboard/content-result";
 
 const L = {
   tr: {
@@ -569,7 +570,7 @@ function ContentCard({ item, onDelete }: { item: ContentItem; onDelete: (id: str
       {expanded && (
         <div className="border-t border-[hsl(var(--border))] px-4 pb-4 pt-3">
           {hasJson ? <MetaView meta={item.meta!} type={item.type} /> : (
-            <p className="whitespace-pre-wrap text-sm leading-relaxed">{item.body}</p>
+            <ContentResult text={item.body} />
           )}
         </div>
       )}
@@ -817,7 +818,7 @@ export default function ContentPage() {
                   {lastGenerated.meta && Object.keys(lastGenerated.meta).length > 0 ? (
                     <MetaView meta={lastGenerated.meta} type={lastGenerated.type} />
                   ) : (
-                    <p className="whitespace-pre-wrap text-xs leading-relaxed">{lastGenerated.body}</p>
+                    <ContentResult text={lastGenerated.body} />
                   )}
                   <div className="mt-2 flex justify-end"><CopyBtn text={lastGenerated.body} /></div>
                 </div>

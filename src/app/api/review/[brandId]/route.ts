@@ -31,7 +31,24 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ bran
 
   const where = {
     brandId,
-    ...(sentiment ? { sentiment: sentiment as "POSITIVE" | "NEUTRAL" | "NEGATIVE" } : {}),
+    // Duygu filtresi yalnızca AI'ın analiz ettiği yorumlarda doluydu; elle
+    // eklenen yorumlarda alan boş kaldığı için bu yorumlar sekmelerde hiç
+    // görünmüyor, sadece "Tümü"nde çıkıyordu. Alan boşsa PUANDAN türetiliyor:
+    // 4-5 olumlu, 3 nötr, 1-2 olumsuz.
+    ...(sentiment
+      ? {
+          OR: [
+            { sentiment: sentiment as "POSITIVE" | "NEUTRAL" | "NEGATIVE" },
+            {
+              sentiment: null,
+              rating:
+                sentiment === "POSITIVE" ? { gte: 4 }
+                : sentiment === "NEGATIVE" ? { lte: 2 }
+                : { equals: 3 },
+            },
+          ],
+        }
+      : {}),
   };
 
   const [reviews, total] = await Promise.all([
@@ -62,8 +79,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ bra
   const parsed = postSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
 
+  // Duygu, AI analizi çalışana kadar puandan türetilir. Aksi hâlde elle
+  // eklenen yorum hiçbir sekmede görünmüyordu. AI analizi sonradan
+  // çalıştığında bu değerin üzerine yazar.
+  const puan = parsed.data.rating;
+  const varsayilanDuygu = puan >= 4 ? "POSITIVE" : puan <= 2 ? "NEGATIVE" : "NEUTRAL";
+
   const review = await prisma.review.create({
-    data: { brandId, ...parsed.data },
+    data: { brandId, sentiment: varsayilanDuygu, ...parsed.data },
   });
 
   const userId = (session.user as { id: string }).id;

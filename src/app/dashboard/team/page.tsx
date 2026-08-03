@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Users, UserPlus, Trash2, ChevronDown, Loader2, Crown, Shield, Edit3, Eye } from "lucide-react";
 import type { BrandRole, GlobalRole } from "@prisma/client";
 import { useLang } from "@/components/language-provider";
+import { useBrand } from "@/components/dashboard/brand-provider";
 
 const L = {
   tr: {
@@ -11,7 +12,7 @@ const L = {
     globalRoles: { SUPER_ADMIN: "Süper Admin", ADMIN: "Admin", CUSTOMER: "Müşteri", STAFF: "Personel" },
     title: "Takım Yönetimi",
     subtitle: "Marka üyelerini yönet, rol ve erişim izinlerini ayarla.",
-    brandIdPh: "Marka ID gir...", loadBtn: "Yükle",
+    noBrand: "Önce üstteki menüden bir marka seçin.",
     brandRoles: "Marka Rolleri",
     addMember: "Üye Ekle", emailPh: "ornek@email.com", add: "Ekle",
     genericError: "Hata oluştu",
@@ -23,7 +24,7 @@ const L = {
     globalRoles: { SUPER_ADMIN: "Super Admin", ADMIN: "Admin", CUSTOMER: "Customer", STAFF: "Staff" },
     title: "Team Management",
     subtitle: "Manage brand members, set roles and access permissions.",
-    brandIdPh: "Enter brand ID...", loadBtn: "Load",
+    noBrand: "Select a brand from the switcher above first.",
     brandRoles: "Brand Roles",
     addMember: "Add Member", emailPh: "you@example.com", add: "Add",
     genericError: "Something went wrong",
@@ -75,7 +76,9 @@ function Avatar({ name, email, avatarUrl }: { name?: string | null; email: strin
 export default function TeamPage() {
   const { lang } = useLang();
   const sL = L[lang];
-  const [brandId, setBrandId] = useState("");
+  // Marka artık üstteki marka seçicisinden gelir; elle ID yazılmaz.
+  const { activeBrand } = useBrand();
+  const brandId = activeBrand?.id ?? "";
   const [loaded, setLoaded] = useState(false);
   const [owner, setOwner] = useState<Member | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
@@ -94,6 +97,11 @@ export default function TeamPage() {
     if (data.owner) setOwner(data.owner);
     if (data.members) setMembers(data.members);
     setLoading(false);
+  }, [brandId]);
+
+  useEffect(() => {
+    if (brandId) { setLoaded(true); load(); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brandId]);
 
   async function invite(e: React.FormEvent) {
@@ -152,17 +160,9 @@ export default function TeamPage() {
         </div>
       </div>
 
-      {/* Marka ID */}
-      {!loaded && (
-        <div className="glass mb-8 flex gap-2 rounded-2xl p-5">
-          <input type="text" placeholder={sL.brandIdPh} value={brandId}
-            onChange={(e) => setBrandId(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && brandId.trim()) { setLoaded(true); load(); } }}
-            className="flex-1 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-4 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary))] transition" />
-          <button onClick={() => { if (brandId.trim()) { setLoaded(true); load(); } }}
-            className="rounded-xl bg-[hsl(var(--primary))] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90">
-            {sL.loadBtn}
-          </button>
+      {!activeBrand && (
+        <div className="glass mb-8 rounded-2xl p-5 text-sm text-[hsl(var(--muted-foreground))]">
+          {sL.noBrand}
         </div>
       )}
 

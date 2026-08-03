@@ -4,6 +4,7 @@ import { useBrand } from "@/components/dashboard/brand-provider";
 import { Loader2, Sparkles, Plus, Trash2, Copy, Check, Layers, Download, Wand2, Edit3, Save } from "lucide-react";
 import type { ContentType } from "@prisma/client";
 import { useLang } from "@/components/language-provider";
+import { ContentResult } from "@/components/dashboard/content-result";
 
 const L = {
   tr: {
@@ -380,7 +381,7 @@ export default function BatchContentPage() {
                     <textarea className={inp + " h-32 resize-y font-mono text-xs"} value={editDraft}
                       onChange={(e) => setEditDraft(e.target.value)} />
                   ) : (
-                    <p className="whitespace-pre-wrap text-sm text-[hsl(var(--foreground))]">{r.body}</p>
+                    <ContentResult text={r.body} />
                   )}
                 </>
               ) : (
