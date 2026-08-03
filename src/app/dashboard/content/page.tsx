@@ -49,6 +49,18 @@ const L = {
     planTitle: "30 Günlük İçerik Takvimi",
     planDesc: (b: string) => `${b} için Instagram, Facebook, LinkedIn ve Blog içeriklerini kapsayan tam aylık takvim.`,
     planGenerating: "Plan Oluşturuluyor...", planGenerate: "30 Günlük Plan Oluştur",
+    planPlatforms: "Hangi platformlar?",
+    planPerWeek: "Haftada kaç paylaşım",
+    planAudience: "Kimlere hitap ediyorsunuz?",
+    planAudiencePh: "Örn. 25-45 yaş kadınlar, mahalle sakinleri",
+    planGoal: "Bu planın amacı ne?",
+    planGoalPh: "Örn. randevu artırmak, yeni şubeyi duyurmak",
+    planFocus: "Bu ay öne çıkarmak istediğiniz",
+    planFocusPh: "Örn. yeni saç bakım paketi, kış kampanyası",
+    planSpecial: "Özel günler / etkinlikler",
+    planSpecialPh: "Örn. 8 Mart, açılış yıldönümü 14'ünde",
+    planAvoid: "İçerik ÜRETİLMESİN dediğiniz konular",
+    planAvoidPh: "Örn. siyaset, fiyat tartışması, rakip isimleri",
   },
   en: {
     copied: "Copied", copy: "Copy",
@@ -87,6 +99,18 @@ const L = {
     planTitle: "30-Day Content Calendar",
     planDesc: (b: string) => `A full monthly calendar for ${b} covering Instagram, Facebook, LinkedIn and Blog content.`,
     planGenerating: "Creating Plan...", planGenerate: "Create 30-Day Plan",
+    planPlatforms: "Which platforms?",
+    planPerWeek: "Posts per week",
+    planAudience: "Who do you serve?",
+    planAudiencePh: "e.g. women aged 25-45, local residents",
+    planGoal: "Goal of this plan?",
+    planGoalPh: "e.g. more bookings, announce the new branch",
+    planFocus: "What to highlight this month",
+    planFocusPh: "e.g. new hair care package, winter campaign",
+    planSpecial: "Special days / events",
+    planSpecialPh: "e.g. Mar 8, anniversary on the 14th",
+    planAvoid: "Topics to AVOID",
+    planAvoidPh: "e.g. politics, price debates, competitor names",
   },
 };
 
@@ -579,6 +603,19 @@ function ContentCard({ item, onDelete }: { item: ContentItem; onDelete: (id: str
 }
 
 // ─── Ana Sayfa ───────────────────────────────────────────────────
+const inp =
+  "w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3.5 py-2.5 text-sm outline-none transition focus:border-[hsl(var(--primary))] placeholder:text-[hsl(var(--muted-foreground))]";
+
+/** Plan brief'inde seçilebilecek platformlar. Boş bırakılırsa AI hepsini karıştırır. */
+const PLAN_PLATFORMS = [
+  { value: "INSTAGRAM_POST", label: "Instagram" },
+  { value: "REELS_IDEA", label: "Reels" },
+  { value: "STORY_IDEA", label: "Story" },
+  { value: "FACEBOOK_POST", label: "Facebook" },
+  { value: "LINKEDIN_POST", label: "LinkedIn" },
+  { value: "BLOG_POST", label: "Blog" },
+];
+
 type Tab = "generate" | "library" | "plan";
 
 export default function ContentPage() {
@@ -602,6 +639,14 @@ export default function ContentPage() {
 
   const [planGenerating, setPlanGenerating] = useState(false);
   const [planTone, setPlanTone] = useState("");
+  // Plan brief'i — boş bırakılanlar isteğe eklenmez, AI varsayım yapmaz.
+  const [planAudience, setPlanAudience] = useState("");
+  const [planGoal, setPlanGoal] = useState("");
+  const [planFocus, setPlanFocus] = useState("");
+  const [planSpecial, setPlanSpecial] = useState("");
+  const [planAvoid, setPlanAvoid] = useState("");
+  const [planPlatforms, setPlanPlatforms] = useState<string[]>([]);
+  const [planPerWeek, setPlanPerWeek] = useState(5);
   const [latestPlan, setLatestPlan] = useState<ContentItem | null>(null);
 
   const loadItems = useCallback(async () => {
@@ -660,6 +705,13 @@ export default function ContentPage() {
         sector: activeBrand?.sector || "Genel",
         description: activeBrand?.description || activeBrand?.name || "",
         tone: planTone || undefined,
+        audience: planAudience || undefined,
+        goal: planGoal || undefined,
+        focus: planFocus || undefined,
+        specialDays: planSpecial || undefined,
+        avoid: planAvoid || undefined,
+        platforms: planPlatforms.length ? planPlatforms : undefined,
+        perWeek: planPerWeek,
       }),
     });
     const data = await res.json();
@@ -894,6 +946,57 @@ export default function ContentPage() {
                 ))}
               </div>
             </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">{sL.planPlatforms}</label>
+              <div className="flex flex-wrap gap-1.5">
+                {PLAN_PLATFORMS.map((pf) => {
+                  const secili = planPlatforms.includes(pf.value);
+                  return (
+                    <button key={pf.value} type="button"
+                      onClick={() => setPlanPlatforms((s) => secili ? s.filter((x) => x !== pf.value) : [...s, pf.value])}
+                      className={`rounded-lg px-2.5 py-1 text-xs transition ${secili ? "text-white" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))]"}`}
+                      style={secili ? { background: primaryColor } : {}}>
+                      {pf.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">
+                {sL.planPerWeek}: <span className="font-bold">{planPerWeek}</span>
+              </label>
+              <input type="range" min={1} max={14} value={planPerWeek}
+                onChange={(e) => setPlanPerWeek(Number(e.target.value))}
+                className="w-full accent-[hsl(var(--primary))]" />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">{sL.planAudience} <span className="text-[hsl(var(--muted-foreground))]">{sL.optional}</span></label>
+              <input className={inp} value={planAudience} onChange={(e) => setPlanAudience(e.target.value)} placeholder={sL.planAudiencePh} />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">{sL.planGoal} <span className="text-[hsl(var(--muted-foreground))]">{sL.optional}</span></label>
+              <input className={inp} value={planGoal} onChange={(e) => setPlanGoal(e.target.value)} placeholder={sL.planGoalPh} />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">{sL.planFocus} <span className="text-[hsl(var(--muted-foreground))]">{sL.optional}</span></label>
+              <input className={inp} value={planFocus} onChange={(e) => setPlanFocus(e.target.value)} placeholder={sL.planFocusPh} />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">{sL.planSpecial} <span className="text-[hsl(var(--muted-foreground))]">{sL.optional}</span></label>
+              <input className={inp} value={planSpecial} onChange={(e) => setPlanSpecial(e.target.value)} placeholder={sL.planSpecialPh} />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">{sL.planAvoid} <span className="text-[hsl(var(--muted-foreground))]">{sL.optional}</span></label>
+              <input className={inp} value={planAvoid} onChange={(e) => setPlanAvoid(e.target.value)} placeholder={sL.planAvoidPh} />
+            </div>
+
             <button type="submit" disabled={planGenerating}
               className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
               style={{ background: primaryColor }}>
@@ -901,13 +1004,17 @@ export default function ContentPage() {
             </button>
           </form>
 
-          {latestPlan?.meta && (
+          {latestPlan && (
             <div className="glass rounded-2xl p-5">
               <div className="mb-3 flex items-center justify-between">
                 <p className="text-sm font-semibold">📅 {latestPlan.title}</p>
                 <CopyBtn text={latestPlan.body} />
               </div>
-              <ContentPlanView meta={latestPlan.meta as Record<string, unknown>} />
+              {latestPlan.meta && Object.keys(latestPlan.meta).length > 0 ? (
+                <ContentPlanView meta={latestPlan.meta as Record<string, unknown>} />
+              ) : (
+                <ContentResult text={latestPlan.body} />
+              )}
             </div>
           )}
         </div>

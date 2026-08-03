@@ -10,6 +10,22 @@ export interface ContentInput {
   primaryColor?: string;
   /** Üretilecek içeriğin dili. Global hedef kitleye yayın yapanlar için. */
   language?: string;
+
+  // ── 30 günlük plan brief'i ────────────────────────────────────────
+  /** Kime hitap ediyor */
+  audience?: string;
+  /** Hangi platformlarda yayın yapıyor */
+  platforms?: string[];
+  /** Haftada kaç paylaşım */
+  perWeek?: number;
+  /** Bu ay öne çıkarılacak ürün/hizmet/kampanya */
+  focus?: string;
+  /** Ay içindeki özel günler, etkinlikler */
+  specialDays?: string;
+  /** Paylaşılmasını İSTEMEDİĞİ konular */
+  avoid?: string;
+  /** Planın asıl amacı */
+  goal?: string;
 }
 
 /** Prompt'un sonuna eklenen dil talimatı. Varsayılan Türkçe. */
@@ -134,9 +150,27 @@ Konu: ${topic ?? "genel paylaşım"}
 }
 Tüm hashtagler # ile başlasın. Türkçe ve İngilizce karışık olabilir.`,
 
-  CONTENT_PLAN: ({ brandName, sector, tone }) =>
+  CONTENT_PLAN: ({ brandName, sector, description, tone, audience, platforms, perWeek, focus, specialDays, avoid, goal }) =>
     `${brandName} (${sector}) için 30 günlük sosyal medya içerik planı oluştur.
+
+İŞLETME
+${description}
 Ton: ${tone ?? "profesyonel ve samimi"}
+${audience ? `Hedef kitle: ${audience}` : ""}
+${goal ? `Planın amacı: ${goal}` : ""}
+${focus ? `Bu ay öne çıkarılacak: ${focus}` : ""}
+${specialDays ? `Ay içindeki özel günler/etkinlikler: ${specialDays}` : ""}
+${avoid ? `ASLA şu konularda içerik üretme: ${avoid}` : ""}
+${platforms?.length ? `Yalnızca şu platformlar için üret: ${platforms.join(", ")}` : ""}
+${perWeek ? `Haftada ${perWeek} paylaşım planla — her güne içerik koyma, işletme yetişemez.` : ""}
+
+KURALLAR
+- Konular birbirini TEKRAR ETMESİN; her hafta farklı bir açı olsun.
+- Sadece tanıtım yapma: bilgilendirici, perde arkası, müşteri hikâyesi,
+  soru-cevap gibi türleri karıştır. Peş peşe iki satış içeriği koyma.
+${specialDays ? "- Belirtilen özel günleri ilgili tarihlere yerleştir." : ""}
+- caption alanı gerçekten kullanılabilir olsun: 1-2 cümle, somut.
+
 Her güne bir içerik, 4 hafta = 28 gün. JSON formatında:
 {
   "weeks": [
@@ -305,7 +339,11 @@ export async function generateContent(
   input: ContentInput
 ): Promise<GeneratedContent> {
   const prompt = brandContext(input) + PROMPTS[type](input) + langLine(input.language);
-  const raw = await generateText({ prompt, maxTokens: 1800 });
+  // 30 günlük plan 28 kayıt üretiyor; 1800 token'a sığmıyordu. Çıktı ortadan
+  // kesilince JSON bozuluyor, ayrıştırma başarısız oluyor ve meta hiç
+  // dolmadığı için plan ekranda hiç görünmüyordu.
+  const maxTokens = type === "CONTENT_PLAN" ? 8000 : 1800;
+  const raw = await generateText({ prompt, maxTokens });
 
   // JSON döndüren tipler. Buraya eklenmeyen bir tip, prompt'u JSON istese bile
   // düz metin dalına düşer ve ham çıktı (```json çitiyle birlikte) gövdeye basılır.
@@ -322,7 +360,9 @@ export async function generateContent(
     try {
       if (jsonMatch) meta = JSON.parse(jsonMatch[0]);
     } catch {
-      // Model bozuk JSON döndürdüyse üretimi tamamen kaybetme; ham metni göster
+      // Model bozuk/yarım JSON döndürdüyse üretimi kaybetme; ham metni göster.
+      // Arayüz meta boşken gövdeyi bastığı için içerik ekranda yine görünür.
+      console.warn(`İçerik JSON ayrıştırılamadı (${type}) — ham metin döndürüldü`);
       return { title: `${TYPE_LABELS[type]} — ${input.brandName}`, body: raw.trim() };
     }
     return {

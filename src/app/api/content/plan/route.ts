@@ -9,6 +9,15 @@ const schema = z.object({
   sector: z.string().min(2),
   description: z.string().min(5),
   tone: z.string().optional(),
+
+  // Brief — boş bırakılanlar prompta girmez, AI o konuda varsayım yapmaz.
+  audience: z.string().optional(),
+  platforms: z.array(z.string()).optional(),
+  perWeek: z.number().min(1).max(14).optional(),
+  focus: z.string().optional(),
+  specialDays: z.string().optional(),
+  avoid: z.string().optional(),
+  goal: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -19,7 +28,8 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
 
-  const { brandId, sector, description, tone } = parsed.data;
+  const { brandId, sector, description, tone,
+    audience, platforms, perWeek, focus, specialDays, avoid, goal } = parsed.data;
 
   const brand = await prisma.brand.findFirst({
     where: { id: brandId, ownerId: (session.user as { id: string }).id },
@@ -31,6 +41,7 @@ export async function POST(req: NextRequest) {
     sector,
     description,
     tone,
+    audience, platforms, perWeek, focus, specialDays, avoid, goal,
   });
 
   const item = await prisma.contentItem.create({
