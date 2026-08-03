@@ -300,6 +300,7 @@ model Brand {
   reservations   Reservation[]
 
   @@index([ownerId])
+  orders       Order[]
 }
 
 /// White-Label ayarları — Ajans planı müşterilerinin kendi markalarıyla site sunması
@@ -920,6 +921,11 @@ model Menu {
 
   brand      Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
   categories MenuCategory[]
+  orders     Order[]
+
+  /// Masadan sipariş açık mı. Kapalıysa menü yalnızca görüntülenir.
+  /// Her işletme sipariş almak istemez (sadece menü göstermek isteyen çok).
+  orderingEnabled Boolean @default(false)
 }
 
 /// Menü kategorisi (Başlangıçlar, Ana Yemekler, İçecekler vb.)
@@ -953,9 +959,48 @@ model MenuItem {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  category MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category   MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
 
   @@index([categoryId, order])
+}
+
+/// QR menüden verilen sipariş
+model Order {
+  id        String   @id @default(cuid())
+  menuId    String
+  brandId   String
+  /// Masa numarası veya "Paket". Müşteri girer.
+  tableNo   String
+  note      String?
+  /// Sipariş anındaki toplam — ürün fiyatı sonradan değişse bile tutar sabit kalır
+  total     Float    @default(0)
+  status    String   @default("NEW") // NEW | PREPARING | DELIVERED | CANCELLED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  menu  Menu        @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  brand Brand       @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+
+  @@index([brandId, status])
+  @@index([brandId, createdAt])
+}
+
+/// Siparişteki tek satır. Ürün adı ve fiyatı KOPYALANIR: ürün sonradan
+/// silinse ya da zamlansa bile geçmiş sipariş olduğu gibi kalmalı.
+model OrderItem {
+  id         String  @id @default(cuid())
+  orderId    String
+  menuItemId String?
+  name       String
+  price      Float   @default(0)
+  quantity   Int     @default(1)
+
+  order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
 }
 
 /// Arka plan görev kaydı (BullMQ kuyruğu ile eşlenir)

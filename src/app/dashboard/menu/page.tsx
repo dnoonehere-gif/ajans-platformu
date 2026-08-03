@@ -4,7 +4,7 @@ import { useBrand } from "@/components/dashboard/brand-provider";
 import {
   Plus, Trash2, Save, Edit2, ChevronDown, ChevronUp,
   Globe, QrCode, Copy, Check, Loader2, Eye, EyeOff,
-  UtensilsCrossed, Star, X, Sparkles, ImageIcon,
+  UtensilsCrossed, Star, X, Sparkles, ImageIcon, ShoppingBag,
 } from "lucide-react";
 import QRCode from "qrcode";
 import { useLang } from "@/components/language-provider";
@@ -72,7 +72,7 @@ interface MenuItem {
 interface MenuCategory { id: string; name: string; emoji?: string | null; description?: string | null; items: MenuItem[] }
 interface Menu {
   id: string; title: string; description?: string | null; currency: string;
-  isPublished: boolean; theme: string; categories: MenuCategory[];
+  isPublished: boolean; theme: string; orderingEnabled?: boolean; categories: MenuCategory[];
 }
 
 const THEMES = [
@@ -257,11 +257,22 @@ export default function MenuPage() {
           <p className="text-sm text-[hsl(var(--muted-foreground))]">{sL.subtitle}</p>
         </div>
         {menu && (
+          <>
+          {/* Masadan sipariş — her işletme sipariş almak istemez, o yüzden
+              varsayılan kapalı ve ayrı bir düğme. */}
+          <button onClick={() => saveSettings({ orderingEnabled: !menu.orderingEnabled })} disabled={saving}
+            title="Menüden sipariş alınsın mı"
+            className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${menu.orderingEnabled ? "bg-orange-500/10 text-orange-400 hover:bg-orange-500/20" : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))]"}`}>
+            <ShoppingBag className="h-4 w-4" />
+            {menu.orderingEnabled ? "Sipariş Açık" : "Sipariş Kapalı"}
+          </button>
+
           <button onClick={() => saveSettings({ isPublished: !menu.isPublished })} disabled={saving}
             className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${menu.isPublished ? "bg-green-500/10 text-green-500 hover:bg-green-500/20" : "bg-[hsl(var(--primary))] text-white hover:opacity-90"}`}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : menu.isPublished ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
             {menu.isPublished ? sL.published : sL.publish}
           </button>
+          </>
         )}
       </div>
 

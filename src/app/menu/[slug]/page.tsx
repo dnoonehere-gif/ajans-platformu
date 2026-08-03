@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect, use } from "react";
 import Image from "next/image";
-import { Search, Phone, MapPin, Star, Loader2, ChevronRight } from "lucide-react";
+import { useCart, CartBar } from "@/components/menu/order-cart";
+import { Search, Phone, MapPin, Star, Loader2, ChevronRight, Plus } from "lucide-react";
 
 interface MenuItem {
   id: string; name: string; description?: string | null;
@@ -9,8 +10,8 @@ interface MenuItem {
   isPopular: boolean; allergens: string[];
 }
 interface MenuCategory { id: string; name: string; emoji?: string | null; description?: string | null; items: MenuItem[] }
-interface Menu { title: string; description?: string | null; currency: string; theme: string; categories: MenuCategory[] }
-interface Brand { name: string; logoUrl?: string | null; primaryColor?: string | null; phone?: string | null; address?: string | null }
+interface Menu { title: string; description?: string | null; currency: string; theme: string; orderingEnabled?: boolean; categories: MenuCategory[] }
+interface Brand { id: string; name: string; logoUrl?: string | null; primaryColor?: string | null; phone?: string | null; address?: string | null }
 
 export default function PublicMenuPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -19,6 +20,7 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
   const [notFound, setNotFound] = useState(false);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const cart = useCart();
 
   useEffect(() => {
     fetch(`/api/menu/public/${slug}`)
@@ -148,6 +150,15 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
                     {item.description && (
                       <p className="mt-1 text-sm text-gray-500 leading-relaxed">{item.description}</p>
                     )}
+                    {menu.orderingEnabled && item.isAvailable !== false && (
+                      <button
+                        onClick={() => cart.ekle({ id: item.id, name: item.name, price: item.price })}
+                        className="mt-2 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90"
+                        style={{ background: color }}
+                      >
+                        <Plus className="h-3 w-3" /> Ekle
+                      </button>
+                    )}
                     {(item.allergens ?? []).length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
                         {(item.allergens ?? []).map(a => (
@@ -184,6 +195,10 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
           <p className="text-center text-xs text-gray-300 pt-4">Novelya ile güçlendirilmiştir</p>
         </div>
       </div>
+
+      {menu.orderingEnabled && (
+        <CartBar brandId={brand.id} currency={menu.currency} color={color} cart={cart} />
+      )}
     </div>
   );
 }

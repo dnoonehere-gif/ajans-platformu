@@ -26,6 +26,8 @@ const schema = z.object({
   currency: z.string().nullish(),
   isPublished: z.boolean().nullish(),
   theme: z.enum(["modern", "classic", "minimal"]).nullish(),
+  /** Masadan sipariş açık mı */
+  orderingEnabled: z.boolean().nullish(),
 });
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ brandId: string }> }) {
