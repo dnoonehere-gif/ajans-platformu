@@ -77,6 +77,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id;
         token.role = (user as { role?: string }).role;
       }
+      // Google ile girişte `user` adapter'dan gelir ve alan adı `globalRole`
+      // olduğu için `role` boş kalıyordu; middleware de boş rolü CUSTOMER
+      // sayıp admin panelini /dashboard'a yönlendiriyordu. Rol yoksa DB'den
+      // okunur — böylece hem OAuth girişleri hem de sonradan yükseltilen
+      // hesaplar doğru yetkiyi alır.
+      if (!token.role && token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { globalRole: true },
+        });
+        if (dbUser) token.role = dbUser.globalRole;
+      }
       return token;
     },
     async session({ session, token }) {

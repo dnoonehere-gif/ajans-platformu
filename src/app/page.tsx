@@ -171,32 +171,36 @@ const L = {
 const BIZ_LOGOS = [
   {
     ad: "Kahve Durağı",
-    bg: "linear-gradient(135deg,#b45309,#78350f)",
+    bg: "linear-gradient(140deg,#c2762b,#6b3410)",
     mark: (
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z" />
-        <path d="M16 9h2a2.5 2.5 0 0 1 0 5h-2" />
+      <svg viewBox="0 0 32 32" className="h-full w-full">
+        <path d="M7 12h14v7a7 7 0 0 1-7 7 7 7 0 0 1-7-7v-7Z" fill="#fff" />
+        <path d="M21 13.5h1.8a3.2 3.2 0 0 1 0 6.4H21v-2.2h1.6a1 1 0 0 0 0-2H21v-2.2Z" fill="#fff" />
+        <path d="M12 5.5c1.6 1.4 1.6 2.6 0 4M16.5 5.5c1.6 1.4 1.6 2.6 0 4"
+          stroke="#fff" strokeWidth="1.6" strokeLinecap="round" fill="none" opacity=".85" />
       </svg>
     ),
   },
   {
     ad: "Studio Kuaför",
-    bg: "linear-gradient(135deg,#0ea5e9,#1e3a8a)",
+    bg: "linear-gradient(140deg,#38bdf8,#15326e)",
     mark: (
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="6" cy="18" r="2.6" />
-        <circle cx="18" cy="18" r="2.6" />
-        <path d="M7.8 16.2 19 4M16.2 16.2 5 4" />
+      <svg viewBox="0 0 32 32" className="h-full w-full">
+        <circle cx="9.5" cy="23" r="4" fill="none" stroke="#fff" strokeWidth="2.4" />
+        <circle cx="22.5" cy="23" r="4" fill="none" stroke="#fff" strokeWidth="2.4" />
+        <path d="M12.3 20.2 24 6M19.7 20.2 8 6" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" />
       </svg>
     ),
   },
   {
     ad: "Moda Butik",
-    bg: "linear-gradient(135deg,#ec4899,#7e22ce)",
+    bg: "linear-gradient(140deg,#f472b6,#6b21a8)",
     mark: (
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M5 8h14l-1.2 11.5a1 1 0 0 1-1 .9H7.2a1 1 0 0 1-1-.9L5 8Z" />
-        <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+      <svg viewBox="0 0 32 32" className="h-full w-full">
+        <path d="M7 11h18l-1.6 15.2a1.4 1.4 0 0 1-1.4 1.3H10a1.4 1.4 0 0 1-1.4-1.3L7 11Z" fill="#fff" />
+        <path d="M11.6 12V9.2a4.4 4.4 0 0 1 8.8 0V12"
+          fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />
+        <circle cx="16" cy="18" r="2.1" fill="#7e22ce" />
       </svg>
     ),
   },
@@ -397,7 +401,7 @@ export default function AnaSayfa() {
                     <span
                       key={b.ad}
                       title={b.ad}
-                      className="grid h-8 w-8 place-items-center overflow-hidden rounded-full border-2 border-[var(--mk-surface)] shadow-sm"
+                      className="h-8 w-8 overflow-hidden rounded-full border-2 border-[var(--mk-surface)] p-[5px] shadow-sm"
                       style={{ background: b.bg }}
                     >
                       {b.mark}

@@ -61,8 +61,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
 
           {/* Marka seçici */}
-          <div className="w-[232px] shrink-0 overflow-hidden border-b border-[hsl(var(--border))] p-2 [&_span]:opacity-0 [&_svg]:opacity-0 [&_span]:transition-opacity group-hover:w-auto group-hover:p-3 group-hover:[&_span]:opacity-100 group-hover:[&_svg]:opacity-100">
-            <BrandSwitcher />
+          {/* overflow-hidden YOK: açılır liste (Yeni Marka Ekle) buradan taşar */}
+          <div className="relative z-50 w-[232px] shrink-0 border-b border-[hsl(var(--border))] p-2 group-hover:w-auto group-hover:p-3">
+            <BrandSwitcher rail />
           </div>
 
           {/* Nav */}
