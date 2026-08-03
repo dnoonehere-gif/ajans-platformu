@@ -48,6 +48,7 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { date: "asc" },
       take: 200,
+      include: { employee: { select: { id: true, fullName: true } } },
     });
 
     return NextResponse.json({ reservations });

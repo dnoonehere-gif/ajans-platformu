@@ -77,6 +77,18 @@ export async function POST(req: NextRequest) {
     realStats, realReviews, hours, showPricing, hasPhotos,
   }, Number(attempt) || 0);
 
+  // Amaç randevu/rezervasyon ise butonlar gerçek rezervasyon sayfasına
+  // bağlanır. Aksi hâlde AI hepsini #contact'a yönlendiriyor ve "rezervasyon"
+  // seçmenin hiçbir karşılığı olmuyordu.
+  if (goal === "randevu" || goal === "rezervasyon") {
+    const rezervasyonYolu = `/rezervasyon/${brand.slug}`;
+    for (const blok of blocks) {
+      const d = blok.data as Record<string, unknown>;
+      if (blok.type === "hero" && d.ctaHref === "#contact") d.ctaHref = rezervasyonYolu;
+      if (blok.type === "cta" && d.buttonHref === "#contact") d.buttonHref = rezervasyonYolu;
+    }
+  }
+
   const website = await prisma.website.upsert({
     where: { brandId },
     create: {

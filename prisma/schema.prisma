@@ -472,8 +472,9 @@ model Employee {
   phone     String?
   createdAt DateTime @default(now())
 
-  brand  Brand   @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  branch Branch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  brand        Brand         @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  branch       Branch?       @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  reservations Reservation[]
 
   @@index([brandId])
 }
@@ -660,12 +661,16 @@ model Reservation {
   notes       String?
   cancelReason String? // İptal sebebi (dashboard'dan girilir)
   status      String   @default("PENDING") // PENDING | CONFIRMED | CANCELLED
-  source      String   @default("chatbot") // chatbot | manual
+  source      String   @default("chatbot") // chatbot | website | manual
   conversationId String?
+  /// Hangi çalışandan randevu alındığı. Kuaför/klinik gibi kişiye bağlı
+  /// işlerde gerekli; restoran/otelde boş kalır.
+  employeeId  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  brand    Brand     @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  employee Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
 
   @@index([brandId, date])
   @@index([brandId, status])

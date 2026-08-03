@@ -25,6 +25,7 @@ interface Reservation {
   cancelReason?: string | null;
   status: "PENDING" | "CONFIRMED" | "CANCELLED";
   source: string;
+  employee?: { id: string; fullName: string } | null;
   createdAt: string;
 }
 
@@ -223,6 +224,7 @@ export default function ReservationsPage() {
                     <p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">
                       {tarihYaz(r.date)} · {r.time}
                       {r.partySize > 1 && <> · <Users className="inline h-3 w-3" /> {r.partySize} kişi</>}
+                      {r.employee && <> · {r.employee.fullName}</>}
                     </p>
                     <div className="mt-1.5 flex flex-wrap gap-3 text-xs text-[hsl(var(--muted-foreground))]">
                       {r.phone && <a href={`tel:${r.phone}`} className="flex items-center gap-1 hover:text-[hsl(var(--primary))]"><Phone className="h-3 w-3" /> {r.phone}</a>}

@@ -9,8 +9,14 @@ import { Check, Loader2 } from "lucide-react";
  * "rezervasyonunuz kesinleşti" değil, "talebiniz alındı" denir — yanlış
  * beklenti oluşturmamak için.
  */
-export function ReservationForm({ brandId, color }: { brandId: string; color: string }) {
-  const [form, setForm] = useState({ name: "", phone: "", email: "", date: "", time: "", partySize: 1, notes: "" });
+export function ReservationForm({
+  brandId, color, employees = [],
+}: {
+  brandId: string;
+  color: string;
+  employees?: { id: string; fullName: string; title?: string | null }[];
+}) {
+  const [form, setForm] = useState({ name: "", phone: "", email: "", date: "", time: "", partySize: 1, notes: "", employeeId: "" });
   const [gonderiliyor, setGonderiliyor] = useState(false);
   const [tamam, setTamam] = useState(false);
   const [hata, setHata] = useState("");
@@ -41,6 +47,7 @@ export function ReservationForm({ brandId, color }: { brandId: string; color: st
           time: form.time,
           partySize: form.partySize,
           notes: form.notes || null,
+          employeeId: form.employeeId || null,
         }),
       });
       const data = await res.json();
@@ -85,6 +92,18 @@ export function ReservationForm({ brandId, color }: { brandId: string; color: st
         <input className={inp} type="email" placeholder="E-posta (isteğe bağlı)" value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })} />
       </div>
+      {employees.length > 0 && (
+        <select className={inp} value={form.employeeId}
+          onChange={(e) => setForm({ ...form, employeeId: e.target.value })}>
+          <option value="">Fark etmez</option>
+          {employees.map((emp) => (
+            <option key={emp.id} value={emp.id}>
+              {emp.fullName}{emp.title ? ` — ${emp.title}` : ""}
+            </option>
+          ))}
+        </select>
+      )}
+
       <textarea className={`${inp} h-20 resize-y`} placeholder="Eklemek istediğiniz not" value={form.notes}
         onChange={(e) => setForm({ ...form, notes: e.target.value })} />
 

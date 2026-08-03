@@ -14,6 +14,8 @@ const schema = z.object({
   partySize: z.number().int().min(1).max(50).default(1),
   notes: z.string().optional().nullable(),
   conversationId: z.string().optional().nullable(),
+  /** Seçilen çalışan (kişiye bağlı işlerde) */
+  employeeId: z.string().optional().nullable(),
 });
 
 export async function POST(req: NextRequest) {
@@ -39,6 +41,15 @@ export async function POST(req: NextRequest) {
     ]);
     if (!chatbot && !website) {
       return NextResponse.json({ error: "Rezervasyon bu marka için aktif değil" }, { status: 403 });
+    }
+
+    // Çalışan başka bir markaya aitse atama reddedilir — id tahmin edilerek
+    // başka işletmenin personeline randevu yazılamasın.
+    if (data.employeeId) {
+      const emp = await prisma.employee.findFirst({
+        where: { id: data.employeeId, brandId }, select: { id: true },
+      });
+      if (!emp) return NextResponse.json({ error: "Seçilen çalışan bulunamadı" }, { status: 400 });
     }
 
     const reservation = await prisma.reservation.create({

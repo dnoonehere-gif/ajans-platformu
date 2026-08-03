@@ -21,6 +21,8 @@ export default async function PublicReservationPage({
       id: true, name: true, phone: true, address: true, primaryColor: true, logoUrl: true,
       chatbot: { select: { isActive: true, reservationEnabled: true } },
       website: { select: { isPublished: true } },
+      // Çalışan varsa ziyaretçi kimden randevu alacağını seçebilir.
+      employees: { select: { id: true, fullName: true, title: true }, orderBy: { createdAt: "asc" } },
     },
   });
 
@@ -47,7 +49,7 @@ export default async function PublicReservationPage({
         </div>
 
         {acik ? (
-          <ReservationForm brandId={brand.id} color={renk} />
+          <ReservationForm brandId={brand.id} color={renk} employees={brand.employees} />
         ) : (
           <div className="rounded-2xl bg-white p-6 text-center shadow-sm">
             <p className="text-sm text-neutral-600">
