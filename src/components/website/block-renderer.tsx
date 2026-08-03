@@ -1,6 +1,7 @@
 "use client";
 import type { Block, SiteTheme } from "@/server/ai/website-generator";
 import { PALETTES, FONT_PAIRS } from "@/server/ai/website-themes";
+import { EditProvider, T } from "./editable";
 import {
   Scissors, Sparkles, Clock, Phone, MapPin, Star, Shield, Heart, Wrench,
   Car, Coffee, Camera, Users, Award, Check, Calendar, Mail, type LucideIcon,
@@ -28,7 +29,16 @@ function Icon({ name, className = "h-5 w-5" }: { name?: string; className?: stri
 
 const PAD = { sikisik: "py-12", normal: "py-20", ferah: "py-28" } as const;
 
-export function BlockRenderer({ blocks, theme }: { blocks: Block[]; theme?: SiteTheme | null }) {
+export function BlockRenderer({
+  blocks, theme, editable = false, onUpdate, onFocusField,
+}: {
+  blocks: Block[];
+  theme?: SiteTheme | null;
+  /** true ise metinler tıklanıp yerinde düzenlenir (sadece editör önizlemesi) */
+  editable?: boolean;
+  onUpdate?: (blockId: string, path: string, value: string) => void;
+  onFocusField?: (blockId: string, path: string) => void;
+}) {
   const palette = PALETTES.find((p) => p.id === theme?.paletteId) ?? PALETTES[0];
   const fonts = FONT_PAIRS.find((f) => f.id === theme?.fontPairId) ?? FONT_PAIRS[0];
   const radius = theme?.radius ?? 16;
@@ -59,7 +69,17 @@ export function BlockRenderer({ blocks, theme }: { blocks: Block[]; theme?: Site
         .w-btn { background: var(--w-accent); color: var(--w-accent-ink); border-radius: var(--w-r-sm); }
       `}</style>
       {blocks.map((b) => (
-        <Section key={b.id} block={b} pad={PAD[density]} heroLayout={theme?.heroLayout ?? "ortali-buyuk"} />
+        <EditProvider
+          key={b.id}
+          value={{
+            editable,
+            blockId: b.id,
+            update: (bid, path, value) => onUpdate?.(bid, path, value),
+            onFocusField,
+          }}
+        >
+          <Section block={b} pad={PAD[density]} heroLayout={theme?.heroLayout ?? "ortali-buyuk"} />
+        </EditProvider>
       ))}
     </div>
   );
@@ -91,16 +111,21 @@ function Heading({ children, className = "" }: { children: React.ReactNode; clas
   return <h2 className={`w-h text-3xl font-bold md:text-4xl ${className}`}>{children}</h2>;
 }
 
+/** Bölüm başlığı — düzenlenebilir. */
+function HeadT({ d, className = "", fallback = "" }: { d: D; className?: string; fallback?: string }) {
+  return <T data={d} path="title" as="h2" fallback={fallback} className={`w-h block text-3xl font-bold md:text-4xl ${className}`} />;
+}
+
 /* ── Hero: düzen seçimi sayfanın karakterini belirler ─────────────── */
 function Hero({ d, layout }: { d: D; layout: string }) {
   const eyebrow = s(d.eyebrow);
   const cta = (
     <a href={s(d.ctaHref) || "#contact"} className="w-btn inline-block px-8 py-3.5 font-semibold shadow-lg transition hover:opacity-90">
-      {s(d.cta) || "İletişime Geç"}
+      <T data={d} path="cta" fallback="İletişime Geç" />
     </a>
   );
   const label = eyebrow && (
-    <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--w-accent)" }}>{eyebrow}</p>
+    <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--w-accent)" }}><T data={d} path="eyebrow" /></p>
   );
 
   if (layout === "bolunmus") {
@@ -108,8 +133,8 @@ function Hero({ d, layout }: { d: D; layout: string }) {
       <section className="grid md:grid-cols-2">
         <div className="flex flex-col justify-center px-6 py-24 md:px-12" style={{ background: "var(--w-surface)" }}>
           {label}
-          <h1 className="w-h text-4xl font-bold leading-[1.05] md:text-5xl">{s(d.headline)}</h1>
-          <p className="mt-5 max-w-md text-base" style={{ color: "var(--w-ink-soft)" }}>{s(d.subheadline)}</p>
+          <T data={d} path="headline" as="h1" className="w-h block text-4xl font-bold leading-[1.05] md:text-5xl" />
+          <T data={d} path="subheadline" as="p" className="mt-5 max-w-md text-base block" style={{ color: "var(--w-ink-soft)" }} />
           <div className="mt-8">{cta}</div>
         </div>
         <div className="min-h-[280px]" style={{ background: `linear-gradient(160deg, var(--w-accent), var(--w-bg))` }} />
@@ -122,8 +147,8 @@ function Hero({ d, layout }: { d: D; layout: string }) {
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-24 md:grid-cols-2">
         <div>
           {label}
-          <h1 className="w-h text-4xl font-bold leading-[1.05] md:text-5xl">{s(d.headline)}</h1>
-          <p className="mt-5 text-base" style={{ color: "var(--w-ink-soft)" }}>{s(d.subheadline)}</p>
+          <T data={d} path="headline" as="h1" className="w-h block text-4xl font-bold leading-[1.05] md:text-5xl" />
+          <T data={d} path="subheadline" as="p" className="mt-5 text-base block" style={{ color: "var(--w-ink-soft)" }} />
           <div className="mt-8">{cta}</div>
         </div>
         <div className="aspect-[4/3] w-full" style={{ background: `linear-gradient(140deg, var(--w-accent), var(--w-surface))`, borderRadius: "var(--w-r)" }} />
@@ -137,8 +162,8 @@ function Hero({ d, layout }: { d: D; layout: string }) {
         style={{ background: `linear-gradient(200deg, var(--w-accent), var(--w-bg) 70%)` }}>
         <div className="max-w-3xl">
           {label}
-          <h1 className="w-h text-5xl font-bold leading-[1.02] md:text-7xl">{s(d.headline)}</h1>
-          <p className="mx-auto mt-6 max-w-xl text-lg" style={{ color: "var(--w-ink-soft)" }}>{s(d.subheadline)}</p>
+          <T data={d} path="headline" as="h1" className="w-h block text-5xl font-bold leading-[1.02] md:text-7xl" />
+          <T data={d} path="subheadline" as="p" className="mx-auto mt-6 max-w-xl text-lg block" style={{ color: "var(--w-ink-soft)" }} />
           <div className="mt-10">{cta}</div>
         </div>
       </section>
@@ -149,8 +174,8 @@ function Hero({ d, layout }: { d: D; layout: string }) {
     return (
       <section className="mx-auto max-w-3xl px-6 py-28">
         {label}
-        <h1 className="w-h text-3xl font-bold leading-tight md:text-4xl">{s(d.headline)}</h1>
-        <p className="mt-4 text-base" style={{ color: "var(--w-ink-soft)" }}>{s(d.subheadline)}</p>
+        <T data={d} path="headline" as="h1" className="w-h block text-3xl font-bold leading-tight md:text-4xl" />
+        <T data={d} path="subheadline" as="p" className="mt-4 text-base block" style={{ color: "var(--w-ink-soft)" }} />
         <div className="mt-8">{cta}</div>
       </section>
     );
@@ -159,8 +184,8 @@ function Hero({ d, layout }: { d: D; layout: string }) {
   return (
     <section className="px-6 py-28 text-center">
       {label}
-      <h1 className="w-h mx-auto max-w-4xl text-5xl font-bold leading-[1.02] md:text-6xl">{s(d.headline)}</h1>
-      <p className="mx-auto mt-6 max-w-xl text-base" style={{ color: "var(--w-ink-soft)" }}>{s(d.subheadline)}</p>
+      <T data={d} path="headline" as="h1" className="w-h mx-auto block max-w-4xl text-5xl font-bold leading-[1.02] md:text-6xl" />
+      <T data={d} path="subheadline" as="p" className="mx-auto mt-6 max-w-xl text-base block" style={{ color: "var(--w-ink-soft)" }} />
       <div className="mt-9">{cta}</div>
     </section>
   );
@@ -176,7 +201,7 @@ function Cards({ d, pad, variant, surface }: { d: D; pad: string; variant?: stri
     return (
       <section className={`px-6 ${pad}`} style={bg}>
         <div className="mx-auto max-w-3xl">
-          <Heading className="mb-10">{s(d.title)}</Heading>
+          <HeadT d={d} className="mb-10" />
           <div className="divide-y" style={{ borderColor: "var(--w-ink-soft)" }}>
             {items.map((it, i) => (
               <div key={i} className="flex gap-6 py-6">
@@ -184,8 +209,8 @@ function Cards({ d, pad, variant, surface }: { d: D; pad: string; variant?: stri
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div>
-                  <h3 className="w-h mb-1.5 text-lg font-semibold">{it.title}</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: "var(--w-ink-soft)" }}>{it.desc}</p>
+                  <T data={d} path={`items.${i}.title`} as="h3" className="w-h mb-1.5 block text-lg font-semibold" />
+                  <T data={d} path={`items.${i}.desc`} as="p" className="block text-sm leading-relaxed" style={{ color: "var(--w-ink-soft)" }} />
                 </div>
               </div>
             ))}
@@ -199,14 +224,14 @@ function Cards({ d, pad, variant, surface }: { d: D; pad: string; variant?: stri
     return (
       <section className={`px-6 ${pad}`} style={bg}>
         <div className="mx-auto max-w-5xl">
-          <Heading className="mb-10">{s(d.title)}</Heading>
+          <HeadT d={d} className="mb-10" />
           <div className="space-y-4">
             {items.map((it, i) => (
               <div key={i} className="w-card flex items-center gap-5 p-6">
                 <span className="shrink-0" style={{ color: "var(--w-accent)" }}><Icon name={it.icon} className="h-7 w-7" /></span>
                 <div className="flex-1">
-                  <h3 className="w-h font-semibold">{it.title}</h3>
-                  <p className="mt-1 text-sm" style={{ color: "var(--w-ink-soft)" }}>{it.desc}</p>
+                  <T data={d} path={`items.${i}.title`} as="h3" className="w-h block font-semibold" />
+                  <T data={d} path={`items.${i}.desc`} as="p" className="mt-1 block text-sm" style={{ color: "var(--w-ink-soft)" }} />
                 </div>
                 {it.price && <span className="w-h shrink-0 font-bold" style={{ color: "var(--w-accent)" }}>{it.price}</span>}
               </div>
@@ -221,7 +246,7 @@ function Cards({ d, pad, variant, surface }: { d: D; pad: string; variant?: stri
     return (
       <section className={`px-6 ${pad}`} style={bg}>
         <div className="mx-auto max-w-4xl">
-          <Heading className="mb-10">{s(d.title)}</Heading>
+          <HeadT d={d} className="mb-10" />
           <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
             {items.map((it, i) => (
               <div key={i} className="flex gap-4">
@@ -231,7 +256,7 @@ function Cards({ d, pad, variant, surface }: { d: D; pad: string; variant?: stri
                     {it.title}
                     {it.price && <span className="ml-2 text-sm font-normal" style={{ color: "var(--w-accent)" }}>{it.price}</span>}
                   </h3>
-                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--w-ink-soft)" }}>{it.desc}</p>
+                  <T data={d} path={`items.${i}.desc`} as="p" className="mt-1 block text-sm leading-relaxed" style={{ color: "var(--w-ink-soft)" }} />
                 </div>
               </div>
             ))}
@@ -243,13 +268,13 @@ function Cards({ d, pad, variant, surface }: { d: D; pad: string; variant?: stri
 
   return (
     <section className={`px-6 ${pad}`} style={bg}>
-      <Heading className="mb-12 text-center">{s(d.title)}</Heading>
+      <HeadT d={d} className="mb-12 text-center" />
       <div className={`mx-auto grid max-w-5xl gap-5 ${items.length === 4 ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
         {items.map((it, i) => (
           <div key={i} className="w-card p-7">
             <span className="inline-flex" style={{ color: "var(--w-accent)" }}><Icon name={it.icon} className="h-7 w-7" /></span>
-            <h3 className="w-h mb-2 mt-4 text-lg font-semibold">{it.title}</h3>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--w-ink-soft)" }}>{it.desc}</p>
+            <T data={d} path={`items.${i}.title`} as="h3" className="w-h mb-2 mt-4 block text-lg font-semibold" />
+            <T data={d} path={`items.${i}.desc`} as="p" className="block text-sm leading-relaxed" style={{ color: "var(--w-ink-soft)" }} />
             {it.price && <p className="w-h mt-4 font-bold" style={{ color: "var(--w-accent)" }}>{it.price}</p>}
           </div>
         ))}
@@ -263,8 +288,8 @@ function About({ d, pad }: { d: D; pad: string }) {
   return (
     <section className={`px-6 ${pad}`}>
       <div className="mx-auto max-w-3xl">
-        <Heading className="mb-6">{s(d.title)}</Heading>
-        <p className="text-base leading-relaxed" style={{ color: "var(--w-ink-soft)" }}>{s(d.body)}</p>
+        <HeadT d={d} className="mb-6" />
+        <T data={d} path="body" as="p" className="block text-base leading-relaxed" style={{ color: "var(--w-ink-soft)" }} />
         {stats.length > 0 && (
           <div className="mt-12 grid gap-5 sm:grid-cols-3">
             {stats.map((st, i) => (
@@ -289,7 +314,7 @@ function Gallery({ d, pad, variant }: { d: D; pad: string; variant?: string }) {
     : "grid-cols-2 md:grid-cols-3";
   return (
     <section className={`px-6 ${pad}`} style={{ background: "var(--w-surface)" }}>
-      <Heading className="mb-10 text-center">{s(d.title)}</Heading>
+      <HeadT d={d} className="mb-10 text-center" />
       <div className={`mx-auto grid max-w-5xl gap-3 ${grid}`}>
         {slots.map((src, i) => (
           <div key={i}
@@ -310,7 +335,7 @@ function Pricing({ d, pad }: { d: D; pad: string }) {
   if (items.length === 0) return null;
   return (
     <section className={`px-6 ${pad}`}>
-      <Heading className="mb-10 text-center">{s(d.title)}</Heading>
+      <HeadT d={d} className="mb-10 text-center" />
       <div className="mx-auto max-w-2xl">
         {items.map((it, i) => (
           <div key={i} className="flex items-baseline gap-4 border-b py-4 last:border-0" style={{ borderColor: "var(--w-surface)" }}>
@@ -329,7 +354,7 @@ function Hours({ d, pad }: { d: D; pad: string }) {
   if (rows.length === 0) return null;
   return (
     <section className={`px-6 ${pad}`} style={{ background: "var(--w-surface)" }}>
-      <Heading className="mb-8 text-center">{s(d.title)}</Heading>
+      <HeadT d={d} className="mb-8 text-center" />
       <div className="mx-auto max-w-sm space-y-2.5">
         {rows.map((r, i) => (
           <div key={i} className="flex justify-between text-sm">
@@ -347,7 +372,7 @@ function Faq({ d, pad }: { d: D; pad: string }) {
   if (items.length === 0) return null;
   return (
     <section className={`px-6 ${pad}`}>
-      <Heading className="mb-10">{s(d.title)}</Heading>
+      <HeadT d={d} className="mb-10" />
       <div className="mx-auto max-w-2xl space-y-3">
         {items.map((it, i) => (
           <details key={i} className="w-card group p-5">
@@ -365,7 +390,7 @@ function Team({ d, pad }: { d: D; pad: string }) {
   if (items.length === 0) return null;
   return (
     <section className={`px-6 ${pad}`}>
-      <Heading className="mb-10 text-center">{s(d.title)}</Heading>
+      <HeadT d={d} className="mb-10 text-center" />
       <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-3">
         {items.map((m, i) => (
           <div key={i} className="text-center">
@@ -388,7 +413,7 @@ function Testimonials({ d, pad }: { d: D; pad: string }) {
   if (items.length === 0) return null;
   return (
     <section className={`px-6 ${pad}`} style={{ background: "var(--w-surface)" }}>
-      <Heading className="mb-10 text-center">{s(d.title)}</Heading>
+      <HeadT d={d} className="mb-10 text-center" />
       <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-3">
         {items.map((t, i) => (
           <figure key={i} className="p-6" style={{ background: "var(--w-bg)", borderRadius: "var(--w-r)" }}>
@@ -409,12 +434,12 @@ function Cta({ d, pad }: { d: D; pad: string }) {
     <section className={`px-6 ${pad}`}>
       <div className="mx-auto max-w-3xl p-12 text-center"
         style={{ background: "var(--w-accent)", color: "var(--w-accent-ink)", borderRadius: "var(--w-r)" }}>
-        <h2 className="w-h text-3xl font-bold">{s(d.title)}</h2>
-        <p className="mx-auto mt-4 max-w-lg opacity-90">{s(d.body)}</p>
+        <T data={d} path="title" as="h2" className="w-h block text-3xl font-bold" />
+        <T data={d} path="body" as="p" className="mx-auto mt-4 block max-w-lg opacity-90" />
         <a href={s(d.buttonHref) || "#contact"}
           className="mt-8 inline-block px-8 py-3.5 font-semibold transition hover:opacity-90"
           style={{ background: "var(--w-bg)", color: "var(--w-ink)", borderRadius: "var(--w-r-sm)" }}>
-          {s(d.buttonText) || "İletişime Geç"}
+          <T data={d} path="buttonText" fallback="İletişime Geç" />
         </a>
       </div>
     </section>
@@ -425,7 +450,7 @@ function Contact({ d, pad }: { d: D; pad: string }) {
   const phone = s(d.phone), email = s(d.email), address = s(d.address);
   return (
     <section id="contact" className={`px-6 ${pad}`} style={{ background: "var(--w-surface)" }}>
-      <Heading className="mb-10 text-center">{s(d.title) || "İletişim"}</Heading>
+      <HeadT d={d} className="mb-10 text-center" fallback="İletişim" />
       <div className="mx-auto max-w-md space-y-4">
         {phone && (
           <a href={`tel:${phone}`} className="flex items-center gap-3 transition hover:opacity-70">

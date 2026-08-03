@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { BlockRenderer } from "@/components/website/block-renderer";
+import { setByPath, type TextFormat } from "@/components/website/editable";
 import type { SiteTheme } from "@/server/ai/website-generator";
 import type { Block } from "@/server/ai/website-generator";
 import { useLang } from "@/components/language-provider";
@@ -33,6 +34,8 @@ const L = {
     export: "Dışa Aktar", exportTitle: "HTML olarak indir",
     domain: "Domain", undo: "Geri Al",
     save: "Kaydet", saved: "Kaydedildi",
+    color: "Renk", resetFmt: "Sıfırla",
+    editHint: "Metne tıklayıp doğrudan düzenleyebilirsin",
     unpublish: "Yayından Kaldır", publish: "Yayınla",
     unpublishShort: "Kaldır", publishShort: "Yayınla",
     novelyaAddr: "Novelya Adresi",
@@ -68,6 +71,8 @@ const L = {
     export: "Export", exportTitle: "Download as HTML",
     domain: "Domain", undo: "Undo",
     save: "Save", saved: "Saved",
+    color: "Color", resetFmt: "Reset",
+    editHint: "Click any text to edit it directly",
     unpublish: "Unpublish", publish: "Publish",
     unpublishShort: "Unpublish", publishShort: "Publish",
     novelyaAddr: "Novelya Address",
@@ -84,6 +89,26 @@ const L = {
     preview: "Preview", fullscreen: "Fullscreen", editorTab: "Editor",
   },
 };
+
+/** Biçim çubuğu seçenekleri. Değer boşsa tema fontu/boyutu geçerli kalır. */
+const FONTS = [
+  { label: "Tema fontu", value: "" },
+  { label: "Inter", value: "'Inter', system-ui, sans-serif" },
+  { label: "Georgia", value: "Georgia, serif" },
+  { label: "Arial Black", value: "'Arial Black', Impact, sans-serif" },
+  { label: "Trebuchet", value: "'Trebuchet MS', sans-serif" },
+  { label: "Courier", value: "'Courier New', monospace" },
+];
+
+const SIZES = [
+  { label: "Boyut", value: "" },
+  { label: "Çok küçük", value: "0.75rem" },
+  { label: "Küçük", value: "0.875rem" },
+  { label: "Normal", value: "1rem" },
+  { label: "Büyük", value: "1.25rem" },
+  { label: "Çok büyük", value: "2rem" },
+  { label: "Dev", value: "3.5rem" },
+];
 
 interface WebsitePage {
   id: string;
@@ -158,6 +183,31 @@ export default function WebsiteEditorPage({
   // yazmaya devam ederse sayaç sıfırlanır, böylece her tuşta istek gitmez.
   // İlk yüklemede ve AI düzenlemesinin kendi kaydından sonra tetiklenmemesi
   // için son kaydedilen içerik referansta tutulur.
+  // Önizlemede tıklanan metin — biçim çubuğu bunun üzerinde çalışır.
+  const [odak, setOdak] = useState<{ blockId: string; path: string } | null>(null);
+
+  /** Yerinde düzenlenen metni blok ağacına yazar. */
+  function metniGuncelle(blockId: string, path: string, value: string) {
+    setBlocks((prev) => prev.map((b) => (b.id === blockId ? { ...b, data: setByPath(b.data, path, value) } : b)));
+  }
+
+  /** Odaktaki alanın biçimini (font/boyut/renk/kalınlık) değiştirir. */
+  function bicimUygula(yama: Partial<TextFormat>) {
+    if (!odak) return;
+    setBlocks((prev) => prev.map((b) => {
+      if (b.id !== odak.blockId) return b;
+      const fmt = { ...((b.data._fmt as Record<string, TextFormat>) ?? {}) };
+      fmt[odak.path] = { ...(fmt[odak.path] ?? {}), ...yama };
+      return { ...b, data: { ...b.data, _fmt: fmt } };
+    }));
+  }
+
+  const odakBicimi: TextFormat = (() => {
+    if (!odak) return {};
+    const b = blocks.find((x) => x.id === odak.blockId);
+    return ((b?.data._fmt as Record<string, TextFormat>) ?? {})[odak.path] ?? {};
+  })();
+
   const sonKayitRef = useRef<string>("");
   useEffect(() => {
     if (!website || !activePage || blocks.length === 0) return;
@@ -551,7 +601,59 @@ export default function WebsiteEditorPage({
           </div>
 
           <div className={`transition-opacity duration-300 ${aiLoading ? "opacity-60" : "opacity-100"}`}>
-            <BlockRenderer blocks={blocks} theme={website?.theme ?? null} />
+            {/* Biçim çubuğu — bir metne tıklandığında beliriyor. Font,
+                boyut, renk ve kalınlık yalnızca o alana uygulanır ve blok
+                verisiyle birlikte kaydedilir. */}
+            {odak && (
+              <div className="sticky top-0 z-20 mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-2 shadow-lg">
+                <select
+                  value={odakBicimi.fontFamily ?? ""}
+                  onChange={(e) => bicimUygula({ fontFamily: e.target.value || undefined })}
+                  className="h-8 rounded-lg border border-[hsl(var(--border))] bg-transparent px-2 text-xs outline-none"
+                >
+                  {FONTS.map((f) => <option key={f.label} value={f.value}>{f.label}</option>)}
+                </select>
+
+                <select
+                  value={odakBicimi.fontSize ?? ""}
+                  onChange={(e) => bicimUygula({ fontSize: e.target.value || undefined })}
+                  className="h-8 rounded-lg border border-[hsl(var(--border))] bg-transparent px-2 text-xs outline-none"
+                >
+                  {SIZES.map((sz) => <option key={sz.label} value={sz.value}>{sz.label}</option>)}
+                </select>
+
+                <label className="flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] px-2 text-xs">
+                  <span className="h-4 w-4 rounded border border-[hsl(var(--border))]"
+                    style={{ background: odakBicimi.color ?? "transparent" }} />
+                  {sL.color}
+                  <input type="color" value={odakBicimi.color ?? "#000000"}
+                    onChange={(e) => bicimUygula({ color: e.target.value })}
+                    className="h-0 w-0 opacity-0" />
+                </label>
+
+                <button
+                  onClick={() => bicimUygula({ bold: !odakBicimi.bold })}
+                  className={`h-8 w-8 rounded-lg border text-xs font-black transition ${odakBicimi.bold
+                    ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.12)] text-[hsl(var(--primary))]"
+                    : "border-[hsl(var(--border))]"}`}
+                >B</button>
+
+                <button
+                  onClick={() => bicimUygula({ fontFamily: undefined, fontSize: undefined, color: undefined, bold: false })}
+                  className="h-8 rounded-lg border border-[hsl(var(--border))] px-2.5 text-xs transition hover:bg-[hsl(var(--accent))]"
+                >{sL.resetFmt}</button>
+
+                <span className="ml-auto pr-1 text-[10px] text-[hsl(var(--muted-foreground))]">{sL.editHint}</span>
+              </div>
+            )}
+
+            <BlockRenderer
+              blocks={blocks}
+              theme={website?.theme ?? null}
+              editable
+              onUpdate={metniGuncelle}
+              onFocusField={(blockId, path) => setOdak({ blockId, path })}
+            />
           </div>
         </main>
       </div>
