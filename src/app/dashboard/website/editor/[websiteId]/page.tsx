@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { BlockRenderer } from "@/components/website/block-renderer";
+import type { SiteTheme } from "@/server/ai/website-generator";
 import type { Block } from "@/server/ai/website-generator";
 import { useLang } from "@/components/language-provider";
 import { PageLoading } from "@/components/ui/page-loading";
@@ -97,6 +98,8 @@ interface Website {
   title: string;
   isPublished: boolean;
   subdomain?: string;
+  /** Palet/tipografi/düzen — üreticinin seçtiği görsel kimlik */
+  theme?: SiteTheme | null;
   pages: WebsitePage[];
   brand?: { slug: string };
 }
@@ -526,7 +529,7 @@ export default function WebsiteEditorPage({
           </div>
 
           <div className={`transition-opacity duration-300 ${aiLoading ? "opacity-60" : "opacity-100"}`}>
-            <BlockRenderer blocks={blocks} />
+            <BlockRenderer blocks={blocks} theme={website?.theme ?? null} />
           </div>
         </main>
       </div>

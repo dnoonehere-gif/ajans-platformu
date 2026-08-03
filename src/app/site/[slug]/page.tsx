@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { BlockRenderer } from "@/components/website/block-renderer";
+import type { SiteTheme } from "@/server/ai/website-generator";
 import type { Block } from "@/server/ai/website-generator";
 import type { Metadata } from "next";
 
@@ -36,10 +37,12 @@ export default async function PublicSitePage({
   const website = brand.website;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const blocks = (website.pages[0]?.blocks ?? []) as any as Block[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const theme = (website.theme ?? null) as any as SiteTheme | null;
 
   return (
     <div className="min-h-screen">
-      <BlockRenderer blocks={blocks} />
+      <BlockRenderer blocks={blocks} theme={theme} />
     </div>
   );
 }

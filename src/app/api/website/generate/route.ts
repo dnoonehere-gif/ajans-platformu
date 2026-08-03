@@ -11,6 +11,21 @@ const schema = z.object({
   description: z.string().optional().default(""),
   primaryColor: z.string().optional(),
   phone: z.string().optional(),
+
+  // Brief — üretimden önce sorulan sorular. Hepsi isteğe bağlı; boş
+  // bırakılanlar üreticiye gitmez ve AI o konuda içerik UYDURMAZ.
+  audience: z.string().optional(),
+  topServices: z.string().optional(),
+  goal: z.enum(["randevu", "arama", "bilgi", "satis", "rezervasyon"]).optional(),
+  tone: z.enum(["luks", "samimi", "profesyonel", "eglenceli", "sade"]).optional(),
+  differentiator: z.string().optional(),
+  realStats: z.string().optional(),
+  realReviews: z.string().optional(),
+  hours: z.string().optional(),
+  showPricing: z.boolean().optional(),
+  hasPhotos: z.boolean().optional(),
+  /** "Yeniden üret" sayacı — her turda farklı tasarım gelsin diye */
+  attempt: z.number().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -21,7 +36,9 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri" }, { status: 400 });
 
-  const { brandId, sector, description, primaryColor, phone } = parsed.data;
+  const { brandId, sector, description, primaryColor, phone,
+    audience, topServices, goal, tone, differentiator,
+    realStats, realReviews, hours, showPricing, hasPhotos, attempt } = parsed.data;
 
   const brand = await prisma.brand.findFirst({
     where: { id: brandId, ownerId: user.id },
@@ -47,7 +64,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const blocks = await generateWebsiteBlocks({
+  const { blocks, theme } = await generateWebsiteBlocks({
     brandName: brand.name,
     sector,
     description: description || `${brand.name} — ${sector} sektöründe hizmet veren bir işletme.`,
@@ -55,7 +72,10 @@ export async function POST(req: NextRequest) {
     email: brand.email ?? undefined,
     address: brand.address ?? undefined,
     primaryColor: primaryColor || brand.primaryColor || undefined,
-  });
+    // Brief — kullanıcı doldurmazsa undefined kalır ve üretici uydurmaz
+    audience, topServices, goal, tone, differentiator,
+    realStats, realReviews, hours, showPricing, hasPhotos,
+  }, Number(attempt) || 0);
 
   const website = await prisma.website.upsert({
     where: { brandId },
@@ -63,6 +83,7 @@ export async function POST(req: NextRequest) {
       brandId,
       title: brand.name,
       subdomain: brand.slug,
+      theme: theme as never,
       isPublished: false,
       pages: {
         create: {
@@ -75,6 +96,7 @@ export async function POST(req: NextRequest) {
     },
     update: {
       title: brand.name,
+      theme: theme as never,
       pages: {
         deleteMany: {},
         create: {

@@ -1,109 +1,256 @@
 "use client";
-import type { Block } from "@/server/ai/website-generator";
+import type { Block, SiteTheme } from "@/server/ai/website-generator";
+import { PALETTES, FONT_PAIRS } from "@/server/ai/website-themes";
+import {
+  Scissors, Sparkles, Clock, Phone, MapPin, Star, Shield, Heart, Wrench,
+  Car, Coffee, Camera, Users, Award, Check, Calendar, Mail, type LucideIcon,
+} from "lucide-react";
 
-export function BlockRenderer({ blocks }: { blocks: Block[] }) {
+/**
+ * Üretilen bloklar burada HTML'e dönüşür.
+ *
+ * Tema (palet/tipografi/yoğunluk) CSS değişkenlerine yazılır; bütün bloklar
+ * yalnızca bu değişkenleri okur. Böylece tek bir tema değişikliği sayfanın
+ * tamamını değiştirir ve her site birbirine benzemez.
+ */
+
+const ICONS: Record<string, LucideIcon> = {
+  scissors: Scissors, sparkles: Sparkles, clock: Clock, phone: Phone,
+  "map-pin": MapPin, star: Star, shield: Shield, heart: Heart, wrench: Wrench,
+  car: Car, coffee: Coffee, camera: Camera, users: Users, award: Award,
+  check: Check, calendar: Calendar, mail: Mail,
+};
+
+function Icon({ name, className = "h-5 w-5" }: { name?: string; className?: string }) {
+  const C = ICONS[(name ?? "").toLowerCase()] ?? Sparkles;
+  return <C className={className} strokeWidth={1.75} />;
+}
+
+const PAD = { sikisik: "py-12", normal: "py-20", ferah: "py-28" } as const;
+
+export function BlockRenderer({ blocks, theme }: { blocks: Block[]; theme?: SiteTheme | null }) {
+  const palette = PALETTES.find((p) => p.id === theme?.paletteId) ?? PALETTES[0];
+  const fonts = FONT_PAIRS.find((f) => f.id === theme?.fontPairId) ?? FONT_PAIRS[0];
+  const radius = theme?.radius ?? 16;
+  const density = theme?.density ?? "normal";
+
+  const style = {
+    "--w-bg": palette.bg,
+    "--w-surface": palette.surface,
+    "--w-ink": palette.ink,
+    "--w-ink-soft": palette.inkSoft,
+    "--w-accent": palette.accent,
+    "--w-accent-ink": palette.accentInk,
+    "--w-r": `${radius}px`,
+    "--w-r-sm": `${Math.max(4, radius - 6)}px`,
+    "--w-display": fonts.display,
+    "--w-body": fonts.body,
+    "--w-tracking": fonts.tracking,
+    background: "var(--w-bg)",
+    color: "var(--w-ink)",
+    fontFamily: "var(--w-body)",
+  } as React.CSSProperties;
+
   return (
-    <div className="space-y-0">
-      {blocks.map((block) => (
-        <BlockSection key={block.id} block={block} />
+    <div style={style}>
+      <style>{`
+        .w-h { font-family: var(--w-display); letter-spacing: var(--w-tracking); ${fonts.upper ? "text-transform: uppercase;" : ""} }
+        .w-card { background: var(--w-surface); border-radius: var(--w-r); }
+        .w-btn { background: var(--w-accent); color: var(--w-accent-ink); border-radius: var(--w-r-sm); }
+      `}</style>
+      {blocks.map((b) => (
+        <Section key={b.id} block={b} pad={PAD[density]} heroLayout={theme?.heroLayout ?? "ortali-buyuk"} />
       ))}
     </div>
   );
 }
 
-function BlockSection({ block }: { block: Block }) {
+function Section({ block, pad, heroLayout }: { block: Block; pad: string; heroLayout: string }) {
+  const d = block.data;
   switch (block.type) {
-    case "hero":      return <HeroBlock data={block.data} />;
-    case "features":  return <FeaturesBlock data={block.data} />;
-    case "about":     return <AboutBlock data={block.data} />;
-    case "services":  return <ServicesBlock data={block.data} />;
-    case "cta":       return <CtaBlock data={block.data} />;
-    case "contact":   return <ContactBlock data={block.data} />;
-    default:          return null;
+    case "hero":         return <Hero d={d} layout={heroLayout} />;
+    case "services":     return <Cards d={d} pad={pad} variant={block.variant} surface />;
+    case "features":     return <Cards d={d} pad={pad} variant={block.variant} />;
+    case "about":        return <About d={d} pad={pad} />;
+    case "gallery":      return <Gallery d={d} pad={pad} variant={block.variant} />;
+    case "pricing":      return <Pricing d={d} pad={pad} />;
+    case "hours":        return <Hours d={d} pad={pad} />;
+    case "faq":          return <Faq d={d} pad={pad} />;
+    case "team":         return <Team d={d} pad={pad} />;
+    case "testimonials": return <Testimonials d={d} pad={pad} />;
+    case "cta":          return <Cta d={d} pad={pad} />;
+    case "contact":      return <Contact d={d} pad={pad} />;
+    default:             return null;
   }
 }
 
-function HeroBlock({ data }: { data: Record<string, unknown> }) {
-  const bg = (data.bgColor as string) ?? "#6366f1";
-  return (
-    <section
-      className="relative overflow-hidden px-6 py-28 text-center"
-      style={{ background: `linear-gradient(135deg, ${bg}33 0%, ${bg}08 60%)` }}
-    >
-      <div
-        className="absolute inset-0 -z-10"
-        style={{ background: `radial-gradient(60% 60% at 50% 0%, ${bg}28, transparent)` }}
-      />
-      <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight md:text-5xl">
-        {data.headline as string}
-      </h1>
-      <p className="mx-auto mt-5 max-w-xl text-base text-[hsl(var(--muted-foreground))]">
-        {data.subheadline as string}
-      </p>
-      <div className="mt-8">
-        <a
-          href={data.ctaHref as string}
-          className="rounded-xl px-7 py-3 font-semibold text-white shadow-lg transition hover:opacity-90"
-          style={{ backgroundColor: bg }}
-        >
-          {data.cta as string}
-        </a>
-      </div>
-    </section>
-  );
+type D = Record<string, unknown>;
+const s = (v: unknown) => (v == null ? "" : String(v));
+
+function Heading({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <h2 className={`w-h text-3xl font-bold md:text-4xl ${className}`}>{children}</h2>;
 }
 
-function FeaturesBlock({ data }: { data: Record<string, unknown> }) {
-  const items = data.items as { icon: string; title: string; desc: string }[];
-  return (
-    <section className="bg-[hsl(var(--muted)/0.3)] px-6 py-20">
-      <h2 className="mb-10 text-center text-3xl font-bold">{data.title as string}</h2>
-      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
-        {items?.map((item, i) => (
-          <div key={i} className="glass rounded-2xl p-6 text-center">
-            <div className="mb-3 text-4xl">{item.icon}</div>
-            <h3 className="mb-2 font-semibold">{item.title}</h3>
-            <p className="text-sm text-[hsl(var(--muted-foreground))]">{item.desc}</p>
-          </div>
-        ))}
-      </div>
-    </section>
+/* ── Hero: düzen seçimi sayfanın karakterini belirler ─────────────── */
+function Hero({ d, layout }: { d: D; layout: string }) {
+  const eyebrow = s(d.eyebrow);
+  const cta = (
+    <a href={s(d.ctaHref) || "#contact"} className="w-btn inline-block px-8 py-3.5 font-semibold shadow-lg transition hover:opacity-90">
+      {s(d.cta) || "İletişime Geç"}
+    </a>
   );
-}
+  const label = eyebrow && (
+    <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--w-accent)" }}>{eyebrow}</p>
+  );
 
-function AboutBlock({ data }: { data: Record<string, unknown> }) {
-  const stats = data.stats as { value: string; label: string }[];
-  return (
-    <section className="px-6 py-20">
-      <div className="mx-auto max-w-4xl">
-        <h2 className="mb-6 text-3xl font-bold">{data.title as string}</h2>
-        <p className="mb-10 leading-relaxed text-[hsl(var(--muted-foreground))]">{data.body as string}</p>
-        <div className="grid grid-cols-3 gap-6 text-center">
-          {stats?.map((s, i) => (
-            <div key={i} className="glass rounded-2xl p-6">
-              <div className="text-3xl font-bold text-[hsl(var(--primary))]">{s.value}</div>
-              <div className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{s.label}</div>
-            </div>
-          ))}
+  if (layout === "bolunmus") {
+    return (
+      <section className="grid md:grid-cols-2">
+        <div className="flex flex-col justify-center px-6 py-24 md:px-12" style={{ background: "var(--w-surface)" }}>
+          {label}
+          <h1 className="w-h text-4xl font-bold leading-[1.05] md:text-5xl">{s(d.headline)}</h1>
+          <p className="mt-5 max-w-md text-base" style={{ color: "var(--w-ink-soft)" }}>{s(d.subheadline)}</p>
+          <div className="mt-8">{cta}</div>
         </div>
-      </div>
+        <div className="min-h-[280px]" style={{ background: `linear-gradient(160deg, var(--w-accent), var(--w-bg))` }} />
+      </section>
+    );
+  }
+
+  if (layout === "sol-yazi-sag-foto") {
+    return (
+      <section className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-24 md:grid-cols-2">
+        <div>
+          {label}
+          <h1 className="w-h text-4xl font-bold leading-[1.05] md:text-5xl">{s(d.headline)}</h1>
+          <p className="mt-5 text-base" style={{ color: "var(--w-ink-soft)" }}>{s(d.subheadline)}</p>
+          <div className="mt-8">{cta}</div>
+        </div>
+        <div className="aspect-[4/3] w-full" style={{ background: `linear-gradient(140deg, var(--w-accent), var(--w-surface))`, borderRadius: "var(--w-r)" }} />
+      </section>
+    );
+  }
+
+  if (layout === "tam-ekran-foto") {
+    return (
+      <section className="relative flex min-h-[80vh] items-center justify-center px-6 text-center"
+        style={{ background: `linear-gradient(200deg, var(--w-accent), var(--w-bg) 70%)` }}>
+        <div className="max-w-3xl">
+          {label}
+          <h1 className="w-h text-5xl font-bold leading-[1.02] md:text-7xl">{s(d.headline)}</h1>
+          <p className="mx-auto mt-6 max-w-xl text-lg" style={{ color: "var(--w-ink-soft)" }}>{s(d.subheadline)}</p>
+          <div className="mt-10">{cta}</div>
+        </div>
+      </section>
+    );
+  }
+
+  if (layout === "minimal-satir") {
+    return (
+      <section className="mx-auto max-w-3xl px-6 py-28">
+        {label}
+        <h1 className="w-h text-3xl font-bold leading-tight md:text-4xl">{s(d.headline)}</h1>
+        <p className="mt-4 text-base" style={{ color: "var(--w-ink-soft)" }}>{s(d.subheadline)}</p>
+        <div className="mt-8">{cta}</div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="px-6 py-28 text-center">
+      {label}
+      <h1 className="w-h mx-auto max-w-4xl text-5xl font-bold leading-[1.02] md:text-6xl">{s(d.headline)}</h1>
+      <p className="mx-auto mt-6 max-w-xl text-base" style={{ color: "var(--w-ink-soft)" }}>{s(d.subheadline)}</p>
+      <div className="mt-9">{cta}</div>
     </section>
   );
 }
 
-function ServicesBlock({ data }: { data: Record<string, unknown> }) {
-  const items = data.items as { title: string; desc: string; icon: string }[];
+/* ── services / features: dört farklı yerleşim ────────────────────── */
+function Cards({ d, pad, variant, surface }: { d: D; pad: string; variant?: string; surface?: boolean }) {
+  const items = (d.items as { icon?: string; title: string; desc: string; price?: string }[]) ?? [];
+  if (items.length === 0) return null;
+  const bg = surface ? { background: "var(--w-surface)" } : undefined;
+
+  if (variant === "numarali-liste") {
+    return (
+      <section className={`px-6 ${pad}`} style={bg}>
+        <div className="mx-auto max-w-3xl">
+          <Heading className="mb-10">{s(d.title)}</Heading>
+          <div className="divide-y" style={{ borderColor: "var(--w-ink-soft)" }}>
+            {items.map((it, i) => (
+              <div key={i} className="flex gap-6 py-6">
+                <span className="w-h shrink-0 text-2xl font-bold tabular-nums" style={{ color: "var(--w-accent)" }}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <h3 className="w-h mb-1.5 text-lg font-semibold">{it.title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: "var(--w-ink-soft)" }}>{it.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (variant === "yatay-satir") {
+    return (
+      <section className={`px-6 ${pad}`} style={bg}>
+        <div className="mx-auto max-w-5xl">
+          <Heading className="mb-10">{s(d.title)}</Heading>
+          <div className="space-y-4">
+            {items.map((it, i) => (
+              <div key={i} className="w-card flex items-center gap-5 p-6">
+                <span className="shrink-0" style={{ color: "var(--w-accent)" }}><Icon name={it.icon} className="h-7 w-7" /></span>
+                <div className="flex-1">
+                  <h3 className="w-h font-semibold">{it.title}</h3>
+                  <p className="mt-1 text-sm" style={{ color: "var(--w-ink-soft)" }}>{it.desc}</p>
+                </div>
+                {it.price && <span className="w-h shrink-0 font-bold" style={{ color: "var(--w-accent)" }}>{it.price}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (variant === "ikon-solda" || variant === "fiyatli-liste") {
+    return (
+      <section className={`px-6 ${pad}`} style={bg}>
+        <div className="mx-auto max-w-4xl">
+          <Heading className="mb-10">{s(d.title)}</Heading>
+          <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
+            {items.map((it, i) => (
+              <div key={i} className="flex gap-4">
+                <span className="shrink-0" style={{ color: "var(--w-accent)" }}><Icon name={it.icon} className="h-6 w-6" /></span>
+                <div>
+                  <h3 className="w-h font-semibold">
+                    {it.title}
+                    {it.price && <span className="ml-2 text-sm font-normal" style={{ color: "var(--w-accent)" }}>{it.price}</span>}
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: "var(--w-ink-soft)" }}>{it.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className="bg-[hsl(var(--muted)/0.3)] px-6 py-20">
-      <h2 className="mb-10 text-center text-3xl font-bold">{data.title as string}</h2>
-      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 md:grid-cols-2">
-        {items?.map((item, i) => (
-          <div key={i} className="glass flex items-start gap-4 rounded-2xl p-6">
-            <span className="text-3xl">{item.icon}</span>
-            <div>
-              <h3 className="mb-1 font-semibold">{item.title}</h3>
-              <p className="text-sm text-[hsl(var(--muted-foreground))]">{item.desc}</p>
-            </div>
+    <section className={`px-6 ${pad}`} style={bg}>
+      <Heading className="mb-12 text-center">{s(d.title)}</Heading>
+      <div className={`mx-auto grid max-w-5xl gap-5 ${items.length === 4 ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
+        {items.map((it, i) => (
+          <div key={i} className="w-card p-7">
+            <span className="inline-flex" style={{ color: "var(--w-accent)" }}><Icon name={it.icon} className="h-7 w-7" /></span>
+            <h3 className="w-h mb-2 mt-4 text-lg font-semibold">{it.title}</h3>
+            <p className="text-sm leading-relaxed" style={{ color: "var(--w-ink-soft)" }}>{it.desc}</p>
+            {it.price && <p className="w-h mt-4 font-bold" style={{ color: "var(--w-accent)" }}>{it.price}</p>}
           </div>
         ))}
       </div>
@@ -111,50 +258,190 @@ function ServicesBlock({ data }: { data: Record<string, unknown> }) {
   );
 }
 
-function CtaBlock({ data }: { data: Record<string, unknown> }) {
-  const btnColor = (data.buttonColor as string) ?? "#6366f1";
+function About({ d, pad }: { d: D; pad: string }) {
+  const stats = (d.stats as { value: string; label: string }[]) ?? [];
   return (
-    <section className="px-6 py-20 text-center">
-      <div className="glass mx-auto max-w-2xl rounded-3xl p-12">
-        <h2 className="mb-4 text-3xl font-bold">{data.title as string}</h2>
-        <p className="mb-8 text-[hsl(var(--muted-foreground))]">{data.body as string}</p>
-        <a
-          href={data.buttonHref as string}
-          className="rounded-xl px-8 py-3 font-semibold text-white shadow-lg transition hover:opacity-90"
-          style={{ backgroundColor: btnColor }}
-        >
-          {data.buttonText as string}
+    <section className={`px-6 ${pad}`}>
+      <div className="mx-auto max-w-3xl">
+        <Heading className="mb-6">{s(d.title)}</Heading>
+        <p className="text-base leading-relaxed" style={{ color: "var(--w-ink-soft)" }}>{s(d.body)}</p>
+        {stats.length > 0 && (
+          <div className="mt-12 grid gap-5 sm:grid-cols-3">
+            {stats.map((st, i) => (
+              <div key={i} className="w-card p-6 text-center">
+                <div className="w-h text-3xl font-bold" style={{ color: "var(--w-accent)" }}>{st.value}</div>
+                <div className="mt-1 text-sm" style={{ color: "var(--w-ink-soft)" }}>{st.label}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/** Görseller henüz yüklenmemişse yer tutucu gösterir (medya yükleme geldiğinde dolar). */
+function Gallery({ d, pad, variant }: { d: D; pad: string; variant?: string }) {
+  const images = (d.images as string[]) ?? [];
+  const slots = images.length > 0 ? images : Array.from({ length: 6 }, () => "");
+  const grid = variant === "seritli" ? "grid-cols-2 md:grid-cols-4"
+    : variant === "mozaik" ? "grid-cols-2 md:grid-cols-3"
+    : "grid-cols-2 md:grid-cols-3";
+  return (
+    <section className={`px-6 ${pad}`} style={{ background: "var(--w-surface)" }}>
+      <Heading className="mb-10 text-center">{s(d.title)}</Heading>
+      <div className={`mx-auto grid max-w-5xl gap-3 ${grid}`}>
+        {slots.map((src, i) => (
+          <div key={i}
+            className={`overflow-hidden ${variant === "mozaik" && i % 5 === 0 ? "row-span-2 aspect-[3/4]" : "aspect-square"}`}
+            style={{ borderRadius: "var(--w-r-sm)", background: src ? undefined : "var(--w-bg)" }}>
+            {src
+              ? <img src={src} alt="" className="h-full w-full object-cover" />
+              : <div className="flex h-full w-full items-center justify-center opacity-30"><Camera className="h-6 w-6" /></div>}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Pricing({ d, pad }: { d: D; pad: string }) {
+  const items = (d.items as { title: string; price: string; desc?: string }[]) ?? [];
+  if (items.length === 0) return null;
+  return (
+    <section className={`px-6 ${pad}`}>
+      <Heading className="mb-10 text-center">{s(d.title)}</Heading>
+      <div className="mx-auto max-w-2xl">
+        {items.map((it, i) => (
+          <div key={i} className="flex items-baseline gap-4 border-b py-4 last:border-0" style={{ borderColor: "var(--w-surface)" }}>
+            <span className="w-h font-semibold">{it.title}</span>
+            <span className="flex-1 border-b border-dotted opacity-30" />
+            <span className="w-h font-bold tabular-nums" style={{ color: "var(--w-accent)" }}>{it.price}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Hours({ d, pad }: { d: D; pad: string }) {
+  const rows = (d.rows as { gun: string; saat: string }[]) ?? [];
+  if (rows.length === 0) return null;
+  return (
+    <section className={`px-6 ${pad}`} style={{ background: "var(--w-surface)" }}>
+      <Heading className="mb-8 text-center">{s(d.title)}</Heading>
+      <div className="mx-auto max-w-sm space-y-2.5">
+        {rows.map((r, i) => (
+          <div key={i} className="flex justify-between text-sm">
+            <span>{r.gun}</span>
+            <span className="tabular-nums" style={{ color: "var(--w-ink-soft)" }}>{r.saat}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Faq({ d, pad }: { d: D; pad: string }) {
+  const items = (d.items as { q: string; a: string }[]) ?? [];
+  if (items.length === 0) return null;
+  return (
+    <section className={`px-6 ${pad}`}>
+      <Heading className="mb-10">{s(d.title)}</Heading>
+      <div className="mx-auto max-w-2xl space-y-3">
+        {items.map((it, i) => (
+          <details key={i} className="w-card group p-5">
+            <summary className="w-h cursor-pointer list-none font-semibold marker:hidden">{it.q}</summary>
+            <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--w-ink-soft)" }}>{it.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Team({ d, pad }: { d: D; pad: string }) {
+  const items = (d.items as { name: string; role: string; bio?: string }[]) ?? [];
+  if (items.length === 0) return null;
+  return (
+    <section className={`px-6 ${pad}`}>
+      <Heading className="mb-10 text-center">{s(d.title)}</Heading>
+      <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-3">
+        {items.map((m, i) => (
+          <div key={i} className="text-center">
+            <div className="mx-auto mb-4 grid h-24 w-24 place-items-center rounded-full text-2xl font-bold"
+              style={{ background: "var(--w-accent)", color: "var(--w-accent-ink)" }}>
+              {m.name.slice(0, 1).toUpperCase()}
+            </div>
+            <h3 className="w-h font-semibold">{m.name}</h3>
+            <p className="text-sm" style={{ color: "var(--w-accent)" }}>{m.role}</p>
+            {m.bio && <p className="mt-2 text-sm" style={{ color: "var(--w-ink-soft)" }}>{m.bio}</p>}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Testimonials({ d, pad }: { d: D; pad: string }) {
+  const items = (d.items as { text: string; author: string; rating?: number }[]) ?? [];
+  if (items.length === 0) return null;
+  return (
+    <section className={`px-6 ${pad}`} style={{ background: "var(--w-surface)" }}>
+      <Heading className="mb-10 text-center">{s(d.title)}</Heading>
+      <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-3">
+        {items.map((t, i) => (
+          <figure key={i} className="p-6" style={{ background: "var(--w-bg)", borderRadius: "var(--w-r)" }}>
+            <div className="mb-3 flex gap-0.5" style={{ color: "var(--w-accent)" }}>
+              {Array.from({ length: t.rating ?? 5 }).map((_, k) => <Star key={k} className="h-4 w-4 fill-current" />)}
+            </div>
+            <blockquote className="text-sm leading-relaxed">{t.text}</blockquote>
+            <figcaption className="mt-4 text-sm font-semibold" style={{ color: "var(--w-ink-soft)" }}>{t.author}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Cta({ d, pad }: { d: D; pad: string }) {
+  return (
+    <section className={`px-6 ${pad}`}>
+      <div className="mx-auto max-w-3xl p-12 text-center"
+        style={{ background: "var(--w-accent)", color: "var(--w-accent-ink)", borderRadius: "var(--w-r)" }}>
+        <h2 className="w-h text-3xl font-bold">{s(d.title)}</h2>
+        <p className="mx-auto mt-4 max-w-lg opacity-90">{s(d.body)}</p>
+        <a href={s(d.buttonHref) || "#contact"}
+          className="mt-8 inline-block px-8 py-3.5 font-semibold transition hover:opacity-90"
+          style={{ background: "var(--w-bg)", color: "var(--w-ink)", borderRadius: "var(--w-r-sm)" }}>
+          {s(d.buttonText) || "İletişime Geç"}
         </a>
       </div>
     </section>
   );
 }
 
-function ContactBlock({ data }: { data: Record<string, unknown> }) {
-  const phone = data.phone ? String(data.phone) : null;
-  const email = data.email ? String(data.email) : null;
-  const address = data.address ? String(data.address) : null;
+function Contact({ d, pad }: { d: D; pad: string }) {
+  const phone = s(d.phone), email = s(d.email), address = s(d.address);
   return (
-    <section id="contact" className="bg-[hsl(var(--muted)/0.3)] px-6 py-20">
-      <h2 className="mb-10 text-center text-3xl font-bold">{data.title as string}</h2>
-      <div className="mx-auto max-w-md space-y-4 text-center">
+    <section id="contact" className={`px-6 ${pad}`} style={{ background: "var(--w-surface)" }}>
+      <Heading className="mb-10 text-center">{s(d.title) || "İletişim"}</Heading>
+      <div className="mx-auto max-w-md space-y-4">
         {phone && (
-          <p className="text-lg">
-            📞{" "}
-            <a href={`tel:${phone}`} className="hover:text-[hsl(var(--primary))]">
-              {phone}
-            </a>
-          </p>
+          <a href={`tel:${phone}`} className="flex items-center gap-3 transition hover:opacity-70">
+            <Phone className="h-5 w-5 shrink-0" style={{ color: "var(--w-accent)" }} /><span>{phone}</span>
+          </a>
         )}
         {email && (
-          <p className="text-lg">
-            ✉️{" "}
-            <a href={`mailto:${email}`} className="hover:text-[hsl(var(--primary))]">
-              {email}
-            </a>
+          <a href={`mailto:${email}`} className="flex items-center gap-3 transition hover:opacity-70">
+            <Mail className="h-5 w-5 shrink-0" style={{ color: "var(--w-accent)" }} /><span>{email}</span>
+          </a>
+        )}
+        {address && (
+          <p className="flex items-start gap-3">
+            <MapPin className="mt-0.5 h-5 w-5 shrink-0" style={{ color: "var(--w-accent)" }} /><span>{address}</span>
           </p>
         )}
-        {address && <p className="text-lg">📍 {address}</p>}
       </div>
     </section>
   );
