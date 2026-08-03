@@ -191,6 +191,26 @@ export default function WebsiteEditorPage({
     setBlocks((prev) => prev.map((b) => (b.id === blockId ? { ...b, data: setByPath(b.data, path, value) } : b)));
   }
 
+  /** Seçilen dosyayı yükler, herkese açık URL döndürür. */
+  async function medyaYukle(file: File): Promise<string | null> {
+    if (!website) return null;
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("brandId", website.brandId);
+    try {
+      const res = await fetch("/api/media/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) {
+        setMessages((m) => [...m, { role: "ai", content: `❌ ${data.error ?? sL.problem}` }]);
+        return null;
+      }
+      return data.url as string;
+    } catch {
+      setMessages((m) => [...m, { role: "ai", content: `❌ ${sL.problem}` }]);
+      return null;
+    }
+  }
+
   /** Odaktaki alanın biçimini (font/boyut/renk/kalınlık) değiştirir. */
   function bicimUygula(yama: Partial<TextFormat>) {
     if (!odak) return;
@@ -653,6 +673,7 @@ export default function WebsiteEditorPage({
               editable
               onUpdate={metniGuncelle}
               onFocusField={(blockId, path) => setOdak({ blockId, path })}
+              uploadMedia={medyaYukle}
             />
           </div>
         </main>

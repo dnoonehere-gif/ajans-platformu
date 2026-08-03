@@ -1,7 +1,7 @@
 "use client";
 import type { Block, SiteTheme } from "@/server/ai/website-generator";
 import { PALETTES, FONT_PAIRS } from "@/server/ai/website-themes";
-import { EditProvider, T } from "./editable";
+import { EditProvider, T, Media } from "./editable";
 import {
   Scissors, Sparkles, Clock, Phone, MapPin, Star, Shield, Heart, Wrench,
   Car, Coffee, Camera, Users, Award, Check, Calendar, Mail, type LucideIcon,
@@ -30,7 +30,7 @@ function Icon({ name, className = "h-5 w-5" }: { name?: string; className?: stri
 const PAD = { sikisik: "py-12", normal: "py-20", ferah: "py-28" } as const;
 
 export function BlockRenderer({
-  blocks, theme, editable = false, onUpdate, onFocusField,
+  blocks, theme, editable = false, onUpdate, onFocusField, uploadMedia,
 }: {
   blocks: Block[];
   theme?: SiteTheme | null;
@@ -38,6 +38,8 @@ export function BlockRenderer({
   editable?: boolean;
   onUpdate?: (blockId: string, path: string, value: string) => void;
   onFocusField?: (blockId: string, path: string) => void;
+  /** Görsel/video yükleyip herkese açık URL döndürür */
+  uploadMedia?: (file: File) => Promise<string | null>;
 }) {
   const palette = PALETTES.find((p) => p.id === theme?.paletteId) ?? PALETTES[0];
   const fonts = FONT_PAIRS.find((f) => f.id === theme?.fontPairId) ?? FONT_PAIRS[0];
@@ -76,6 +78,7 @@ export function BlockRenderer({
             blockId: b.id,
             update: (bid, path, value) => onUpdate?.(bid, path, value),
             onFocusField,
+            uploadMedia,
           }}
         >
           <Section block={b} pad={PAD[density]} heroLayout={theme?.heroLayout ?? "ortali-buyuk"} />
@@ -137,7 +140,7 @@ function Hero({ d, layout }: { d: D; layout: string }) {
           <T data={d} path="subheadline" as="p" className="mt-5 max-w-md text-base block" style={{ color: "var(--w-ink-soft)" }} />
           <div className="mt-8">{cta}</div>
         </div>
-        <div className="min-h-[280px]" style={{ background: `linear-gradient(160deg, var(--w-accent), var(--w-bg))` }} />
+        <Media data={d} path="image" className="min-h-[280px]" style={{ background: `linear-gradient(160deg, var(--w-accent), var(--w-bg))` }} />
       </section>
     );
   }
@@ -151,7 +154,7 @@ function Hero({ d, layout }: { d: D; layout: string }) {
           <T data={d} path="subheadline" as="p" className="mt-5 text-base block" style={{ color: "var(--w-ink-soft)" }} />
           <div className="mt-8">{cta}</div>
         </div>
-        <div className="aspect-[4/3] w-full" style={{ background: `linear-gradient(140deg, var(--w-accent), var(--w-surface))`, borderRadius: "var(--w-r)" }} />
+        <Media data={d} path="image" className="aspect-[4/3] w-full overflow-hidden" style={{ background: `linear-gradient(140deg, var(--w-accent), var(--w-surface))`, borderRadius: "var(--w-r)" }} />
       </section>
     );
   }
@@ -317,13 +320,13 @@ function Gallery({ d, pad, variant }: { d: D; pad: string; variant?: string }) {
       <HeadT d={d} className="mb-10 text-center" />
       <div className={`mx-auto grid max-w-5xl gap-3 ${grid}`}>
         {slots.map((src, i) => (
-          <div key={i}
+          <Media
+            key={i}
+            data={d}
+            path={`images.${i}`}
             className={`overflow-hidden ${variant === "mozaik" && i % 5 === 0 ? "row-span-2 aspect-[3/4]" : "aspect-square"}`}
-            style={{ borderRadius: "var(--w-r-sm)", background: src ? undefined : "var(--w-bg)" }}>
-            {src
-              ? <img src={src} alt="" className="h-full w-full object-cover" />
-              : <div className="flex h-full w-full items-center justify-center opacity-30"><Camera className="h-6 w-6" /></div>}
-          </div>
+            style={{ borderRadius: "var(--w-r-sm)", background: src ? undefined : "var(--w-bg)" }}
+          />
         ))}
       </div>
     </section>
@@ -386,7 +389,7 @@ function Faq({ d, pad }: { d: D; pad: string }) {
 }
 
 function Team({ d, pad }: { d: D; pad: string }) {
-  const items = (d.items as { name: string; role: string; bio?: string }[]) ?? [];
+  const items = (d.items as { name: string; role: string; bio?: string; photo?: string }[]) ?? [];
   if (items.length === 0) return null;
   return (
     <section className={`px-6 ${pad}`}>
@@ -394,10 +397,14 @@ function Team({ d, pad }: { d: D; pad: string }) {
       <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-3">
         {items.map((m, i) => (
           <div key={i} className="text-center">
-            <div className="mx-auto mb-4 grid h-24 w-24 place-items-center rounded-full text-2xl font-bold"
-              style={{ background: "var(--w-accent)", color: "var(--w-accent-ink)" }}>
-              {m.name.slice(0, 1).toUpperCase()}
-            </div>
+            {m.photo
+              ? <Media data={d} path={`items.${i}.photo`} className="mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full" />
+              : (
+                <div className="mx-auto mb-4 grid h-24 w-24 place-items-center rounded-full text-2xl font-bold"
+                  style={{ background: "var(--w-accent)", color: "var(--w-accent-ink)" }}>
+                  {m.name.slice(0, 1).toUpperCase()}
+                </div>
+              )}
             <h3 className="w-h font-semibold">{m.name}</h3>
             <p className="text-sm" style={{ color: "var(--w-accent)" }}>{m.role}</p>
             {m.bio && <p className="mt-2 text-sm" style={{ color: "var(--w-ink-soft)" }}>{m.bio}</p>}

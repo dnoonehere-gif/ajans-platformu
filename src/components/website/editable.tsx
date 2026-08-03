@@ -1,5 +1,6 @@
 "use client";
-import { createContext, useContext, useRef } from "react";
+import { createContext, useContext, useRef, useState } from "react";
+import { Camera } from "lucide-react";
 
 /**
  * Önizlemede doğrudan düzenleme altyapısı.
@@ -27,6 +28,8 @@ interface EditApi {
   update: (blockId: string, path: string, value: string) => void;
   /** Bir alana odaklanıldığında editörün araç çubuğunu açması için */
   onFocusField?: (blockId: string, path: string) => void;
+  /** Dosyayı yükleyip herkese açık URL döndürür; hata olursa null. */
+  uploadMedia?: (file: File) => Promise<string | null>;
 }
 
 const EditCtx = createContext<EditApi | null>(null);
@@ -121,5 +124,82 @@ export function T({
     >
       {text}
     </Tag>
+  );
+}
+
+
+/**
+ * Düzenlenebilir görsel/video yuvası.
+ *
+ * Salt okunur bağlamda doğrudan medyayı basar. Editörde tıklanınca dosya
+ * seçici açılır — mobilde bu, telefonun galerisini ve kamerasını sunar,
+ * masaüstünde dosya penceresini. Ayrıca sürükle-bırak desteklenir.
+ */
+export function Media({
+  data,
+  path,
+  className = "",
+  style,
+}: {
+  data: Record<string, unknown>;
+  path: string;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  const api = useEdit();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [yukleniyor, setYukleniyor] = useState(false);
+
+  const src = String(
+    path.split(".").reduce<unknown>((acc, k) => (acc as Record<string, unknown>)?.[k], data) ?? ""
+  );
+  const video = /\.(mp4|webm|mov)(\?|$)/i.test(src);
+
+  async function dosyaAl(file?: File | null) {
+    if (!file || !api?.uploadMedia) return;
+    setYukleniyor(true);
+    const url = await api.uploadMedia(file);
+    setYukleniyor(false);
+    if (url) api.update(api.blockId, path, url);
+  }
+
+  const icerik = src ? (
+    video
+      ? <video src={src} className="h-full w-full object-cover" muted loop playsInline autoPlay />
+      : <img src={src} alt="" className="h-full w-full object-cover" />
+  ) : (
+    <div className="flex h-full w-full flex-col items-center justify-center gap-1 opacity-40">
+      <Camera className="h-6 w-6" />
+      {api?.editable && <span className="text-[10px]">Görsel ekle</span>}
+    </div>
+  );
+
+  if (!api?.editable) {
+    return <div className={className} style={style}>{icerik}</div>;
+  }
+
+  return (
+    <div
+      onClick={() => inputRef.current?.click()}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => { e.preventDefault(); void dosyaAl(e.dataTransfer.files?.[0]); }}
+      className={`${className} group relative cursor-pointer ring-offset-2 transition hover:ring-2 hover:ring-blue-500/60`}
+      style={style}
+      title="Tıkla veya sürükle-bırak"
+    >
+      {icerik}
+      {yukleniyor && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs font-medium text-white">
+          Yükleniyor...
+        </div>
+      )}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*,video/mp4,video/webm,video/quicktime"
+        onChange={(e) => { void dosyaAl(e.target.files?.[0]); e.target.value = ""; }}
+        className="hidden"
+      />
+    </div>
   );
 }
