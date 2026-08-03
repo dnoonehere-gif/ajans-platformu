@@ -9,7 +9,26 @@ import { PageLoading } from "@/components/ui/page-loading";
 
 const L = {
   tr: {
-    steps: ["Sektör", "Renk", "Logo", "İletişim"],
+    steps: ["Sektör", "Renk", "Logo", "İletişim", "Brief"],
+    briefTitle: "Son birkaç soru",
+    briefSub: "Bunları doldurdukça site sizin işletmenize özel çıkar. Boş bıraktıklarınız için yapay zekâ bilgi uydurmaz.",
+    qAudience: "Kimlere hizmet veriyorsunuz?",
+    phAudience: "Örn. mahalle sakinleri, 30-50 yaş kadınlar, kurumsal firmalar",
+    qServices: "En çok yaptığınız 3-4 iş nedir?",
+    phServices: "Örn. saç kesimi, ombre, kaş alımı, gelin başı",
+    qGoal: "Site ziyaretçisi ne yapsın?",
+    goals: ["Randevu alsın", "Arasın", "Bilgi edinsin", "Satın alsın", "Rezervasyon yapsın"],
+    qTone: "Nasıl bir his versin?",
+    tones: ["Lüks", "Samimi", "Profesyonel", "Eğlenceli", "Sade"],
+    qDiff: "Sizi rakiplerinizden ayıran ne?",
+    phDiff: "Örn. 7/24 açığız, tek seansta bitiriyoruz, ithal ürün kullanıyoruz",
+    qHours: "Çalışma saatleriniz",
+    phHours: "Örn. Hafta içi 09:00-19:00, Pazar kapalı",
+    qStats: "Paylaşmak istediğiniz gerçek rakamlar",
+    phStats: "Örn. 12 yıldır hizmetteyiz, 3 şube",
+    statsNote: "Boş bırakırsanız sitede uydurma rakam yazılmaz.",
+    qPhotos: "İşletmeme ait fotoğraflarım var (galeri bölümü eklensin)",
+    qPricing: "Fiyatlarımı sitede göstermek istiyorum",
     sectors: ["Restoran & Kafe", "Güzellik & Kuaför", "Hukuk Bürosu", "Muhasebe & Mali Müşavir", "Sağlık & Klinik", "Diş Hekimi", "Eğitim & Kurs", "İnşaat & Tadilat", "Gayrimenkul", "Otomotiv & Servis", "Tekstil & Giyim", "E-ticaret", "Spor & Fitness", "Otel & Konaklama", "Teknoloji & Yazılım", "Hediyelik & Çiçek", "Temizlik Hizmetleri", "Diğer"],
     genericError: "Bir hata oluştu", connFail: "Bağlantı hatası",
     generatingTitle: "Yapay zekâ sitenizi oluşturuyor",
@@ -30,7 +49,26 @@ const L = {
     generate: "AI ile Oluştur",
   },
   en: {
-    steps: ["Industry", "Color", "Logo", "Contact"],
+    steps: ["Industry", "Color", "Logo", "Contact", "Brief"],
+    briefTitle: "A few last questions",
+    briefSub: "The more you fill in, the more the site fits your business. Anything left blank will not be invented by the AI.",
+    qAudience: "Who do you serve?",
+    phAudience: "e.g. local residents, women aged 30-50, corporate clients",
+    qServices: "Your 3-4 most common jobs?",
+    phServices: "e.g. haircut, ombre, brow shaping, bridal styling",
+    qGoal: "What should a visitor do?",
+    goals: ["Book", "Call", "Learn more", "Buy", "Reserve"],
+    qTone: "What feeling should it have?",
+    tones: ["Luxury", "Warm", "Professional", "Playful", "Minimal"],
+    qDiff: "What sets you apart?",
+    phDiff: "e.g. open 24/7, done in one session, imported products",
+    qHours: "Opening hours",
+    phHours: "e.g. Weekdays 09:00-19:00, closed Sunday",
+    qStats: "Real numbers you want to share",
+    phStats: "e.g. 12 years in business, 3 branches",
+    statsNote: "Leave blank and no made-up numbers will appear.",
+    qPhotos: "I have photos of my business (add a gallery)",
+    qPricing: "I want to show my prices",
     sectors: ["Restaurant & Cafe", "Beauty & Salon", "Law Firm", "Accounting", "Health & Clinic", "Dentist", "Education & Courses", "Construction & Renovation", "Real Estate", "Automotive & Service", "Textile & Fashion", "E-commerce", "Sports & Fitness", "Hotel & Lodging", "Technology & Software", "Gifts & Flowers", "Cleaning Services", "Other"],
     genericError: "Something went wrong", connFail: "Connection error",
     generatingTitle: "AI is building your website",
@@ -88,11 +126,16 @@ const COLORS = [
   { label: "Gri", value: "#6b7280" },
 ];
 
+/** Brief seçenekleri — değerler üreticinin beklediği anahtarlarla birebir. */
+const GOALS = ["randevu", "arama", "bilgi", "satis", "rezervasyon"] as const;
+const TONES = ["luks", "samimi", "profesyonel", "eglenceli", "sade"] as const;
+
 const STEPS = [
   { id: 1, label: "Sektör", icon: Building2 },
   { id: 2, label: "Renk", icon: Palette },
   { id: 3, label: "Logo", icon: ImageIcon },
   { id: 4, label: "İletişim", icon: Phone },
+  { id: 5, label: "Brief", icon: Sparkles },
 ];
 
 const inputCls =
@@ -131,6 +174,17 @@ export default function WebsitePage() {
   const [primaryColor, setPrimaryColor] = useState("#6366f1");
   const [customColor, setCustomColor] = useState("");
   const [phone, setPhone] = useState("");
+  // Brief — üretici bunları aldıkça siteyi işletmeye özel kurabiliyor.
+  // Boş bırakılanlar isteğe hiç eklenmez ve AI o konuda içerik uydurmaz.
+  const [audience, setAudience] = useState("");
+  const [topServices, setTopServices] = useState("");
+  const [goal, setGoal] = useState("");
+  const [tone, setTone] = useState("");
+  const [differentiator, setDifferentiator] = useState("");
+  const [realStats, setRealStats] = useState("");
+  const [hours, setHours] = useState("");
+  const [showPricing, setShowPricing] = useState(false);
+  const [hasPhotos, setHasPhotos] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -176,6 +230,15 @@ export default function WebsitePage() {
           sector: effectiveSector,
           primaryColor: effectiveColor,
           phone: phone || undefined,
+          audience: audience || undefined,
+          topServices: topServices || undefined,
+          goal: goal || undefined,
+          tone: tone || undefined,
+          differentiator: differentiator || undefined,
+          realStats: realStats || undefined,
+          hours: hours || undefined,
+          showPricing,
+          hasPhotos,
         }),
       });
       const data = await res.json();
@@ -492,15 +555,103 @@ export default function WebsitePage() {
               <ChevronLeft className="h-4 w-4" /> {sL.back}
             </button>
             <button
-              onClick={handleGenerate}
+              onClick={() => setStep(5)}
               disabled={uploading}
               className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
             >
-              {uploading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Sparkles className="h-4 w-4" />
-              )}
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronRight className="h-4 w-4" />}
+              {sL.next}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 5 — Brief. Sitenin herkese benzemesini engelleyen adım: üretici
+          bu cevapları aldıkça palet, blok seçimi ve metin işletmeye özel
+          kuruluyor. Tamamı isteğe bağlı; boş bırakılan alan isteğe hiç
+          eklenmiyor ve AI o konuda bilgi UYDURMUYOR. */}
+      {step === 5 && (
+        <div className="glass rounded-3xl p-6 sm:p-8">
+          <h2 className="mb-1 text-lg font-bold">{sL.briefTitle}</h2>
+          <p className="mb-6 text-sm text-[hsl(var(--muted-foreground))]">{sL.briefSub}</p>
+
+          <div className="space-y-5">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">{sL.qAudience}</label>
+              <input className={inputCls} value={audience} onChange={(e) => setAudience(e.target.value)} placeholder={sL.phAudience} />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">{sL.qServices}</label>
+              <input className={inputCls} value={topServices} onChange={(e) => setTopServices(e.target.value)} placeholder={sL.phServices} />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">{sL.qGoal}</label>
+              <div className="flex flex-wrap gap-2">
+                {GOALS.map((g, i) => (
+                  <button key={g} onClick={() => setGoal(goal === g ? "" : g)}
+                    className={`rounded-xl border px-4 py-2 text-sm transition ${goal === g
+                      ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.1)] font-semibold text-[hsl(var(--primary))]"
+                      : "border-[hsl(var(--border))] hover:bg-[hsl(var(--accent))]"}`}>
+                    {sL.goals[i]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">{sL.qTone}</label>
+              <div className="flex flex-wrap gap-2">
+                {TONES.map((tn, i) => (
+                  <button key={tn} onClick={() => setTone(tone === tn ? "" : tn)}
+                    className={`rounded-xl border px-4 py-2 text-sm transition ${tone === tn
+                      ? "border-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.1)] font-semibold text-[hsl(var(--primary))]"
+                      : "border-[hsl(var(--border))] hover:bg-[hsl(var(--accent))]"}`}>
+                    {sL.tones[i]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">{sL.qDiff}</label>
+              <input className={inputCls} value={differentiator} onChange={(e) => setDifferentiator(e.target.value)} placeholder={sL.phDiff} />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">{sL.qHours}</label>
+              <input className={inputCls} value={hours} onChange={(e) => setHours(e.target.value)} placeholder={sL.phHours} />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">{sL.qStats}</label>
+              <input className={inputCls} value={realStats} onChange={(e) => setRealStats(e.target.value)} placeholder={sL.phStats} />
+              <p className="mt-1.5 text-xs text-[hsl(var(--muted-foreground))]">{sL.statsNote}</p>
+            </div>
+
+            <div className="space-y-3 rounded-2xl border border-[hsl(var(--border))] p-4">
+              <label className="flex cursor-pointer items-center gap-3 text-sm">
+                <input type="checkbox" checked={hasPhotos} onChange={(e) => setHasPhotos(e.target.checked)} className="h-4 w-4 accent-[hsl(var(--primary))]" />
+                {sL.qPhotos}
+              </label>
+              <label className="flex cursor-pointer items-center gap-3 text-sm">
+                <input type="checkbox" checked={showPricing} onChange={(e) => setShowPricing(e.target.checked)} className="h-4 w-4 accent-[hsl(var(--primary))]" />
+                {sL.qPricing}
+              </label>
+            </div>
+          </div>
+
+          {error && <p className="mb-4 mt-5 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-red-400">{error}</p>}
+
+          <div className="mt-6 flex justify-between">
+            <button onClick={() => setStep(4)}
+              className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] px-5 py-2.5 text-sm transition hover:bg-[hsl(var(--accent))]">
+              <ChevronLeft className="h-4 w-4" /> {sL.back}
+            </button>
+            <button onClick={handleGenerate} disabled={generating || uploading}
+              className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50">
+              {generating || uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {sL.generate}
             </button>
           </div>

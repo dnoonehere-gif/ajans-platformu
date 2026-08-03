@@ -154,6 +154,26 @@ export default function WebsiteEditorPage({
 
   const activePage = website?.pages[0];
 
+  // Otomatik kayıt: blocks değiştikten 2 saniye sonra kaydeder. Kullanıcı
+  // yazmaya devam ederse sayaç sıfırlanır, böylece her tuşta istek gitmez.
+  // İlk yüklemede ve AI düzenlemesinin kendi kaydından sonra tetiklenmemesi
+  // için son kaydedilen içerik referansta tutulur.
+  const sonKayitRef = useRef<string>("");
+  useEffect(() => {
+    if (!website || !activePage || blocks.length === 0) return;
+    const imza = JSON.stringify(blocks);
+    if (sonKayitRef.current === "") { sonKayitRef.current = imza; return; }
+    if (sonKayitRef.current === imza) return;
+    const zamanlayici = setTimeout(() => {
+      sonKayitRef.current = imza;
+      void saveBlocks(blocks);
+    }, 2000);
+    return () => clearTimeout(zamanlayici);
+    // saveBlocks kimliği her renderda değişse de etkiyi yeniden kurmamak için
+    // kasıtlı olarak bağımlılığa alınmadı.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blocks, website, activePage]);
+
   async function saveBlocks(b: Block[]) {
     if (!website || !activePage) return;
     setSaving(true);
@@ -211,7 +231,9 @@ export default function WebsiteEditorPage({
         { role: "ai", content: sL.applied },
       ]);
 
-      // Otomatik kaydet
+      // AI değişikliğini hemen kaydet; imza güncellenerek otomatik
+      // kaydın aynı içeriği ikinci kez göndermesi engellenir.
+      sonKayitRef.current = JSON.stringify(data.blocks);
       await saveBlocks(data.blocks);
     } catch (e) {
       setMessages((m) => [
