@@ -174,7 +174,10 @@ export function Media({
     </div>
   );
 
+  // Yayınlanmış sitede boş görsel yuvası hiç çizilmez; aksi hâlde ziyaretçi
+  // yarım kalmış gibi görünen boş kareler görürdü.
   if (!api?.editable) {
+    if (!src) return null;
     return <div className={className} style={style}>{icerik}</div>;
   }
 

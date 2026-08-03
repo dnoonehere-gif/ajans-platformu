@@ -3,11 +3,12 @@ import { useEffect, useState, use, useRef } from "react";
 import {
   Eye, EyeOff, Save, Loader2, Globe, ChevronLeft,
   Sparkles, Send, RotateCcw, Check, Pencil, Bot, ExternalLink,
-  Download, HelpCircle, ChevronDown,
+  Download, HelpCircle, ChevronDown, Plus, ArrowUp, ArrowDown, Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { BlockRenderer } from "@/components/website/block-renderer";
 import { setByPath, type TextFormat } from "@/components/website/editable";
+import { BLOCK_PRESETS } from "@/components/website/block-presets";
 import type { SiteTheme } from "@/server/ai/website-generator";
 import type { Block } from "@/server/ai/website-generator";
 import { useLang } from "@/components/language-provider";
@@ -227,6 +228,36 @@ export default function WebsiteEditorPage({
     const b = blocks.find((x) => x.id === odak.blockId);
     return ((b?.data._fmt as Record<string, TextFormat>) ?? {})[odak.path] ?? {};
   })();
+
+  const [bolumMenusu, setBolumMenusu] = useState(false);
+
+  /** Yeni bölümü iletişim bloğunun ÜSTÜNE ekler — iletişim en sonda kalmalı. */
+  function bolumEkle(yap: () => Block) {
+    setHistory((h) => [...h, blocks]);
+    setBlocks((prev) => {
+      const yeni = yap();
+      const iletisim = prev.findIndex((b) => b.type === "contact");
+      if (iletisim === -1) return [...prev, yeni];
+      return [...prev.slice(0, iletisim), yeni, ...prev.slice(iletisim)];
+    });
+    setBolumMenusu(false);
+  }
+
+  function bolumSil(id: string) {
+    setHistory((h) => [...h, blocks]);
+    setBlocks((prev) => prev.filter((b) => b.id !== id));
+  }
+
+  function bolumTasi(id: string, yon: -1 | 1) {
+    setBlocks((prev) => {
+      const i = prev.findIndex((b) => b.id === id);
+      const j = i + yon;
+      if (i === -1 || j < 0 || j >= prev.length) return prev;
+      const kopya = [...prev];
+      [kopya[i], kopya[j]] = [kopya[j], kopya[i]];
+      return kopya;
+    });
+  }
 
   const sonKayitRef = useRef<string>("");
   useEffect(() => {
@@ -675,6 +706,67 @@ export default function WebsiteEditorPage({
               onFocusField={(blockId, path) => setOdak({ blockId, path })}
               uploadMedia={medyaYukle}
             />
+
+            {/* ── Bölüm yönetimi ──
+                Site üretilirken brief'e göre blok seçiliyor; "fotoğrafım var"
+                işaretlemeyen kullanıcı galeriyi hiç alamıyor ve sonradan da
+                ekleyemiyordu. Buradan her bölüm eklenip sırası değiştirilebilir. */}
+            <div className="mt-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold">Bölümler</p>
+                <div className="relative">
+                  <button
+                    onClick={() => setBolumMenusu((a) => !a)}
+                    className="flex items-center gap-1.5 rounded-xl bg-[hsl(var(--primary))] px-3.5 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Bölüm Ekle
+                  </button>
+
+                  {bolumMenusu && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setBolumMenusu(false)} />
+                      <div className="absolute right-0 top-full z-50 mt-1.5 max-h-80 w-64 overflow-y-auto rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1.5 shadow-xl">
+                        {BLOCK_PRESETS.map((pr) => (
+                          <button
+                            key={pr.label}
+                            onClick={() => bolumEkle(pr.make)}
+                            className="w-full rounded-xl px-3 py-2 text-left transition hover:bg-[hsl(var(--accent))]"
+                          >
+                            <span className="block text-sm font-medium">{pr.label}</span>
+                            <span className="block text-[11px] text-[hsl(var(--muted-foreground))]">{pr.hint}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                {blocks.map((b, i) => (
+                  <div key={b.id} className="flex items-center gap-2 rounded-xl bg-[hsl(var(--muted)/0.4)] px-3 py-2">
+                    <span className="flex-1 truncate text-xs font-medium">
+                      {BLOCK_PRESETS.find((pr) => pr.type === b.type)?.label ?? b.type}
+                    </span>
+                    <button onClick={() => bolumTasi(b.id, -1)} disabled={i === 0} title="Yukarı"
+                      className="rounded-lg p-1 text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] disabled:opacity-30">
+                      <ArrowUp className="h-3.5 w-3.5" />
+                    </button>
+                    <button onClick={() => bolumTasi(b.id, 1)} disabled={i === blocks.length - 1} title="Aşağı"
+                      className="rounded-lg p-1 text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] disabled:opacity-30">
+                      <ArrowDown className="h-3.5 w-3.5" />
+                    </button>
+                    {/* Hero ve iletişim silinemez: sayfanın açılışı ve kapanışı */}
+                    {b.type !== "hero" && b.type !== "contact" && (
+                      <button onClick={() => bolumSil(b.id)} title="Kaldır"
+                        className="rounded-lg p-1 text-red-400 transition hover:bg-red-500/10">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </main>
       </div>

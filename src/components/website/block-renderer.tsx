@@ -288,10 +288,14 @@ function Cards({ d, pad, variant, surface }: { d: D; pad: string; variant?: stri
 
 function About({ d, pad }: { d: D; pad: string }) {
   const stats = (d.stats as { value: string; label: string }[]) ?? [];
+  // Görsel isteğe bağlı: yalnızca yüklenmişse ya da editördeyken yer tutucu
+  // olarak görünür; yayınlanmış sitede boş kare çıkmaz.
+  const gorsel = String(d.image ?? "");
   return (
     <section className={`px-6 ${pad}`}>
       <div className="mx-auto max-w-3xl">
         <HeadT d={d} className="mb-6" />
+        <Media data={d} path="image" className={`mb-6 w-full overflow-hidden ${gorsel ? "aspect-[16/7]" : "aspect-[16/7]"}`} style={{ borderRadius: "var(--w-r)", background: "var(--w-surface)" }} />
         <T data={d} path="body" as="p" className="block text-base leading-relaxed" style={{ color: "var(--w-ink-soft)" }} />
         {stats.length > 0 && (
           <div className="mt-12 grid gap-5 sm:grid-cols-3">
