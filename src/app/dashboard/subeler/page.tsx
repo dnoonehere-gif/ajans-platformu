@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { MapPin, Phone, Plus, Pencil, Trash2, Loader2, Check, X, Users, Building2 } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
+import { EmployeeManager } from "@/components/dashboard/employee-manager";
 import { useLang } from "@/components/language-provider";
 import { PageLoading } from "@/components/ui/page-loading";
 
@@ -95,13 +96,19 @@ export default function SubelerPage() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const subeleriYukle = useCallback(async () => {
+    if (!activeBrand) return;
+    const r = await fetch(`/api/brand/${activeBrand.id}/branches`);
+    const d = await r.json();
+    setBranches(d.branches ?? []);
+    setLoading(false);
+  }, [activeBrand?.id]);
+
   useEffect(() => {
     if (!activeBrand) return;
     setLoading(true);
-    fetch(`/api/brand/${activeBrand.id}/branches`)
-      .then((r) => r.json())
-      .then((d) => { setBranches(d.branches ?? []); setLoading(false); });
-  }, [activeBrand?.id]);
+    void subeleriYukle();
+  }, [activeBrand?.id, subeleriYukle]);
 
   async function addBranch(data: Partial<Branch>) {
     if (!activeBrand) return;
@@ -242,6 +249,14 @@ export default function SubelerPage() {
       )}
 
       {/* Özet */}
+      {activeBrand && (
+        <EmployeeManager
+          brandId={activeBrand.id}
+          branches={branches.map((b) => ({ id: b.id, name: b.name }))}
+          onChange={subeleriYukle}
+        />
+      )}
+
       {branches.length > 0 && (
         <div className="mt-6 glass rounded-2xl p-5">
           <div className="flex flex-wrap gap-6">
