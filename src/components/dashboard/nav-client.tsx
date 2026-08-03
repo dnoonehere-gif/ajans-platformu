@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Globe, Bot, Star, Sparkles, QrCode,
   Users, Settings, ChevronRight, Building2, MapPin, CreditCard,
   UtensilsCrossed, Lock, Crown, Layers, FileBarChart, Send,
-  Search, Mail, UserPlus, Receipt,
+  Search, Mail, UserPlus, Receipt, CalendarDays,
 } from "lucide-react";
 import { useBrand } from "./brand-provider";
 import { useLang } from "@/components/language-provider";
@@ -71,6 +71,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/dashboard/reviews", label: "Yorum Analizi", key: "reviewAnalysis", icon: Star, planKey: "reviews", accent: "#facc15" },
       { href: "/dashboard/qr", label: "QR Geri Bildirim", key: "qrFeedback", icon: QrCode, accent: "#fb923c" },
       { href: "/dashboard/crm", label: "CRM & Pipeline", key: "crm", icon: UserPlus, accent: "#a78bfa" },
+      { href: "/dashboard/rezervasyonlar", label: "Rezervasyonlar", key: "rezervasyonlar", icon: CalendarDays, accent: "#22d3ee" },
     ],
   },
   {

@@ -30,13 +30,24 @@ export async function POST(req: NextRequest) {
 
     const { brandId, date, ...data } = parsed.data;
 
-    const chatbot = await prisma.chatbot.findFirst({
-      where: { brandId, isActive: true, reservationEnabled: true },
-    });
-    if (!chatbot) return NextResponse.json({ error: "Rezervasyon bu marka için aktif değil" }, { status: 403 });
+    // Rezervasyon iki kanaldan gelebilir: chatbot ve web sitesi. Önceden
+    // yalnızca chatbot koşulu aranıyordu, bu yüzden sitedeki rezervasyon
+    // formu chatbot kapalıyken çalışmıyordu.
+    const [chatbot, website] = await Promise.all([
+      prisma.chatbot.findFirst({ where: { brandId, isActive: true, reservationEnabled: true } }),
+      prisma.website.findFirst({ where: { brandId, isPublished: true }, select: { id: true } }),
+    ]);
+    if (!chatbot && !website) {
+      return NextResponse.json({ error: "Rezervasyon bu marka için aktif değil" }, { status: 403 });
+    }
 
     const reservation = await prisma.reservation.create({
-      data: { brandId, date: new Date(date), source: "chatbot", ...data },
+      data: {
+        brandId,
+        date: new Date(date),
+        source: parsed.data.conversationId ? "chatbot" : "website",
+        ...data,
+      },
     });
 
     notifyBrandOwner(brandId, {
