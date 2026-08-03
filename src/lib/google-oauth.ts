@@ -126,3 +126,47 @@ const STAR_MAP: Record<string, number> = {
 export function starToNumber(s: string): number {
   return STAR_MAP[s] ?? 0;
 }
+
+/**
+ * Yorum yanıtını Google'a YAZAR (var olan yanıtı da günceller).
+ *
+ * `business.manage` yetkisi bağlanma sırasında zaten isteniyor, bu yüzden
+ * ek bir başvuru gerekmez. Aynı uç hem yeni yanıt hem düzeltme için çalışır;
+ * Google tek bir işletme yanıtı tutar.
+ *
+ * @param locationResourceName örn. "accounts/123/locations/456"
+ * @param reviewId Google'ın yorum kimliği (Review.externalId)
+ */
+export async function replyToGoogleReview(
+  accessToken: string,
+  locationResourceName: string,
+  reviewId: string,
+  comment: string
+): Promise<void> {
+  const url = `${GOOGLE_REVIEWS_URL}/${locationResourceName}/reviews/${reviewId}/reply`;
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ comment }),
+  });
+  if (!res.ok) {
+    throw new Error(`Yanıt gönderilemedi: ${await res.text()}`);
+  }
+}
+
+/** İşletme yanıtını Google'dan siler. */
+export async function deleteGoogleReviewReply(
+  accessToken: string,
+  locationResourceName: string,
+  reviewId: string
+): Promise<void> {
+  const url = `${GOOGLE_REVIEWS_URL}/${locationResourceName}/reviews/${reviewId}/reply`;
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) throw new Error(`Yanıt silinemedi: ${await res.text()}`);
+}

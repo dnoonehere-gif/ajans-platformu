@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import {
   Star, RefreshCw, Loader2, Unlink, CheckCircle2,
   AlertCircle, MapPin, BarChart3, MessageSquare, Search, X,
-  Sparkles, Copy, Check,
+  Sparkles, Copy, Check, Send,
 } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { useLang } from "@/components/language-provider";
@@ -35,7 +35,9 @@ const L = {
     today: "Bugün", yesterday: "Dün", daysAgo: "gün önce", monthsAgo: "ay önce", yearsAgo: "yıl önce",
     aiReply: "AI Yanıt Önerisi", writing: "Yazılıyor...", replySuggestion: "Yanıt Önerisi",
     regenerate: "Yeniden oluştur", copy: "Kopyala",
-    replyHint: "Kopyalayıp Google Business profilinizden yanıt olarak yapıştırabilirsiniz.",
+    send: "Google'a Gönder", sending: "Gönderiliyor...", sent: "Google'da yayında",
+    sendFail: "Google'a gönderilemedi",
+    replyHint: "Metni düzenleyebilir, sonra Google'a gönderebilirsiniz.",
     replyFail: "Öneri oluşturulamadı", connFail: "Bağlantı hatası",
     oauthTitle: "Business Account Bağla",
     oauthDesc: "Google hesabınızla giriş yapın, tüm yorumlarınızı yönetin ve yanıtlayın.",
@@ -67,6 +69,8 @@ const L = {
     today: "Today", yesterday: "Yesterday", daysAgo: "days ago", monthsAgo: "months ago", yearsAgo: "years ago",
     aiReply: "AI Reply Suggestion", writing: "Writing...", replySuggestion: "Reply Suggestion",
     regenerate: "Regenerate", copy: "Copy",
+    send: "Send to Google", sending: "Sending...", sent: "Published on Google",
+    sendFail: "Could not send to Google",
     replyHint: "Copy it and paste as a reply from your Google Business profile.",
     replyFail: "Could not generate a suggestion", connFail: "Connection error",
     oauthTitle: "Connect Business Account",
@@ -93,6 +97,9 @@ interface Review {
   rating: number;
   text: string | null;
   createdAt: string;
+  /** Kaydedilmiş işletme yanıtı ve Google'da yayına girdiği an */
+  reply?: string | null;
+  replyPublishedAt?: string | null;
 }
 
 interface PlaceResult {
@@ -249,9 +256,11 @@ function PlacesSearch({ brandId, onSynced }: { brandId: string; onSynced: () => 
 function ReviewCard({ review, brandId }: { review: Review; brandId: string }) {
   const { lang } = useLang();
   const sL = L[lang];
-  const [reply, setReply] = useState<string | null>(null);
+  const [reply, setReply] = useState<string | null>(review.reply ?? null);
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [published, setPublished] = useState(Boolean(review.replyPublishedAt));
   const [error, setError] = useState("");
 
   async function generateReply() {
@@ -270,6 +279,27 @@ function ReviewCard({ review, brandId }: { review: Review; brandId: string }) {
       setError(sL.connFail);
     }
     setGenerating(false);
+  }
+
+  // Yanıtı doğrudan Google'a yazar. business.manage yetkisi bağlanma
+  // sırasında alındığı için ek bir onay gerekmiyor.
+  async function sendToGoogle() {
+    if (!reply) return;
+    setSending(true);
+    setError("");
+    try {
+      const res = await fetch("/api/google/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brandId, reviewId: review.id, comment: reply, publish: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) setError(data.error ?? sL.sendFail);
+      else setPublished(true);
+    } catch {
+      setError(sL.connFail);
+    }
+    setSending(false);
   }
 
   function copyReply() {
@@ -336,7 +366,26 @@ function ReviewCard({ review, brandId }: { review: Review; brandId: string }) {
                 </button>
               </div>
             </div>
-            <p className="text-sm leading-relaxed">{reply}</p>
+            <textarea
+              value={reply}
+              onChange={(e) => { setReply(e.target.value); setPublished(false); }}
+              rows={3}
+              className="w-full resize-y rounded-xl border border-[hsl(var(--border))] bg-transparent p-3 text-sm leading-relaxed outline-none focus:border-[hsl(var(--primary))]"
+            />
+            {published ? (
+              <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-green-500">
+                <Check className="h-3.5 w-3.5" /> {sL.sent}
+              </p>
+            ) : (
+              <button
+                onClick={sendToGoogle}
+                disabled={sending}
+                className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-[hsl(var(--primary))] px-3.5 py-2 text-xs font-semibold text-[hsl(var(--primary-foreground))] transition hover:opacity-90 disabled:opacity-60"
+              >
+                {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                {sending ? sL.sending : sL.send}
+              </button>
+            )}
             <p className="mt-2 text-[10px] text-[hsl(var(--muted-foreground))]">
               {sL.replyHint}
             </p>

@@ -553,6 +553,10 @@ model Review {
   topics       String[]     // AI tarafından çıkarılan konular
   aiSummary    String?      // AI özeti
   externalId   String?      // Kaynak sistemdeki kimlik
+  // İşletme yanıtı. AI taslağı burada saklanır; Google'a gönderildiğinde
+  // replyPublishedAt dolar. Böylece "hazırlandı ama gönderilmedi" ayırt edilir.
+  reply            String?
+  replyPublishedAt DateTime?
   qrCodeId     String?
   createdAt    DateTime     @default(now())
 
