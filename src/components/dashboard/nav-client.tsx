@@ -128,13 +128,13 @@ export function NavClient({ rail = false }: { rail?: boolean } = {}) {
           key={item.href}
           href="/dashboard/abonelik"
           title={`${label(item)} — Planınıza dahil değil`}
-          className={`group/i flex items-center gap-3 rounded-2xl py-2.5 text-sm font-semibold text-[hsl(var(--muted-foreground)/0.5)] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--muted-foreground))] ${rail ? "w-[232px] px-[22px] group-hover:w-auto group-hover:px-3" : "px-3"}`}
+          className={`group/i flex items-center gap-0 group-hover:gap-3 rounded-2xl py-2.5 text-sm font-semibold text-[hsl(var(--muted-foreground)/0.5)] transition hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--muted-foreground))] ${rail ? "w-full justify-center px-0 group-hover:justify-start group-hover:px-3" : "px-3"}`}
         >
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--accent)/0.6)]">
             <item.icon className="h-4 w-4 opacity-50" />
           </span>
-          <span className={`flex-1 whitespace-nowrap transition-opacity duration-200 ${rail ? "opacity-0 group-hover:opacity-100" : ""}`}>{label(item)}</span>
-          <Lock className={`h-3 w-3 shrink-0 transition-opacity duration-200 ${rail ? "opacity-0 group-hover:opacity-60" : "opacity-60"}`} />
+          <span className={`whitespace-nowrap transition-all duration-200 ${rail ? "w-0 overflow-hidden opacity-0 group-hover:w-auto group-hover:flex-1 group-hover:opacity-100" : "flex-1"}`}>{label(item)}</span>
+          <Lock className={`h-3 shrink-0 transition-all duration-200 ${rail ? "w-0 opacity-0 group-hover:w-3 group-hover:opacity-60" : "w-3 opacity-60"}`} />
         </Link>
       );
     }
@@ -145,8 +145,8 @@ export function NavClient({ rail = false }: { rail?: boolean } = {}) {
         href={item.href}
         ref={isActive ? activeRef : undefined}
         title={rail ? label(item) : undefined}
-        className={`group/i flex items-center gap-3 rounded-2xl py-2.5 text-sm font-semibold transition ${
-          rail ? "px-[22px] group-hover:px-3" : "px-3"
+        className={`group/i flex items-center gap-0 group-hover:gap-3 rounded-2xl py-2.5 text-sm font-semibold transition ${
+          rail ? "w-full justify-center px-0 group-hover:justify-start group-hover:px-3" : "px-3"
         } ${
           isActive
             ? "bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-[0_8px_20px_-8px_hsl(var(--primary)/0.8)]"
@@ -164,8 +164,8 @@ export function NavClient({ rail = false }: { rail?: boolean } = {}) {
         >
           <item.icon className="h-4 w-4" />
         </span>
-        <span className={`flex-1 whitespace-nowrap transition-opacity duration-200 ${rail ? "opacity-0 group-hover:opacity-100" : ""}`}>{label(item)}</span>
-        <ChevronRight className={`h-3 w-3 shrink-0 transition ${rail ? "opacity-0 group-hover:opacity-70" : isActive ? "opacity-70" : "opacity-0 group-hover/i:opacity-40"}`} />
+        <span className={`whitespace-nowrap transition-all duration-200 ${rail ? "w-0 overflow-hidden opacity-0 group-hover:w-auto group-hover:flex-1 group-hover:opacity-100" : "flex-1"}`}>{label(item)}</span>
+        <ChevronRight className={`h-3 shrink-0 transition-all ${rail ? "w-0 opacity-0 group-hover:w-3 group-hover:opacity-70" : `w-3 ${isActive ? "opacity-70" : "opacity-0 group-hover/i:opacity-40"}`}`} />
       </Link>
     );
   }
@@ -175,7 +175,7 @@ export function NavClient({ rail = false }: { rail?: boolean } = {}) {
       {NAV_GROUPS.map((group, gi) => (
         <div key={gi} className={group.label ? "mt-4 first:mt-0" : ""}>
           {group.label && (
-            <p className={`mb-1 whitespace-nowrap px-3 text-[10px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground)/0.6)] transition-opacity ${rail ? "opacity-0 group-hover:opacity-100" : ""}`}>
+            <p className={`whitespace-nowrap px-3 text-[10px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground)/0.6)] transition-all ${rail ? "mb-0 h-0 overflow-hidden opacity-0 group-hover:mb-1 group-hover:h-auto group-hover:opacity-100" : "mb-1"}`}>
               {group.key ? t(`sidebar.${group.key}`) : group.label}
             </p>
           )}

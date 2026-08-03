@@ -56,13 +56,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
           className="group fixed inset-y-0 left-0 z-40 hidden w-[76px] flex-col overflow-hidden border-r border-[hsl(var(--border)/0.5)] bg-[hsl(var(--card))] transition-[width] duration-300 ease-out hover:w-64 hover:shadow-[0_0_60px_-12px_hsl(var(--foreground)/0.25)] lg:flex">
 
           {/* Logo */}
-          <div className="flex h-16 w-[232px] shrink-0 items-center overflow-hidden border-b border-[hsl(var(--border)/0.5)] px-[21px] [&_p]:opacity-0 [&_p]:transition-opacity group-hover:w-auto group-hover:px-5 group-hover:[&_p]:opacity-100">
+          <div className="flex h-16 shrink-0 items-center justify-center overflow-hidden border-b border-[hsl(var(--border)/0.5)] px-0 transition-all group-hover:justify-start group-hover:px-5 [&_p]:w-0 [&_p]:overflow-hidden [&_p]:opacity-0 [&_p]:transition-all group-hover:[&_p]:w-auto group-hover:[&_p]:opacity-100">
             <WhiteLabelLogo />
           </div>
 
           {/* Marka seçici */}
           {/* overflow-hidden YOK: açılır liste (Yeni Marka Ekle) buradan taşar */}
-          <div className="relative z-50 w-[232px] shrink-0 border-b border-[hsl(var(--border))] p-2 group-hover:w-auto group-hover:p-3">
+          <div className="relative z-50 shrink-0 border-b border-[hsl(var(--border))] p-2 transition-all group-hover:p-3">
             <BrandSwitcher rail />
           </div>
 
@@ -72,16 +72,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
           {/* Tema seçici Ayarlar > Görünüm sekmesine taşındı */}
 
           {/* Kullanıcı */}
-          <div className="border-t border-[hsl(var(--border))] p-3">
-            <div className="flex items-center gap-3 rounded-2xl bg-[hsl(var(--accent)/0.6)] px-2 py-2.5 group-hover:px-3">
+          <div className="border-t border-[hsl(var(--border))] p-2 transition-all group-hover:p-3">
+            <div className="flex items-center justify-center gap-0 rounded-2xl bg-[hsl(var(--accent)/0.6)] px-0 py-2.5 transition-all group-hover:justify-start group-hover:gap-3 group-hover:px-3">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary)/0.2)] text-xs font-bold text-[hsl(var(--primary))]">
                 {initials}
               </div>
-              <div className="min-w-0 flex-1 overflow-hidden whitespace-nowrap opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              <div className="w-0 min-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-200 group-hover:w-auto group-hover:flex-1 group-hover:opacity-100">
                 <p className="truncate text-xs font-semibold"><UserName name={user.name} /></p>
                 <p className="truncate text-[10px] text-[hsl(var(--muted-foreground))]">{user.email}</p>
               </div>
-              <form className="shrink-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100" action={async () => { "use server"; await signOut({ redirectTo: `${process.env.NEXTAUTH_URL ?? ""}/giris` }); }}>
+              <form className="w-0 shrink-0 overflow-hidden opacity-0 transition-all duration-200 group-hover:w-auto group-hover:opacity-100" action={async () => { "use server"; await signOut({ redirectTo: `${process.env.NEXTAUTH_URL ?? ""}/giris` }); }}>
                 <LogoutButton />
               </form>
             </div>
