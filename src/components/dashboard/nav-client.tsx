@@ -133,8 +133,8 @@ export function NavClient({ rail = false }: { rail?: boolean } = {}) {
           <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--accent)/0.6)]">
             <item.icon className="h-4 w-4 opacity-50" />
           </span>
-          <span className="flex-1 whitespace-nowrap">{label(item)}</span>
-          <Lock className="h-3 w-3 shrink-0 opacity-60" />
+          <span className={`flex-1 whitespace-nowrap transition-opacity duration-200 ${rail ? "opacity-0 group-hover:opacity-100" : ""}`}>{label(item)}</span>
+          <Lock className={`h-3 w-3 shrink-0 transition-opacity duration-200 ${rail ? "opacity-0 group-hover:opacity-60" : "opacity-60"}`} />
         </Link>
       );
     }
@@ -164,8 +164,8 @@ export function NavClient({ rail = false }: { rail?: boolean } = {}) {
         >
           <item.icon className="h-4 w-4" />
         </span>
-        <span className="flex-1 whitespace-nowrap">{label(item)}</span>
-        <ChevronRight className={`h-3 w-3 shrink-0 transition ${isActive ? "opacity-70" : "opacity-0 group-hover/i:opacity-40"}`} />
+        <span className={`flex-1 whitespace-nowrap transition-opacity duration-200 ${rail ? "opacity-0 group-hover:opacity-100" : ""}`}>{label(item)}</span>
+        <ChevronRight className={`h-3 w-3 shrink-0 transition ${rail ? "opacity-0 group-hover:opacity-70" : isActive ? "opacity-70" : "opacity-0 group-hover/i:opacity-40"}`} />
       </Link>
     );
   }

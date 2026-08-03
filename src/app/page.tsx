@@ -162,6 +162,46 @@ const L = {
 
 /* ── Dekoratif küre — referans tasarımdaki 3B küreye karşılık gelen,
       tamamen CSS/SVG ile üretilmiş katmanlı orb (harici görsel yok) ── */
+/**
+ * Sosyal kanıt avatarları. Düz renk daireler yerine gerçek bir işletme
+ * listesi gibi dursun diye üç farklı sektörden temsili marka işareti:
+ * kafe (fincan), kuaför (makas), butik (poşet). Hepsi satır içi SVG —
+ * dış istek yok, koyu/açık temada aynı görünür.
+ */
+const BIZ_LOGOS = [
+  {
+    ad: "Kahve Durağı",
+    bg: "linear-gradient(135deg,#b45309,#78350f)",
+    mark: (
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z" />
+        <path d="M16 9h2a2.5 2.5 0 0 1 0 5h-2" />
+      </svg>
+    ),
+  },
+  {
+    ad: "Studio Kuaför",
+    bg: "linear-gradient(135deg,#0ea5e9,#1e3a8a)",
+    mark: (
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="6" cy="18" r="2.6" />
+        <circle cx="18" cy="18" r="2.6" />
+        <path d="M7.8 16.2 19 4M16.2 16.2 5 4" />
+      </svg>
+    ),
+  },
+  {
+    ad: "Moda Butik",
+    bg: "linear-gradient(135deg,#ec4899,#7e22ce)",
+    mark: (
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 8h14l-1.2 11.5a1 1 0 0 1-1 .9H7.2a1 1 0 0 1-1-.9L5 8Z" />
+        <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+      </svg>
+    ),
+  },
+] as const;
+
 function Orb({ className = "" }: { className?: string }) {
   return (
     <div className={`pointer-events-none relative ${className}`} aria-hidden>
@@ -353,8 +393,15 @@ export default function AnaSayfa() {
             <div className="pointer-events-none absolute inset-x-0 top-[16%] hidden items-start justify-between px-8 lg:flex xl:px-12">
               <div className="flex items-center gap-3">
                 <div className="flex -space-x-2">
-                  {["#8b5cf6", "#6366f1", "#a855f7"].map((c) => (
-                    <span key={c} className="h-8 w-8 rounded-full border-2 border-[var(--mk-surface)]" style={{ background: c }} />
+                  {BIZ_LOGOS.map((b) => (
+                    <span
+                      key={b.ad}
+                      title={b.ad}
+                      className="grid h-8 w-8 place-items-center overflow-hidden rounded-full border-2 border-[var(--mk-surface)] shadow-sm"
+                      style={{ background: b.bg }}
+                    >
+                      {b.mark}
+                    </span>
                   ))}
                 </div>
                 <div>
@@ -363,7 +410,17 @@ export default function AnaSayfa() {
                 </div>
               </div>
 
-
+              {/* Sağ numaralı indeks — deneme koşulları */}
+              <ul className="space-y-2.5 text-right">
+                {s.checks.map((c, i) => (
+                  <li key={c} className="flex items-baseline justify-end gap-3">
+                    <span className="text-[13px] font-medium text-[var(--mk-ink)]">{c}</span>
+                    <span className="w-8 shrink-0 text-[11px] font-semibold tabular-nums text-[var(--mk-ink-soft)]">
+                      /{String(i + 1).padStart(2, "0")}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
 
             {/* Alt sıra: sol açıklama / sağ dairesel CTA — küreyle aynı hizada */}
