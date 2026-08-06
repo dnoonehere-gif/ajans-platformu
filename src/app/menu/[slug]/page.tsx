@@ -12,7 +12,8 @@ interface MenuItem {
 }
 interface MenuCategory { id: string; name: string; emoji?: string | null; description?: string | null; items: MenuItem[] }
 interface Menu { title: string; description?: string | null; currency: string; theme: string; orderingEnabled?: boolean; categories: MenuCategory[] }
-interface Brand { id: string; name: string; logoUrl?: string | null; primaryColor?: string | null; phone?: string | null; address?: string | null }
+interface Brand { id: string; name: string; logoUrl?: string | null; primaryColor?: string | null; phone?: string | null; address?: string | null;
+  whiteLabel?: { hideNovelya: boolean; footerText?: string | null } | null }
 
 export default function PublicMenuPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -206,7 +207,15 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
               <MapPin className="h-4 w-4 mt-0.5 shrink-0" /> {brand.address}
             </div>
           )}
-          <p className="text-center text-xs text-gray-300 pt-4">Novelya ile güçlendirilmiştir</p>
+          {/* White label: ajans paketinde Novelya markası kalkar, isterse
+              kendi alt yazısını koyar. */}
+          {brand.whiteLabel?.hideNovelya ? (
+            brand.whiteLabel.footerText && (
+              <p className="pt-4 text-center text-xs" style={{ color: tema.inkSoft }}>{brand.whiteLabel.footerText}</p>
+            )
+          ) : (
+            <p className="pt-4 text-center text-xs" style={{ color: tema.inkSoft, opacity: .6 }}>Novelya ile güçlendirilmiştir</p>
+          )}
         </div>
       </div>
 

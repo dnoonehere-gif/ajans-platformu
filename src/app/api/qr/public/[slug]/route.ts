@@ -8,7 +8,11 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ slug: 
     where: { slug, isActive: true },
     include: {
       brand: {
-        select: { name: true, logoUrl: true, primaryColor: true, sector: true },
+        select: {
+          name: true, logoUrl: true, primaryColor: true, sector: true,
+          // "Powered by" yazısı white label ayarına göre gizlenir.
+          whiteLabel: { select: { hideNovelya: true, footerText: true } },
+        },
       },
     },
   });

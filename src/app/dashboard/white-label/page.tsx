@@ -16,6 +16,10 @@ const L = {
     colors: "Renkler", primary: "Ana Renk", accent: "Vurgu Rengi",
     domainAdv: "Domain & Gelişmiş", customDomain: "Özel Domain",
     cnameHint: "CNAME kaydını novelya.com.tr'ye yönlendirin",
+    dnsTitle: "Alan adınızı nasıl bağlarsınız?",
+    dnsStep1: "1. Alan adınızın kayıtlı olduğu panelde (GoDaddy, Cloudflare, Natro vb.) DNS ayarlarına şu kaydı ekleyin:",
+    dnsStep2: "2. Yukarıdaki kutuya alan adınızı yazıp kaydedin.",
+    dnsStep3: "3. DNS yayılması 5 dakika ile 24 saat sürebilir. Bu süre bittiğinde siteniz kendi alan adınızdan açılır.",
     customCss: "Özel CSS",
     hideNovelya: 'Novelya markasını gizle (footer "Powered by" kaldır)',
     saving: "Kaydediliyor...", save: "Kaydet", savedMsg: "Kaydedildi!",
@@ -30,6 +34,10 @@ const L = {
     colors: "Colors", primary: "Primary Color", accent: "Accent Color",
     domainAdv: "Domain & Advanced", customDomain: "Custom Domain",
     cnameHint: "Point a CNAME record to novelya.com.tr",
+    dnsTitle: "How to connect your domain",
+    dnsStep1: "1. In your domain registrar's DNS settings (GoDaddy, Cloudflare, etc.), add this record:",
+    dnsStep2: "2. Type your domain in the field above and save.",
+    dnsStep3: "3. DNS propagation takes 5 minutes to 24 hours. After that your site loads on your own domain.",
     customCss: "Custom CSS",
     hideNovelya: 'Hide Novelya branding (remove "Powered by" footer)',
     saving: "Saving...", save: "Save", savedMsg: "Saved!",
@@ -228,7 +236,20 @@ export default function WhiteLabelPage() {
             <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.customDomain}</label>
             <input className={inp} placeholder="app.ajansiniz.com" value={data.customDomain}
               onChange={(e) => setData((d) => ({ ...d, customDomain: e.target.value }))} />
-            <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{sL.cnameHint}</p>
+            {/* Alan adı bağlama tek satırlık ipucuyla anlaşılmıyordu; adımlar
+                açıkça yazılıyor ve neyin bizden, neyin müşteriden beklendiği
+                ayrılıyor. */}
+            <div className="mt-2 space-y-2 rounded-xl bg-[hsl(var(--muted)/0.5)] p-3 text-xs leading-relaxed text-[hsl(var(--muted-foreground))]">
+              <p className="font-semibold text-[hsl(var(--foreground))]">{sL.dnsTitle}</p>
+              <p>{sL.dnsStep1}</p>
+              <div className="rounded-lg bg-[hsl(var(--background))] p-2 font-mono text-[11px] text-[hsl(var(--foreground))]">
+                <div>Type: CNAME</div>
+                <div>Name: www &nbsp;(veya @)</div>
+                <div>Target: novelya.com.tr</div>
+              </div>
+              <p>{sL.dnsStep2}</p>
+              <p>{sL.dnsStep3}</p>
+            </div>
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.customCss}</label>

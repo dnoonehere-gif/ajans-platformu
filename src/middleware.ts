@@ -36,6 +36,25 @@ export async function middleware(req: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
+  // ── Müşterinin kendi alan adı ────────────────────────────────────────
+  // Middleware kenar çalışma zamanında olduğu için veritabanına bakamaz;
+  // bu yüzden alan adı çözümü sayfaya devredilir. Kendi alan adımız,
+  // localhost ve Railway iç adresleri hariç her konak buraya düşer.
+  const konak = hostname.split(":")[0];
+  const bizeAit =
+    konak === baseDomain ||
+    konak.endsWith(`.${baseDomain}`) ||
+    konak === "localhost" ||
+    konak.startsWith("127.") ||
+    konak.endsWith(".railway.app") ||
+    konak.endsWith(".up.railway.app");
+
+  if (!bizeAit && konak.includes(".")) {
+    const url = req.nextUrl.clone();
+    url.pathname = `/site/alan-adi/${konak}${req.nextUrl.pathname === "/" ? "" : req.nextUrl.pathname}`;
+    return NextResponse.rewrite(url);
+  }
+
   const { pathname } = req.nextUrl;
 
   // ── Global hız sınırı ────────────────────────────────────────────────

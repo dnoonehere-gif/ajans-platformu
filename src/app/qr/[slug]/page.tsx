@@ -8,6 +8,7 @@ interface Brand {
   logoUrl: string | null;
   primaryColor: string | null;
   sector: string | null;
+  whiteLabel?: { hideNovelya: boolean; footerText?: string | null } | null;
 }
 
 const STAR_LABELS = ["", "Çok Kötü", "Kötü", "Orta", "İyi", "Mükemmel"];
@@ -206,9 +207,17 @@ export default function QrFeedbackPage({ params }: { params: Promise<{ slug: str
           </button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-[hsl(var(--muted-foreground))]">
-          Novelya ile güçlendirilmiştir
-        </p>
+        {brand.whiteLabel?.hideNovelya ? (
+          brand.whiteLabel.footerText && (
+            <p className="mt-6 text-center text-xs text-[hsl(var(--muted-foreground))]">
+              {brand.whiteLabel.footerText}
+            </p>
+          )
+        ) : (
+          <p className="mt-6 text-center text-xs text-[hsl(var(--muted-foreground))]">
+            Novelya ile güçlendirilmiştir
+          </p>
+        )}
       </div>
     </div>
   );

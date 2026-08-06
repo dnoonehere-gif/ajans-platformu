@@ -8,6 +8,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
     where: { slug },
     select: {
       id: true, name: true, logoUrl: true, primaryColor: true, phone: true, address: true,
+      // "Powered by" yazısı white label ayarına göre gizlenir. Ayar
+      // kaydediliyordu ama hiçbir herkese açık sayfa okumuyordu.
+      whiteLabel: { select: { hideNovelya: true, footerText: true } },
       menu: {
         include: {
           categories: {
