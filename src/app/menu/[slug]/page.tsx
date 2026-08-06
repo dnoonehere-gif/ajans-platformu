@@ -11,7 +11,7 @@ interface MenuItem {
   isPopular: boolean; allergens: string[];
 }
 interface MenuCategory { id: string; name: string; emoji?: string | null; description?: string | null; items: MenuItem[] }
-interface Menu { title: string; description?: string | null; currency: string; theme: string; orderingEnabled?: boolean; categories: MenuCategory[] }
+interface Menu { title: string; description?: string | null; currency: string; theme: string; orderingEnabled?: boolean; accentColor?: string | null; categories: MenuCategory[] }
 interface Brand { id: string; name: string; logoUrl?: string | null; primaryColor?: string | null; phone?: string | null; address?: string | null;
   whiteLabel?: { hideNovelya: boolean; footerText?: string | null } | null }
 
@@ -47,7 +47,8 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
     </div>
   );
 
-  const color = brand.primaryColor ?? "#6366f1";
+  // Menüye özel renk seçilmişse o kazanır; yoksa markanın ana rengi.
+  const color = menu.accentColor || brand.primaryColor || "#6366f1";
   // Tema veritabanında tutuluyordu ama okunmuyordu; üç seçenek de aynı sayfayı
   // veriyordu. Artık zemin, tipografi, köşe ve kart kurgusu temadan geliyor.
   const tema = getMenuTheme(menu.theme);

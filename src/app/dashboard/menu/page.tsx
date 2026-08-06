@@ -19,6 +19,7 @@ const L = {
     settings: "Menü Ayarları",
     menuTitle: "Menü Başlığı", desc: "Açıklama", currency: "Para Birimi", theme: "Tema",
     themes: { modern: "Modern", classic: "Klasik", minimal: "Minimal" },
+    menuColor: "Menü Rengi", pickColor: "Özel renk", useBrandColor: "Marka rengini kullan",
     qrTitle: "QR Kod & Link", qrDownload: "QR İndir", viewMenu: "Menüyü Görüntüle",
     newCategory: "Yeni Kategori",
     catNamePh: "Kategori adı (örn: Ana Yemekler)", catDescPh: "Açıklama (opsiyonel)",
@@ -45,6 +46,7 @@ const L = {
     settings: "Menu Settings",
     menuTitle: "Menu Title", desc: "Description", currency: "Currency", theme: "Theme",
     themes: { modern: "Modern", classic: "Classic", minimal: "Minimal" },
+    menuColor: "Menu Color", pickColor: "Custom", useBrandColor: "Use brand color",
     qrTitle: "QR Code & Link", qrDownload: "Download QR", viewMenu: "View Menu",
     newCategory: "New Category",
     catNamePh: "Category name (e.g. Main Courses)", catDescPh: "Description (optional)",
@@ -72,13 +74,19 @@ interface MenuItem {
 interface MenuCategory { id: string; name: string; emoji?: string | null; description?: string | null; items: MenuItem[] }
 interface Menu {
   id: string; title: string; description?: string | null; currency: string;
-  isPublished: boolean; theme: string; orderingEnabled?: boolean; categories: MenuCategory[];
+  isPublished: boolean; theme: string; orderingEnabled?: boolean; accentColor?: string | null; categories: MenuCategory[];
 }
 
 const THEMES = [
   { id: "modern", label: "Modern" },
   { id: "classic", label: "Klasik" },
   { id: "minimal", label: "Minimal" },
+];
+
+/** Menü için hazır renkler. Sektöre göre en çok kullanılanlar. */
+const MENU_COLORS = [
+  "#e11d48", "#ea580c", "#ca8a04", "#16a34a",
+  "#0891b2", "#2563eb", "#7c3aed", "#111827",
 ];
 const ALLERGENS = ["Gluten", "Süt", "Yumurta", "Fıstık", "Deniz Ürünleri", "Susam", "Soya", "Vegan", "Vejetaryen"];
 
@@ -312,6 +320,31 @@ export default function MenuPage() {
                     onChange={e => saveSettings({ theme: e.target.value })}>
                     {THEMES.map(t => <option key={t.id} value={t.id}>{sL.themes[t.id as keyof typeof sL.themes] ?? t.label}</option>)}
                   </select>
+                </div>
+              </div>
+
+              {/* Menü rengi — boş bırakılırsa marka rengi kullanılır. İşletme
+                  menüde farklı bir renk isteyebiliyor (mor marka, yeşil menü). */}
+              <div className="mt-4">
+                <label className="mb-1 block text-xs font-medium text-[hsl(var(--muted-foreground))]">{sL.menuColor}</label>
+                <div className="flex flex-wrap items-center gap-2">
+                  {MENU_COLORS.map(c => (
+                    <button key={c} onClick={() => saveSettings({ accentColor: c })} title={c}
+                      className={`h-8 w-8 rounded-lg border-2 transition ${menu?.accentColor === c ? "scale-110 border-[hsl(var(--foreground))]" : "border-transparent"}`}
+                      style={{ background: c }} />
+                  ))}
+                  <label className="flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] px-2.5 text-xs">
+                    {sL.pickColor}
+                    <input type="color" value={menu?.accentColor ?? "#6366f1"}
+                      onChange={e => saveSettings({ accentColor: e.target.value })}
+                      className="h-0 w-0 opacity-0" />
+                  </label>
+                  {menu?.accentColor && (
+                    <button onClick={() => saveSettings({ accentColor: "" })}
+                      className="h-8 rounded-lg border border-[hsl(var(--border))] px-2.5 text-xs transition hover:bg-[hsl(var(--accent))]">
+                      {sL.useBrandColor}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

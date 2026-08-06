@@ -916,6 +916,9 @@ model Menu {
   currency    String   @default("₺")
   isPublished Boolean  @default(false)
   theme       String   @default("modern") // modern | classic | minimal
+  /// Menüye özel vurgu rengi. Boşsa markanın ana rengi kullanılır —
+  /// işletme menüde farklı bir renk isteyebilir (ör. mor marka, yeşil menü).
+  accentColor String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

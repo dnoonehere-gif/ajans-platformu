@@ -28,6 +28,8 @@ const schema = z.object({
   theme: z.enum(["modern", "classic", "minimal"]).nullish(),
   /** Masadan sipariş açık mı */
   orderingEnabled: z.boolean().nullish(),
+  /** Menüye özel vurgu rengi; boş bırakılırsa marka rengi kullanılır */
+  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Geçerli bir renk kodu girin").nullish().or(z.literal("")),
 });
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ brandId: string }> }) {
