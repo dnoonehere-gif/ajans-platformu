@@ -2,6 +2,7 @@
 import { useState, useEffect, use } from "react";
 import Image from "next/image";
 import { useCart, CartBar } from "@/components/menu/order-cart";
+import { getMenuTheme, cardCss } from "@/components/menu/menu-themes";
 import { Search, Phone, MapPin, Star, Loader2, ChevronRight, Plus } from "lucide-react";
 
 interface MenuItem {
@@ -46,28 +47,34 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
   );
 
   const color = brand.primaryColor ?? "#6366f1";
+  // Tema veritabanında tutuluyordu ama okunmuyordu; üç seçenek de aynı sayfayı
+  // veriyordu. Artık zemin, tipografi, köşe ve kart kurgusu temadan geliyor.
+  const tema = getMenuTheme(menu.theme);
+  const kart = cardCss(tema);
+  const ustBantRengi = tema.headerFill === "accent" ? color : tema.surface;
+  const ustBantYazi = tema.headerFill === "accent" ? "#ffffff" : tema.ink;
   const filtered = search.trim()
     ? menu.categories.map(c => ({ ...c, items: c.items.filter(i => i.name.toLowerCase().includes(search.toLowerCase()) || i.description?.toLowerCase().includes(search.toLowerCase())) })).filter(c => c.items.length > 0)
     : menu.categories;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: tema.bg, color: tema.ink, fontFamily: tema.body }}>
 
       {/* Header */}
-      <div className="sticky top-0 z-30" style={{ background: color }}>
+      <div className="sticky top-0 z-30" style={{ background: ustBantRengi, borderBottom: tema.headerFill === "surface" ? `1px solid ${tema.ink}18` : undefined }}>
         <div className="mx-auto max-w-2xl px-4 py-4">
           <div className="flex items-center gap-3">
             {brand.logoUrl ? (
               <Image src={brand.logoUrl} alt={brand.name} width={44} height={44}
-                className="h-11 w-11 rounded-xl object-contain bg-white/20" unoptimized />
+                className="h-11 w-11 object-contain" style={{ borderRadius: tema.radius, background: tema.headerFill === "accent" ? "rgba(255,255,255,.2)" : `${color}18` }} unoptimized />
             ) : (
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 text-xl font-black text-white">
+              <div className="flex h-11 w-11 items-center justify-center text-xl font-black" style={{ borderRadius: tema.radius, background: tema.headerFill === "accent" ? "rgba(255,255,255,.2)" : color, color: "#fff" }}>
                 {brand.name.slice(0, 1)}
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-black text-white truncate">{brand.name}</h1>
-              <p className="text-xs text-white/70">{menu.title}</p>
+              <h1 className="truncate text-lg font-black" style={{ color: ustBantYazi, fontFamily: tema.display, letterSpacing: tema.tracking, textTransform: tema.upperHeadings ? "uppercase" : "none" }}>{brand.name}</h1>
+              <p className="text-xs" style={{ color: tema.headerFill === "accent" ? "rgba(255,255,255,.75)" : tema.inkSoft }}>{menu.title}</p>
             </div>
           </div>
 
@@ -78,21 +85,28 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Ürün ara..."
-              className="w-full rounded-xl bg-white/95 py-2.5 pl-9 pr-4 text-sm text-gray-800 placeholder:text-gray-400 outline-none"
+              className="w-full py-2.5 pl-9 pr-4 text-sm outline-none" style={{ borderRadius: tema.radius, background: tema.surface, color: tema.ink, border: tema.headerFill === "surface" ? `1px solid ${tema.ink}22` : "none" }}
             />
           </div>
         </div>
 
         {/* Kategori çubuğu */}
         {!search && (
-          <div className="overflow-x-auto scrollbar-hide bg-black/10">
+          <div className="overflow-x-auto scrollbar-hide" style={{ background: tema.headerFill === "accent" ? "rgba(0,0,0,.1)" : `${tema.ink}08` }}>
             <div className="flex gap-1 px-4 py-2 min-w-max">
               {menu.categories.map(c => (
                 <button key={c.id} onClick={() => {
                   setActiveCategory(c.id);
                   document.getElementById(`cat-${c.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition ${activeCategory === c.id ? "bg-white text-gray-900" : "text-white/80 hover:text-white"}`}
+                  className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 text-xs font-semibold transition"
+                  style={{
+                    borderRadius: tema.radius,
+                    background: activeCategory === c.id ? (tema.headerFill === "accent" ? "#fff" : color) : "transparent",
+                    color: activeCategory === c.id
+                      ? (tema.headerFill === "accent" ? tema.ink : "#fff")
+                      : (tema.headerFill === "accent" ? "rgba(255,255,255,.8)" : tema.inkSoft),
+                  }}
                 >
                   {c.emoji && <span>{c.emoji}</span>}
                   {c.name}
@@ -106,7 +120,7 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
       {/* İçerik */}
       <div className="mx-auto max-w-2xl px-4 py-6 space-y-8">
         {menu.description && (
-          <p className="text-center text-sm text-gray-500 italic">{menu.description}</p>
+          <p className="text-center text-sm italic" style={{ color: tema.inkSoft }}>{menu.description}</p>
         )}
 
         {filtered.map(category => (
@@ -114,14 +128,14 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
             <div className="mb-4 flex items-center gap-2">
               {category.emoji && <span className="text-2xl">{category.emoji}</span>}
               <div>
-                <h2 className="text-lg font-black text-gray-900">{category.name}</h2>
-                {category.description && <p className="text-xs text-gray-400">{category.description}</p>}
+                <h2 className="text-lg font-black" style={{ fontFamily: tema.display, letterSpacing: tema.tracking, textTransform: tema.upperHeadings ? "uppercase" : "none" }}>{category.name}</h2>
+                {category.description && <p className="text-xs" style={{ color: tema.inkSoft }}>{category.description}</p>}
               </div>
             </div>
 
             <div className="space-y-3">
               {category.items.map(item => (
-                <div key={item.id} className={`flex gap-3 rounded-2xl bg-white p-4 shadow-sm ${item.isAvailable === false ? "opacity-55" : ""}`}>
+                <div key={item.id} className={`flex gap-3 p-4 ${tema.imagePosition === "right" ? "flex-row-reverse" : ""} ${item.isAvailable === false ? "opacity-55" : ""}`} style={kart}>
                   {item.imageUrl && (
                     <Image src={item.imageUrl} alt={item.name} width={80} height={80}
                       className="h-20 w-20 shrink-0 rounded-xl object-cover" unoptimized />
@@ -129,7 +143,7 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <h3 className="font-bold text-gray-900">{item.name}</h3>
+                        <h3 className="font-bold" style={{ fontFamily: tema.display }}>{item.name}</h3>
                         {item.isAvailable === false && (
                           <span className="inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-[10px] font-bold text-gray-600">
                             Tükendi
@@ -148,7 +162,7 @@ export default function PublicMenuPage({ params }: { params: Promise<{ slug: str
                       )}
                     </div>
                     {item.description && (
-                      <p className="mt-1 text-sm text-gray-500 leading-relaxed">{item.description}</p>
+                      <p className="mt-1 text-sm leading-relaxed" style={{ color: tema.inkSoft }}>{item.description}</p>
                     )}
                     {menu.orderingEnabled && item.isAvailable !== false && (
                       <button
