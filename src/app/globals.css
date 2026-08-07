@@ -757,3 +757,20 @@ body {
   box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--nv-i) 70%, transparent);
   border: 1px solid color-mix(in srgb, var(--nv-i) 45%, transparent);
 }
+
+/* ──────────────────────────────────────────────────────────────────────
+   Büyük ekranlarda oransal ölçekleme
+
+   İçerik 1400px'te sınırlı olduğu için 1920'de dolu görünen sayfa, 2K/4K
+   ekranda aynı piksel genişliğinde kalıyor ve oransal olarak küçülüyordu.
+   Tailwind ölçüleri rem tabanlı; kök yazı boyutunu büyütmek yazıyı,
+   boşlukları ve rem cinsinden kapları birlikte ölçekler. Böylece sayfa
+   her çözünürlükte 1920'deki oranlarıyla görünür.
+
+   Not: Kullanıcının tarayıcı yazı boyutu tercihini ezmemek için yalnızca
+   1920px ÜSTÜNDE devreye giriyor; altında varsayılan 16px kalıyor.
+   ────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1920px) { :root { font-size: 18px; } }
+@media (min-width: 2400px) { :root { font-size: 21px; } }
+@media (min-width: 3000px) { :root { font-size: 25px; } }
+@media (min-width: 3600px) { :root { font-size: 29px; } }

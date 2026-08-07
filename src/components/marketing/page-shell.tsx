@@ -78,7 +78,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[var(--mk-bg)] text-[var(--mk-ink)] selection:bg-violet-300/60">
-      <div className="mx-auto max-w-[1400px] px-3 pb-3 sm:px-4 sm:pb-4">
+      <div className="mx-auto max-w-[87.5rem] px-3 pb-3 sm:px-4 sm:pb-4">
 
         {/* İçerik kartı — üstte yapışkan kapsül menü */}
         <div className="overflow-hidden rounded-[28px] bg-[var(--mk-surface)] shadow-[0_30px_80px_-40px_rgba(20,20,40,0.35)] sm:rounded-[36px]">
@@ -116,6 +116,18 @@ export function PageShell({ children }: { children: React.ReactNode }) {
                 <span className="text-[15px] font-bold tracking-tight">Novelya</span>
               </div>
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-[var(--mk-ink-soft)]">{sL.desc}</p>
+              {/* İletişim: ziyaretçi bir insana ulaşabildiğini görsün — güven
+                  için en ucuz sinyallerden biri. */}
+              <div className="mt-4 space-y-1.5 text-sm">
+                <a href="https://wa.me/905380638704" target="_blank" rel="noopener noreferrer"
+                  className="block text-[var(--mk-ink-soft)] transition hover:text-[var(--mk-ink)]">
+                  +90 538 063 87 04
+                </a>
+                <a href="mailto:novelya@novelya.com.tr"
+                  className="block text-[var(--mk-ink-soft)] transition hover:text-[var(--mk-ink)]">
+                  novelya@novelya.com.tr
+                </a>
+              </div>
             </div>
 
             {FOOTER_COLS.map((col) => (

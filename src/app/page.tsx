@@ -347,7 +347,7 @@ export default function AnaSayfa() {
 
   return (
     <div className="min-h-screen bg-[var(--mk-bg)] text-[var(--mk-ink)] selection:bg-violet-300/60">
-      <div className="mx-auto max-w-[1400px] px-3 pb-3 sm:px-4 sm:pb-4">
+      <div className="mx-auto max-w-[87.5rem] px-3 pb-3 sm:px-4 sm:pb-4">
 
         {/* ══ HERO — beyaz üst kart (nav + dev wordmark) + açık gri alt alan ══ */}
         <section className="relative overflow-hidden rounded-[28px] bg-[var(--mk-surface)] shadow-[0_30px_80px_-40px_rgba(20,20,40,0.35)] sm:rounded-[36px]">

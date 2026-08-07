@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Mail, MessageSquare, Clock, Send, Loader2, CheckCircle2, HelpCircle } from "lucide-react";
+import { Mail, MessageSquare, Clock, Send, Loader2, CheckCircle2, HelpCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { PageShell } from "@/components/marketing/page-shell";
 import { useLang } from "@/components/language-provider";
@@ -9,7 +9,7 @@ const L = {
   tr: {
     badge: "İletişim", title: "Bize ulaşın",
     subtitle: "Sorularınız, önerileriniz veya iş birliği talepleriniz için formu doldurun; en kısa sürede size dönüş yapalım.",
-    cEmail: "E-posta", cTime: "Yanıt Süresi", cTimeVal: "Genellikle 24 saat içinde",
+    cEmail: "E-posta", cPhone: "Telefon / WhatsApp", cTime: "Yanıt Süresi", cTimeVal: "Genellikle 24 saat içinde",
     cSupport: "Destek", cSupportVal: "Hesabınızdan canlı destek",
     fastTitle: "Hızlı yanıt mı arıyorsunuz?",
     fastDesc: "Sık sorulan soruların çoğunun cevabı SSS sayfamızda.",
@@ -27,7 +27,7 @@ const L = {
   en: {
     badge: "Contact", title: "Get in touch",
     subtitle: "Fill in the form for your questions, suggestions or partnership requests and we will get back to you as soon as possible.",
-    cEmail: "Email", cTime: "Response Time", cTimeVal: "Usually within 24 hours",
+    cEmail: "Email", cPhone: "Phone / WhatsApp", cTime: "Response Time", cTimeVal: "Usually within 24 hours",
     cSupport: "Support", cSupportVal: "Live support from your account",
     fastTitle: "Looking for a quick answer?",
     fastDesc: "Most frequently asked questions are answered on our FAQ page.",
@@ -51,6 +51,8 @@ export default function IletisimPage() {
   const sL = L[lang];
   const CONTACT = [
     { icon: Mail, title: sL.cEmail, value: "novelya@novelya.com.tr", href: "mailto:novelya@novelya.com.tr" },
+    // WhatsApp bağlantısı: wa.me uluslararası biçim ister (başında + ve boşluk yok)
+    { icon: Phone, title: sL.cPhone, value: "+90 538 063 87 04", href: "https://wa.me/905380638704" },
     { icon: Clock, title: sL.cTime, value: sL.cTimeVal },
     { icon: MessageSquare, title: sL.cSupport, value: sL.cSupportVal },
   ];
