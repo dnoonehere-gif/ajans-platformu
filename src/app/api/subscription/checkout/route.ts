@@ -15,15 +15,26 @@ const schema = z.object({
 });
 
 // Shopier ürün linkleri — plan slug → URL
+/**
+ * Plan → Shopier ürün bağlantısı.
+ *
+ * ⚠️ Bu eşleşme YANLIŞ olursa müşteri farklı tutarda ödeme yapar. Her ürün
+ * 06.08.2026'da Shopier sayfası tek tek açılarak doğrulandı; ad ve fiyat
+ * aşağıdaki yorumlarda yazıyor. Ürün eklenir/değişirse aynı şekilde doğrula.
+ *
+ * DÜZELTİLEN HATA: profesyonel ile isletme aylık bağlantıları TERSTİ.
+ * Profesyonel (₺1.699) alan müşteri ₺2.999'luk sayfaya, İşletme (₺2.999)
+ * alan müşteri ₺1.699'luk sayfaya gidiyordu.
+ */
 const SHOPIER_LINKS: Record<string, string> = {
-  baslangic:            "https://www.shopier.com/NovelyaDijitalAjans/48849668",
-  profesyonel:          "https://www.shopier.com/NovelyaDijitalAjans/48849672",
-  isletme:              "https://www.shopier.com/NovelyaDijitalAjans/48849675",
-  ajans:                "https://www.shopier.com/NovelyaDijitalAjans/48897218",
-  "baslangic-yillik":   "https://www.shopier.com/NovelyaDijitalAjans/48859443",
-  "profesyonel-yillik": "https://www.shopier.com/NovelyaDijitalAjans/48859459",
-  "isletme-yillik":     "https://www.shopier.com/NovelyaDijitalAjans/48859474",
-  "ajans-yillik":       "https://www.shopier.com/NovelyaDijitalAjans/48897230",
+  baslangic:            "https://www.shopier.com/NovelyaDijitalAjans/48849668", // Başlangıç planı — ₺899
+  profesyonel:          "https://www.shopier.com/NovelyaDijitalAjans/48849675", // Profesyonel planı — ₺1.699
+  isletme:              "https://www.shopier.com/NovelyaDijitalAjans/48849672", // İşletme planı — ₺2.999
+  ajans:                "https://www.shopier.com/NovelyaDijitalAjans/48897218", // Ajans planı — ₺4.999
+  "baslangic-yillik":   "https://www.shopier.com/NovelyaDijitalAjans/48859443", // Başlangıç Yıllık — ₺8.990
+  "profesyonel-yillik": "https://www.shopier.com/NovelyaDijitalAjans/48859459", // Profesyonel Yıllık — ₺16.990
+  "isletme-yillik":     "https://www.shopier.com/NovelyaDijitalAjans/48859474", // İşletme Yıllık — ₺29.990
+  "ajans-yillik":       "https://www.shopier.com/NovelyaDijitalAjans/48897230", // Ajans Yıllık — ₺49.990
 };
 
 export async function POST(req: NextRequest) {
