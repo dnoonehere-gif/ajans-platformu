@@ -26,7 +26,11 @@ function addSecurityHeaders(res: NextResponse): NextResponse {
 }
 
 export async function middleware(req: NextRequest) {
-  const hostname = req.headers.get("host") ?? "";
+  // Cloudflare Worker, isteği Railway'e iletirken Host başlığını
+  // www.novelya.com.tr olarak değiştirmek zorunda (Railway tanımadığı alan
+  // adında "Application not found" döner). Ziyaretçinin gerçekte yazdığı
+  // adres bu başlıkta taşınır; varsa o kullanılır.
+  const hostname = req.headers.get("x-forwarded-host-original") ?? req.headers.get("host") ?? "";
   const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN ?? "novelya.com.tr";
   const subdomainMatch = hostname.match(new RegExp(`^([a-z0-9-]+)\\.${baseDomain.replace(".", "\\.")}$`));
   if (subdomainMatch && subdomainMatch[1] !== "www") {

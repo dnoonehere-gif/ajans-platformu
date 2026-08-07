@@ -81,7 +81,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <MetaPixel />
         <ThemeProvider>
           <SessionProvider>
-            <PostHogProvider>
+            <PostHogProvider
+              apiKey={process.env.NEXT_PUBLIC_POSTHOG_KEY ?? process.env.POSTHOG_KEY ?? null}
+              apiHost={process.env.NEXT_PUBLIC_POSTHOG_HOST ?? process.env.POSTHOG_HOST ?? null}
+            >
               <MotionProvider>
                 <LanguageProvider>
                   <AnnounceBar />

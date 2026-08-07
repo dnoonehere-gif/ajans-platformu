@@ -13,9 +13,21 @@ import { useSession } from "next-auth/react";
  * Artık kütüphanenin kendi SPA desteği kullanılıyor: "history_change" App
  * Router'daki rota değişimlerini de kendisi yakalar. Elle gönderim YAPMAYIN.
  */
-if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_POSTHOG_KEY) {
-  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
-    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com",
+/**
+ * NOT (2): Anahtar artık `process.env.NEXT_PUBLIC_*` üzerinden OKUNMUYOR.
+ * NEXT_PUBLIC_ değişkenleri DERLEME anında gömülür; Railway'de değişken
+ * derlemeden sonra eklendiği için kod tamamen ölüydü ve PostHog hiç
+ * yüklenmiyordu (window.posthog tanımsız, tek bir istek bile gitmiyordu).
+ * Anahtar sunucudan prop olarak geliyor — çalışma anında okunuyor, yani
+ * değişken eklendiğinde yeniden derleme gerekmiyor.
+ */
+let baslatildi = false;
+
+function baslat(apiKey: string, apiHost: string) {
+  if (baslatildi || typeof window === "undefined") return;
+  baslatildi = true;
+  posthog.init(apiKey, {
+    api_host: apiHost,
     capture_pageview: "history_change",
     capture_pageleave: true,
     persistence: "localStorage",
@@ -40,8 +52,27 @@ function PostHogIdentify() {
   return null;
 }
 
-export function PostHogProvider({ children }: { children: React.ReactNode }) {
-  if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return <>{children}</>;
+export function PostHogProvider({
+  children,
+  apiKey,
+  apiHost,
+}: {
+  children: React.ReactNode;
+  apiKey?: string | null;
+  apiHost?: string | null;
+}) {
+  // Anahtar yoksa sessizce geçme — konsola yaz ki bir daha aylarca
+  // fark edilmeden kalmasın.
+  useEffect(() => {
+    if (!apiKey) {
+      console.warn("[PostHog] Anahtar yok — POSTHOG_KEY ortam değişkenini tanımlayın.");
+      return;
+    }
+    baslat(apiKey, apiHost || "https://eu.i.posthog.com");
+  }, [apiKey, apiHost]);
+
+  if (!apiKey) return <>{children}</>;
+
   return (
     <PHProvider client={posthog}>
       <PostHogIdentify />
