@@ -37,6 +37,7 @@ const L = {
     save: "Kaydet", saved: "Kaydedildi",
     color: "Renk", resetFmt: "Sıfırla",
     editHint: "Metne tıklayıp doğrudan düzenleyebilirsin",
+    sections: "Bölümler", addSection: "Bölüm Ekle", moveUp: "Yukarı", moveDown: "Aşağı", removeSection: "Kaldır",
     unpublish: "Yayından Kaldır", publish: "Yayınla",
     unpublishShort: "Kaldır", publishShort: "Yayınla",
     novelyaAddr: "Novelya Adresi",
@@ -74,6 +75,7 @@ const L = {
     save: "Save", saved: "Saved",
     color: "Color", resetFmt: "Reset",
     editHint: "Click any text to edit it directly",
+    sections: "Sections", addSection: "Add Section", moveUp: "Up", moveDown: "Down", removeSection: "Remove",
     unpublish: "Unpublish", publish: "Publish",
     unpublishShort: "Unpublish", publishShort: "Publish",
     novelyaAddr: "Novelya Address",
@@ -713,13 +715,13 @@ export default function WebsiteEditorPage({
                 ekleyemiyordu. Buradan her bölüm eklenip sırası değiştirilebilir. */}
             <div className="mt-6 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold">Bölümler</p>
+                <p className="text-sm font-semibold">{sL.sections}</p>
                 <div className="relative">
                   <button
                     onClick={() => setBolumMenusu((a) => !a)}
                     className="flex items-center gap-1.5 rounded-xl bg-[hsl(var(--primary))] px-3.5 py-2 text-xs font-semibold text-white transition hover:opacity-90"
                   >
-                    <Plus className="h-3.5 w-3.5" /> Bölüm Ekle
+                    <Plus className="h-3.5 w-3.5" /> {sL.addSection}
                   </button>
 
                   {bolumMenusu && (
@@ -728,12 +730,12 @@ export default function WebsiteEditorPage({
                       <div className="absolute right-0 top-full z-50 mt-1.5 max-h-80 w-64 overflow-y-auto rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1.5 shadow-xl">
                         {BLOCK_PRESETS.map((pr) => (
                           <button
-                            key={pr.label}
+                            key={pr.type}
                             onClick={() => bolumEkle(pr.make)}
                             className="w-full rounded-xl px-3 py-2 text-left transition hover:bg-[hsl(var(--accent))]"
                           >
-                            <span className="block text-sm font-medium">{pr.label}</span>
-                            <span className="block text-[11px] text-[hsl(var(--muted-foreground))]">{pr.hint}</span>
+                            <span className="block text-sm font-medium">{pr.label[lang]}</span>
+                            <span className="block text-[11px] text-[hsl(var(--muted-foreground))]">{pr.hint[lang]}</span>
                           </button>
                         ))}
                       </div>
@@ -746,19 +748,19 @@ export default function WebsiteEditorPage({
                 {blocks.map((b, i) => (
                   <div key={b.id} className="flex items-center gap-2 rounded-xl bg-[hsl(var(--muted)/0.4)] px-3 py-2">
                     <span className="flex-1 truncate text-xs font-medium">
-                      {BLOCK_PRESETS.find((pr) => pr.type === b.type)?.label ?? b.type}
+                      {BLOCK_PRESETS.find((pr) => pr.type === b.type)?.label[lang] ?? b.type}
                     </span>
-                    <button onClick={() => bolumTasi(b.id, -1)} disabled={i === 0} title="Yukarı"
+                    <button onClick={() => bolumTasi(b.id, -1)} disabled={i === 0} title={sL.moveUp}
                       className="rounded-lg p-1 text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] disabled:opacity-30">
                       <ArrowUp className="h-3.5 w-3.5" />
                     </button>
-                    <button onClick={() => bolumTasi(b.id, 1)} disabled={i === blocks.length - 1} title="Aşağı"
+                    <button onClick={() => bolumTasi(b.id, 1)} disabled={i === blocks.length - 1} title={sL.moveDown}
                       className="rounded-lg p-1 text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] disabled:opacity-30">
                       <ArrowDown className="h-3.5 w-3.5" />
                     </button>
                     {/* Hero ve iletişim silinemez: sayfanın açılışı ve kapanışı */}
                     {b.type !== "hero" && b.type !== "contact" && (
-                      <button onClick={() => bolumSil(b.id)} title="Kaldır"
+                      <button onClick={() => bolumSil(b.id)} title={sL.removeSection}
                         className="rounded-lg p-1 text-red-400 transition hover:bg-red-500/10">
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>

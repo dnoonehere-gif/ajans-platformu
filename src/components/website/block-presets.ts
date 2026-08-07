@@ -13,9 +13,10 @@ import type { Block, BlockType } from "@/server/ai/website-generator";
 
 export interface BlockPreset {
   type: BlockType;
-  label: string;
-  /** Kısa açıklama — kullanıcı hangi bölümü eklediğini bilsin */
-  hint: string;
+  /** Editör arayüzü iki dilli; blok İÇERİĞİ yer tutucu olarak Türkçe kalır
+   *  çünkü üretilen siteler Türk işletmeleri için. */
+  label: { tr: string; en: string };
+  hint: { tr: string; en: string };
   make: () => Block;
 }
 
@@ -27,8 +28,8 @@ function yeniId(type: string) {
 export const BLOCK_PRESETS: BlockPreset[] = [
   {
     type: "gallery",
-    label: "Galeri",
-    hint: "Fotoğraf veya video ızgarası — kareye tıklayıp yükleyin",
+    label: { tr: "Galeri", en: "Gallery" },
+    hint: { tr: "Fotoğraf veya video ızgarası — kareye tıklayıp yükleyin", en: "Photo or video grid — click a tile to upload" },
     make: () => ({
       id: yeniId("gallery"),
       type: "gallery",
@@ -38,8 +39,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
   },
   {
     type: "services",
-    label: "Hizmetler",
-    hint: "Sunduğunuz hizmetlerin listesi",
+    label: { tr: "Hizmetler", en: "Services" },
+    hint: { tr: "Sunduğunuz hizmetlerin listesi", en: "A list of the services you offer" },
     make: () => ({
       id: yeniId("services"),
       type: "services",
@@ -56,8 +57,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
   },
   {
     type: "pricing",
-    label: "Fiyat Listesi",
-    hint: "Hizmet ve fiyat eşleşmeleri",
+    label: { tr: "Fiyat Listesi", en: "Price List" },
+    hint: { tr: "Hizmet ve fiyat eşleşmeleri", en: "Service and price pairs" },
     make: () => ({
       id: yeniId("pricing"),
       type: "pricing",
@@ -72,8 +73,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
   },
   {
     type: "hours",
-    label: "Çalışma Saatleri",
-    hint: "Haftalık açılış-kapanış",
+    label: { tr: "Çalışma Saatleri", en: "Opening Hours" },
+    hint: { tr: "Haftalık açılış-kapanış", en: "Weekly opening and closing times" },
     make: () => ({
       id: yeniId("hours"),
       type: "hours",
@@ -89,8 +90,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
   },
   {
     type: "faq",
-    label: "Sık Sorulanlar",
-    hint: "Soru-cevap listesi",
+    label: { tr: "Sık Sorulanlar", en: "FAQ" },
+    hint: { tr: "Soru-cevap listesi", en: "Question and answer list" },
     make: () => ({
       id: yeniId("faq"),
       type: "faq",
@@ -105,8 +106,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
   },
   {
     type: "team",
-    label: "Ekip",
-    hint: "Çalışanlar — fotoğraf eklenebilir",
+    label: { tr: "Ekip", en: "Team" },
+    hint: { tr: "Çalışanlar — fotoğraf eklenebilir", en: "Staff — photos can be added" },
     make: () => ({
       id: yeniId("team"),
       type: "team",
@@ -121,8 +122,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
   },
   {
     type: "about",
-    label: "Hakkımızda",
-    hint: "İşletmenizin hikâyesi",
+    label: { tr: "Hakkımızda", en: "About" },
+    hint: { tr: "İşletmenizin hikâyesi", en: "Your business story" },
     make: () => ({
       id: yeniId("about"),
       type: "about",
@@ -131,8 +132,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
   },
   {
     type: "features",
-    label: "Öne Çıkanlar",
-    hint: "Sizi ayıran özellikler",
+    label: { tr: "Öne Çıkanlar", en: "Highlights" },
+    hint: { tr: "Sizi ayıran özellikler", en: "What sets you apart" },
     make: () => ({
       id: yeniId("features"),
       type: "features",
@@ -148,8 +149,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
   },
   {
     type: "cta",
-    label: "Harekete Geçirme",
-    hint: "Renkli kutu ve buton",
+    label: { tr: "Harekete Geçirme", en: "Call to Action" },
+    hint: { tr: "Renkli kutu ve buton", en: "Colored box with a button" },
     make: () => ({
       id: yeniId("cta"),
       type: "cta",

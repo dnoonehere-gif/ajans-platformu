@@ -1,4 +1,5 @@
 "use client";
+import { useLang } from "@/components/language-provider";
 
 /**
  * Üretilen içeriği okunabilir biçimde gösterir.
@@ -22,6 +23,8 @@ function jsonCoz(metin: string): Record<string, unknown> | null {
   }
 }
 
+/** Alan adı → görünen etiket. İngilizce arayüzde alan adları zaten
+ *  İngilizce olduğu için yalnızca Türkçe karşılık tablosu tutulur. */
 const ETIKET: Record<string, string> = {
   headlines: "Başlıklar",
   descriptions: "Açıklamalar",
@@ -38,7 +41,8 @@ const ETIKET: Record<string, string> = {
   metaDescription: "Meta Açıklama",
 };
 
-function baslik(anahtar: string) {
+function baslik(anahtar: string, dil: string) {
+  if (dil === "en") return anahtar.replace(/([A-Z])/g, " $1").trim();
   return ETIKET[anahtar] ?? anahtar;
 }
 
@@ -46,6 +50,7 @@ function baslik(anahtar: string) {
 const SINIR: Record<string, number> = { headlines: 30, descriptions: 90 };
 
 export function ContentResult({ text }: { text: string }) {
+  const { lang } = useLang();
   const veri = jsonCoz(text);
 
   if (!veri) {
@@ -61,7 +66,7 @@ export function ContentResult({ text }: { text: string }) {
         return (
           <div key={anahtar}>
             <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">
-              {baslik(anahtar)}
+              {baslik(anahtar, lang)}
             </p>
 
             {Array.isArray(deger) ? (

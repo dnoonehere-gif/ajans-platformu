@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useRef, useState } from "react";
 import { Camera } from "lucide-react";
+import { useLang } from "@/components/language-provider";
 
 /**
  * Önizlemede doğrudan düzenleme altyapısı.
@@ -147,8 +148,12 @@ export function Media({
   style?: React.CSSProperties;
 }) {
   const api = useEdit();
+  const { lang } = useLang();
   const inputRef = useRef<HTMLInputElement>(null);
   const [yukleniyor, setYukleniyor] = useState(false);
+  const m = lang === "en"
+    ? { add: "Add image", hint: "Click or drag and drop", loading: "Uploading..." }
+    : { add: "Görsel ekle", hint: "Tıkla veya sürükle-bırak", loading: "Yükleniyor..." };
 
   const src = String(
     path.split(".").reduce<unknown>((acc, k) => (acc as Record<string, unknown>)?.[k], data) ?? ""
@@ -170,7 +175,7 @@ export function Media({
   ) : (
     <div className="flex h-full w-full flex-col items-center justify-center gap-1 opacity-40">
       <Camera className="h-6 w-6" />
-      {api?.editable && <span className="text-[10px]">Görsel ekle</span>}
+      {api?.editable && <span className="text-[10px]">{m.add}</span>}
     </div>
   );
 
@@ -188,12 +193,12 @@ export function Media({
       onDrop={(e) => { e.preventDefault(); void dosyaAl(e.dataTransfer.files?.[0]); }}
       className={`${className} group relative cursor-pointer ring-offset-2 transition hover:ring-2 hover:ring-blue-500/60`}
       style={style}
-      title="Tıkla veya sürükle-bırak"
+      title={m.hint}
     >
       {icerik}
       {yukleniyor && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs font-medium text-white">
-          Yükleniyor...
+          {m.loading}
         </div>
       )}
       <input

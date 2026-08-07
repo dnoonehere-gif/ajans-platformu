@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ShoppingBag, Check, X, Loader2, RefreshCw, ChefHat } from "lucide-react";
 import { useBrand } from "@/components/dashboard/brand-provider";
 import { PageLoading } from "@/components/ui/page-loading";
+import { useLang } from "@/components/language-provider";
 
 /**
  * QR menüden gelen siparişlerin yönetimi.
@@ -23,26 +24,46 @@ interface Order {
   items: OrderItem[];
 }
 
-const DURUM = {
-  NEW:       { ad: "Yeni",       sinif: "bg-amber-500/12 text-amber-500" },
-  PREPARING: { ad: "Hazırlanıyor", sinif: "bg-blue-500/12 text-blue-400" },
-  DELIVERED: { ad: "Teslim",     sinif: "bg-green-500/12 text-green-500" },
-  CANCELLED: { ad: "İptal",      sinif: "bg-red-500/12 text-red-400" },
+const L = {
+  tr: {
+    title: "Siparişler", sub: "20 saniyede bir güncellenir", refresh: "Yenile",
+    table: "Masa", noBrand: "Önce üstteki menüden bir marka seçin.",
+    tabs: { NEW: "Yeni", PREPARING: "Hazırlanıyor", DELIVERED: "Teslim", ALL: "Tümü" },
+    status: { NEW: "Yeni", PREPARING: "Hazırlanıyor", DELIVERED: "Teslim", CANCELLED: "İptal" },
+    empty: "Bu bölümde sipariş yok. Sipariş alabilmek için menüde \"Masadan sipariş\" ayarının açık olması gerekir.",
+    warnClosed: "Menünüz yayında ama masadan sipariş kapalı. Dijital Menü sayfasından \"Sipariş Açık\" düğmesine basın.",
+    warnUnpublished: "Menünüz henüz yayında değil. Sipariş alabilmek için önce menüyü yayınlayın, sonra siparişi açın.",
+    prep: "Hazırlanıyor", deliver: "Teslim", cancel: "İptal",
+  },
+  en: {
+    title: "Orders", sub: "refreshes every 20 seconds", refresh: "Refresh",
+    table: "Table", noBrand: "Select a brand from the switcher above first.",
+    tabs: { NEW: "New", PREPARING: "Preparing", DELIVERED: "Delivered", ALL: "All" },
+    status: { NEW: "New", PREPARING: "Preparing", DELIVERED: "Delivered", CANCELLED: "Cancelled" },
+    empty: "No orders here. To receive orders, enable \"Table ordering\" on the menu page.",
+    warnClosed: "Your menu is live but table ordering is off. Turn on \"Ordering\" on the Digital Menu page.",
+    warnUnpublished: "Your menu is not published yet. Publish it first, then enable ordering.",
+    prep: "Preparing", deliver: "Delivered", cancel: "Cancel",
+  },
+};
+
+const DURUM_SINIF = {
+  NEW:       "bg-amber-500/12 text-amber-500",
+  PREPARING: "bg-blue-500/12 text-blue-400",
+  DELIVERED: "bg-green-500/12 text-green-500",
+  CANCELLED: "bg-red-500/12 text-red-400",
 } as const;
 
-const SEKMELER = [
-  { key: "NEW", label: "Yeni" },
-  { key: "PREPARING", label: "Hazırlanıyor" },
-  { key: "DELIVERED", label: "Teslim" },
-  { key: "", label: "Tümü" },
-] as const;
+const SEKME_ANAHTARLARI = ["NEW", "PREPARING", "DELIVERED", ""] as const;
 
-function saat(iso: string) {
-  return new Date(iso).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+function saat(iso: string, dil: string) {
+  return new Date(iso).toLocaleTimeString(dil === "en" ? "en-GB" : "tr-TR", { hour: "2-digit", minute: "2-digit" });
 }
 
 export default function OrdersPage() {
   const { activeBrand } = useBrand();
+  const { lang } = useLang();
+  const sL = L[lang];
   const [sekme, setSekme] = useState<string>("NEW");
   const [siparisler, setSiparisler] = useState<Order[]>([]);
   const [yukleniyor, setYukleniyor] = useState(true);
@@ -85,7 +106,7 @@ export default function OrdersPage() {
   }
 
   if (!activeBrand) {
-    return <div className="p-8 text-sm text-[hsl(var(--muted-foreground))]">Önce üstteki menüden bir marka seçin.</div>;
+    return <div className="p-8 text-sm text-[hsl(var(--muted-foreground))]">{L.tr.noBrand}</div>;
   }
 
   return (
@@ -96,33 +117,31 @@ export default function OrdersPage() {
             <ShoppingBag className="h-5 w-5 text-[hsl(var(--primary))]" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">Siparişler</h1>
+            <h1 className="text-xl font-bold">{sL.title}</h1>
             <p className="text-sm text-[hsl(var(--muted-foreground))]">
-              {activeBrand.name} · 20 saniyede bir güncellenir
+              {activeBrand.name} · {sL.sub}
             </p>
           </div>
         </div>
         <button onClick={() => yukle()}
           className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] px-4 py-2.5 text-sm transition hover:bg-[hsl(var(--accent))]">
-          <RefreshCw className="h-4 w-4" /> Yenile
+          <RefreshCw className="h-4 w-4" /> {sL.refresh}
         </button>
       </div>
 
       {!acik && (
         <div className="mb-4 rounded-2xl bg-amber-500/10 px-4 py-3 text-sm text-amber-500">
-          {menuYayinda
-            ? "Menünüz yayında ama masadan sipariş kapalı. Dijital Menü sayfasından \"Sipariş Açık\" düğmesine basın."
-            : "Menünüz henüz yayında değil. Sipariş alabilmek için önce menüyü yayınlayın, sonra siparişi açın."}
+          {menuYayinda ? sL.warnClosed : sL.warnUnpublished}
         </div>
       )}
 
       <div className="mb-4 flex flex-wrap gap-1.5">
-        {SEKMELER.map((s) => (
-          <button key={s.key} onClick={() => setSekme(s.key)}
-            className={`rounded-xl px-4 py-2 text-sm transition ${sekme === s.key
+        {SEKME_ANAHTARLARI.map((k) => (
+          <button key={k || "ALL"} onClick={() => setSekme(k)}
+            className={`rounded-xl px-4 py-2 text-sm transition ${sekme === k
               ? "bg-[hsl(var(--primary))] font-semibold text-white"
               : "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))]"}`}>
-            {s.label}
+            {sL.tabs[(k || "ALL") as keyof typeof sL.tabs]}
           </button>
         ))}
       </div>
@@ -133,21 +152,21 @@ export default function OrdersPage() {
         <div className="glass rounded-2xl p-8 text-center">
           <ShoppingBag className="mx-auto mb-3 h-8 w-8 text-[hsl(var(--muted-foreground))]" />
           <p className="text-sm text-[hsl(var(--muted-foreground))]">
-            Bu bölümde sipariş yok. Sipariş alabilmek için menüde &quot;Masadan sipariş&quot; ayarının açık olması gerekir.
+            {sL.empty}
           </p>
         </div>
       ) : (
         <div className="space-y-3">
           {siparisler.map((o) => {
-            const d = DURUM[o.status] ?? DURUM.NEW;
+            const sinif = DURUM_SINIF[o.status] ?? DURUM_SINIF.NEW;
             return (
               <div key={o.id} className="glass rounded-2xl p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-bold">Masa {o.tableNo}</p>
-                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${d.sinif}`}>{d.ad}</span>
-                      <span className="text-xs text-[hsl(var(--muted-foreground))]">{saat(o.createdAt)}</span>
+                      <p className="font-bold">{sL.table} {o.tableNo}</p>
+                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${sinif}`}>{sL.status[o.status] ?? o.status}</span>
+                      <span className="text-xs text-[hsl(var(--muted-foreground))]">{saat(o.createdAt, lang)}</span>
                     </div>
 
                     <ul className="mt-2 space-y-0.5">
@@ -170,18 +189,18 @@ export default function OrdersPage() {
                       <button onClick={() => durumDegistir(o.id, "PREPARING")} disabled={islemId === o.id}
                         className="flex items-center gap-1.5 rounded-lg border border-blue-500/30 px-3 py-2 text-xs text-blue-400 transition hover:bg-blue-500/10 disabled:opacity-50">
                         {islemId === o.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ChefHat className="h-3.5 w-3.5" />}
-                        Hazırlanıyor
+                        {sL.prep}
                       </button>
                     )}
                     {(o.status === "NEW" || o.status === "PREPARING") && (
                       <>
                         <button onClick={() => durumDegistir(o.id, "DELIVERED")} disabled={islemId === o.id}
                           className="flex items-center gap-1.5 rounded-lg border border-green-500/30 px-3 py-2 text-xs text-green-500 transition hover:bg-green-500/10 disabled:opacity-50">
-                          <Check className="h-3.5 w-3.5" /> Teslim
+                          <Check className="h-3.5 w-3.5" /> {sL.deliver}
                         </button>
                         <button onClick={() => durumDegistir(o.id, "CANCELLED")} disabled={islemId === o.id}
                           className="flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] px-3 py-2 text-xs text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--accent))] disabled:opacity-50">
-                          <X className="h-3.5 w-3.5" /> İptal
+                          <X className="h-3.5 w-3.5" /> {sL.cancel}
                         </button>
                       </>
                     )}

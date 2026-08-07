@@ -1,6 +1,24 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Minus, ShoppingBag, Check, Loader2, X } from "lucide-react";
+
+/** Menü ziyaretçinin tarayıcı diline göre yazılır. */
+const M = {
+  tr: {
+    okTitle: "Siparişiniz alındı.", okBody: "Hazırlanmaya başlandığında masanıza gelecek.",
+    table: "Masa numaranız", note: "Not (isteğe bağlı)",
+    seeCart: "Sepeti gör", close: "Kapat", order: "Sipariş Ver", send: "Siparişi Gönder",
+    errTable: "Masa numaranızı yazın.", errSend: "Sipariş gönderilemedi.",
+    errNet: "Bağlantı hatası. Lütfen tekrar deneyin.",
+  },
+  en: {
+    okTitle: "Order received.", okBody: "It will arrive at your table once prepared.",
+    table: "Your table number", note: "Note (optional)",
+    seeCart: "View cart", close: "Close", order: "Order", send: "Send Order",
+    errTable: "Please enter your table number.", errSend: "Could not send the order.",
+    errNet: "Connection error. Please try again.",
+  },
+};
 
 /**
  * QR menüden sipariş sepeti.
@@ -59,11 +77,16 @@ export function CartBar({
   const [gonderiliyor, setGonderiliyor] = useState(false);
   const [tamam, setTamam] = useState(false);
   const [hata, setHata] = useState("");
+  const [dil, setDil] = useState<"tr" | "en">("tr");
+  useEffect(() => {
+    setDil(navigator.language?.toLowerCase().startsWith("tr") ? "tr" : "en");
+  }, []);
+  const m = M[dil];
 
   if (cart.adet === 0 && !tamam) return null;
 
   async function gonder() {
-    if (!masa.trim()) { setHata("Masa numaranızı yazın."); return; }
+    if (!masa.trim()) { setHata(m.errTable); return; }
     setHata("");
     setGonderiliyor(true);
     try {
@@ -78,12 +101,12 @@ export function CartBar({
         }),
       });
       const data = await res.json();
-      if (!res.ok) { setHata(data.error ?? "Sipariş gönderilemedi."); return; }
+      if (!res.ok) { setHata(data.error ?? m.errSend); return; }
       setTamam(true);
       cart.temizle();
       setAcik(false);
     } catch {
-      setHata("Bağlantı hatası. Lütfen tekrar deneyin.");
+      setHata(m.errNet);
     } finally {
       setGonderiliyor(false);
     }
@@ -97,8 +120,8 @@ export function CartBar({
             <Check className="h-5 w-5" />
           </div>
           <p className="flex-1 text-sm">
-            <span className="font-semibold">Siparişiniz alındı.</span>{" "}
-            <span className="text-neutral-500">Hazırlanmaya başlandığında masanıza gelecek.</span>
+            <span className="font-semibold">{m.okTitle}</span>{" "}
+            <span className="text-neutral-500">{m.okBody}</span>
           </p>
           <button onClick={() => setTamam(false)} className="rounded-lg p-1.5 text-neutral-400">
             <X className="h-4 w-4" />
@@ -138,10 +161,10 @@ export function CartBar({
               ))}
 
               <input value={masa} onChange={(e) => setMasa(e.target.value)}
-                placeholder="Masa numaranız"
+                placeholder={m.table}
                 className="mt-3 w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm outline-none focus:border-neutral-400" />
               <input value={not} onChange={(e) => setNot(e.target.value)}
-                placeholder="Not (isteğe bağlı)"
+                placeholder={m.note}
                 className="mt-2 w-full rounded-xl border border-neutral-200 px-3.5 py-2.5 text-sm outline-none focus:border-neutral-400" />
               {hata && <p className="mt-2 text-xs text-red-500">{hata}</p>}
             </div>
@@ -158,7 +181,7 @@ export function CartBar({
               </span>
               <span>
                 <span className="block text-sm font-semibold text-neutral-900">{currency}{cart.toplam.toFixed(2)}</span>
-                <span className="block text-xs text-neutral-500">{acik ? "Kapat" : "Sepeti gör"}</span>
+                <span className="block text-xs text-neutral-500">{acik ? m.close : m.seeCart}</span>
               </span>
             </button>
 
@@ -166,7 +189,7 @@ export function CartBar({
               className="flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
               style={{ background: color }}>
               {gonderiliyor ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {acik ? "Siparişi Gönder" : "Sipariş Ver"}
+              {acik ? m.send : m.order}
             </button>
           </div>
         </div>
