@@ -23,7 +23,7 @@ interface DomainRequest {
   finalDomain?: string | null;
   adminNote?: string | null;
   createdAt: string;
-  brand: { name: string; slug: string; phone?: string | null };
+  brand: { name: string; slug: string; phone?: string | null; subscriptions?: { plan: { slug: string; name: string } }[] };
   user: { name?: string | null; email?: string | null };
   website: { id: string; title: string; subdomain?: string | null; isPublished: boolean };
 }
@@ -37,6 +37,30 @@ const DURUM: Record<DomainRequest["status"], { ad: string; sinif: string }> = {
 };
 
 const SEKMELER = ["PENDING", "QUOTED", "IN_PROGRESS", "COMPLETED", ""] as const;
+
+/**
+ * Fiyatlandırma.
+ *
+ * Alan adı maliyeti ilk yıl düşük (.com.tr ~₺71) ama YENİLEME yüksek
+ * (~₺952/yıl). Tek seferlik ücret alınırsa ikinci yıl zarar yazılır, bu
+ * yüzden yenileme ücreti baştan söylenir.
+ *
+ * İşletme ve Ajans paketlerinde kurulum ücretsiz — yükseltme sebebi olsun.
+ */
+const KURULUM_UCRETI = 2500;
+const YENILEME_UCRETI = 2000;
+const UCRETSIZ_PAKETLER = ["isletme", "isletme-yillik", "ajans", "ajans-yillik"];
+
+function notSablonu(ucretsiz: boolean) {
+  if (ucretsiz) {
+    return `Alan adı müsait. Paketinize dahil olduğu için kurulum ücreti alınmıyor. ` +
+      `Sonraki yıllarda yıllık ${YENILEME_UCRETI.toLocaleString("tr-TR")} ₺ yenileme ücreti oluşur. ` +
+      `Onaylarsanız 2 iş günü içinde yayına alırız.`;
+  }
+  return `Alan adı müsait. Kurulum ücreti ${KURULUM_UCRETI.toLocaleString("tr-TR")} ₺ ` +
+    `(ilk yıl alan adı dahil). Sonraki yıllarda yıllık ${YENILEME_UCRETI.toLocaleString("tr-TR")} ₺ ` +
+    `yenileme ücreti oluşur. Onaylarsanız 2 iş günü içinde yayına alırız.`;
+}
 
 const inp =
   "w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-sm outline-none transition focus:border-[hsl(var(--primary))]";
@@ -64,11 +88,20 @@ export default function DomainRequestsPage() {
 
   useEffect(() => { void yukle(); }, [yukle]);
 
+  /** Markanın paketi kurulumu ücretsiz kılıyor mu. */
+  function ucretsizMi(t: DomainRequest) {
+    const slug = t.brand.subscriptions?.[0]?.plan.slug ?? "";
+    return UCRETSIZ_PAKETLER.includes(slug);
+  }
+
   function taslakAl(t: DomainRequest) {
+    const bedava = ucretsizMi(t);
     return taslak[t.id] ?? {
-      fiyat: t.priceCents != null ? String(t.priceCents / 100) : "",
+      // Fiyat ve not önceden dolu gelir; ekip her seferinde yazmasın ve
+      // yenileme ücretini söylemeyi unutmasın.
+      fiyat: t.priceCents != null ? String(t.priceCents / 100) : (bedava ? "0" : String(KURULUM_UCRETI)),
       finalDomain: t.finalDomain ?? "",
-      not: t.adminNote ?? "",
+      not: t.adminNote ?? notSablonu(bedava),
     };
   }
 
@@ -155,7 +188,15 @@ export default function DomainRequestsPage() {
                       </p>
                     )}
                     <p className="mt-1.5 text-sm text-[hsl(var(--muted-foreground))]">
-                      {t.brand.name} · {t.user.name || t.user.email}
+                      {t.brand.name}
+                      {t.brand.subscriptions?.[0] && (
+                        <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          ucretsizMi(t) ? "bg-green-500/12 text-green-500" : "bg-[hsl(var(--muted))]"
+                        }`}>
+                          {t.brand.subscriptions[0].plan.name}{ucretsizMi(t) ? " · kurulum ücretsiz" : ""}
+                        </span>
+                      )}
+                      {" · "}{t.user.name || t.user.email}
                       {t.brand.phone && <> · {t.brand.phone}</>}
                     </p>
                     <p className="text-xs text-[hsl(var(--muted-foreground))]">{tarih(t.createdAt)}</p>
@@ -202,6 +243,15 @@ export default function DomainRequestsPage() {
                   <textarea className={`${inp} h-16 resize-y`} value={ts.not}
                     placeholder="Örn. Alan adı müsait, ücret 450 ₺. Onaylarsanız 2 gün içinde yayına alırız."
                     onChange={(e) => setTaslak({ ...taslak, [t.id]: { ...ts, not: e.target.value } })} />
+                </div>
+
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setTaslak({ ...taslak, [t.id]: { ...ts, not: notSablonu(ucretsizMi(t)), fiyat: ucretsizMi(t) ? "0" : String(KURULUM_UCRETI) } })}
+                    className="rounded-lg border border-[hsl(var(--border))] px-3 py-1.5 text-xs transition hover:bg-[hsl(var(--accent))]"
+                  >
+                    Şablonu yükle
+                  </button>
                 </div>
 
                 <button

@@ -27,7 +27,18 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: "desc" },
     take: 200,
     include: {
-      brand: { select: { name: true, slug: true, phone: true } },
+      brand: {
+        select: {
+          name: true, slug: true, phone: true,
+          // Paket bilgisi: İşletme ve Ajans'ta kurulum ücretsiz, ekip
+          // fiyat yazarken bunu görmeli.
+          subscriptions: {
+            where: { status: { in: ["ACTIVE", "TRIALING"] } },
+            select: { plan: { select: { slug: true, name: true } } },
+            take: 1,
+          },
+        },
+      },
       user: { select: { name: true, email: true } },
       website: { select: { id: true, title: true, subdomain: true, isPublished: true } },
     },

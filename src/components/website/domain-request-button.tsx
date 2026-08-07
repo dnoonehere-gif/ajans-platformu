@@ -10,9 +10,10 @@ import { useLang } from "@/components/language-provider";
  * yapamıyor. Self-servis bir akış yerine talep ekibe düşüyor: kullanıcı
  * istediği adı yazıyor, ekip alan adını alıp kuruyor ve bilgileri iletiyor.
  *
- * Ücret önceden sabit değil (uzantıya göre değişiyor), bu yüzden arayüzde
- * rakam VERİLMİYOR — "ekip fiyat bildirecek" deniyor. Yanlış beklenti
- * oluşturmamak için önemli.
+ * Fiyat baştan gösteriliyor: kurulum tek seferlik, YENİLEME ise yıllık.
+ * Yenileme ücretini gizlemek ikinci yıl sürpriz fatura demek olurdu —
+ * müşteri kaybettiren şey tam olarak budur. İşletme ve Ajans paketlerinde
+ * kurulum ücretsiz; yükseltme sebebi olsun diye.
  */
 
 interface DomainRequest {
@@ -38,7 +39,7 @@ const L = {
       "Bilmeniz gereken her şeyi e-posta veya mesajla iletiriz.",
     ],
     priceNote:
-      "Alan adı ücreti uzantıya göre değişir (.com.tr, .com, .net). Ekibimiz size net fiyatı iletmeden hiçbir ücret alınmaz.",
+      "Kurulum ücreti 2.500 ₺ (ilk yıl alan adı dahil), sonraki yıllarda yıllık 2.000 ₺ yenileme ücreti oluşur. İşletme ve Ajans paketlerinde kurulum ücretsizdir. Ekibimiz onayınızı almadan hiçbir ücret tahsil edilmez.",
     domainLabel: "İstediğiniz alan adı",
     domainPh: "kuaforayse.com.tr",
     altLabel: "Alternatif (ilk isim alınmışsa)",
@@ -74,7 +75,7 @@ const L = {
       "We send you everything you need to know by email or message.",
     ],
     priceNote:
-      "Domain pricing depends on the extension (.com.tr, .com, .net). Nothing is charged before we send you an exact price.",
+      "Setup is ₺2,500 (first-year domain included), then ₺2,000 per year for renewal. Setup is free on the Business and Agency plans. Nothing is charged without your approval.",
     domainLabel: "Domain you want",
     domainPh: "yoursalon.com",
     altLabel: "Alternative (if the first is taken)",
