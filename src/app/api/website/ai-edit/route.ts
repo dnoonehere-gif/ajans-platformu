@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { editWebsiteWithAI } from "@/server/ai/website-editor";
+import type { SiteTheme } from "@/server/ai/website-generator";
 import { getBrandPlanFeatures } from "@/lib/plan-guard";
 import { z } from "zod";
 
@@ -39,6 +40,16 @@ export async function POST(req: NextRequest) {
     }, { status: 403 });
   }
 
-  const updatedBlocks = await editWebsiteWithAI(blocks, instruction, website.brand.name, history);
-  return NextResponse.json({ blocks: updatedBlocks });
+  // Tema da düzenlenebiliyor (renk/font/animasyon istekleri orada karşılanır),
+  // bu yüzden mevcut tema modele veriliyor ve dönen tema kaydediliyor.
+  const mevcutTema = (website.theme ?? null) as unknown as SiteTheme | null;
+  const { blocks: yeniBloklar, theme: yeniTema } = await editWebsiteWithAI(
+    blocks, instruction, website.brand.name, history, mevcutTema,
+  );
+
+  if (yeniTema && JSON.stringify(yeniTema) !== JSON.stringify(mevcutTema)) {
+    await prisma.website.update({ where: { id: website.id }, data: { theme: yeniTema as never } });
+  }
+
+  return NextResponse.json({ blocks: yeniBloklar, theme: yeniTema });
 }

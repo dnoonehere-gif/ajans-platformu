@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { Globe2, Check, Loader2, X, Clock } from "lucide-react";
+import { Globe2, Check, Loader2, X, Clock, ExternalLink } from "lucide-react";
 import { useLang } from "@/components/language-provider";
 
 /**
@@ -60,6 +60,7 @@ const L = {
       REJECTED: "Reddedildi",
     },
     price: "Ücret",
+    openSite: "Siteyi Aç",
     close: "Kapat",
   },
   en: {
@@ -96,6 +97,7 @@ const L = {
       REJECTED: "Declined",
     },
     price: "Price",
+    openSite: "Open Site",
     close: "Close",
   },
 };
@@ -176,6 +178,19 @@ export function DomainRequestButton({
         )}
         {mevcut.adminNote && (
           <p className="mt-1.5 text-xs leading-relaxed text-[hsl(var(--muted-foreground))]">{mevcut.adminNote}</p>
+        )}
+
+        {/* Yayına alındıysa adresi doğrudan açılabilir yap — kullanıcı
+            adresi elle yazmak zorunda kalmasın. */}
+        {mevcut.status === "COMPLETED" && (mevcut.finalDomain || mevcut.desiredDomain) && (
+          <a
+            href={`https://${mevcut.finalDomain || mevcut.desiredDomain}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] px-3 py-1.5 text-xs transition hover:bg-[hsl(var(--accent))]"
+          >
+            <ExternalLink className="h-3.5 w-3.5" /> {sL.openSite}
+          </a>
         )}
       </div>
     );

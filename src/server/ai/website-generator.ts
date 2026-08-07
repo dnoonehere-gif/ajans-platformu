@@ -21,6 +21,8 @@ export interface SiteTheme {
   /** Köşe yuvarlaklığı: 0 = keskin, 28 = çok yuvarlak */
   radius: number;
   density: "sikisik" | "normal" | "ferah";
+  /** Bölüm giriş animasyonu: yok | yumusak | belirgin */
+  animation?: "yok" | "yumusak" | "belirgin";
 }
 
 export interface WebsiteGenerateInput {
@@ -95,7 +97,9 @@ ${FONT_PAIRS.map((f) => `   ${f.id} → ${f.uygun}`).join("\n")}
 3) HERO DÜZENİ seç (id yaz):
 ${HERO_LAYOUTS.map((h) => `   ${h.id} → ${h.aciklama}`).join("\n")}
 
-4) radius (0-28) ve density ("sikisik"|"normal"|"ferah") seç.
+4) radius (0-28), density ("sikisik"|"normal"|"ferah") ve
+   animation ("yok"|"yumusak"|"belirgin") seç. Ciddi/kurumsal işlerde
+   "yumusak", eğlenceli/genç markalarda "belirgin", çok sade istenirse "yok".
    Lüks/ciddi işlerde düşük radius + ferah; sevimli/samimi işlerde yüksek radius.
 
 ━━ SONRA BLOKLARI SEÇ ━━
@@ -123,7 +127,7 @@ ${!input.realReviews ? "- Gerçek yorum verilmedi: testimonials bloğu KOYMA. Yo
 ━━ ÇIKTI ━━
 SADECE şu şekilde geçerli JSON döndür, başka hiçbir şey yazma:
 {
-  "theme": { "paletteId": "...", "fontPairId": "...", "heroLayout": "...", "radius": 16, "density": "normal" },
+  "theme": { "paletteId": "...", "fontPairId": "...", "heroLayout": "...", "radius": 16, "density": "normal", "animation": "yumusak" },
   "blocks": [
     { "id": "hero", "type": "hero", "data": { "eyebrow": "kısa etiket", "headline": "...", "subheadline": "...", "cta": "...", "ctaHref": "#contact" } },
     { "id": "services", "type": "services", "variant": "kart-izgara", "data": { "title": "...", "items": [ { "icon": "scissors", "title": "...", "desc": "...", "price": "" } ] } },
@@ -165,6 +169,9 @@ Yukarıdaki liste blokların ŞEMASIDIR, hepsini kullanman gerekmez — seçtikl
     density: densities.includes(parsed.theme?.density as typeof densities[number])
       ? (parsed.theme!.density as SiteTheme["density"])
       : "normal",
+    animation: (["yok", "yumusak", "belirgin"] as const).includes(parsed.theme?.animation as never)
+      ? parsed.theme!.animation
+      : "yumusak",
   };
 
   // contact garanti altına alınır — AI atlarsa sayfa yarım kalmasın.

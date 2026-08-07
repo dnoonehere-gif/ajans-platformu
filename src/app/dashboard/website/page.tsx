@@ -308,9 +308,10 @@ export default function WebsitePage() {
 
   // ── Kütüphane: site zaten varsa sihirbaz yerine bu görünür ──────────
   if (mevcutSite && !yenidenOlustur) {
-    const adres = mevcutSite.subdomain
-      ? `https://${mevcutSite.subdomain}.novelya.com.tr`
-      : `/site/${activeBrand.slug ?? ""}`;
+    // Alt alan adı (marka.novelya.com.tr) için wildcard DNS kaydı YOK —
+    // adres hiç çözülmüyor (curl: 000). Kırık bağlantı göstermemek için
+    // çalışan /site/<slug> yolu kullanılıyor.
+    const adres = `https://www.novelya.com.tr/site/${activeBrand.slug ?? mevcutSite.subdomain ?? ""}`;
     return (
       <div className="mx-auto max-w-2xl px-6 py-10">
         <div className="mb-8 flex items-center gap-3">

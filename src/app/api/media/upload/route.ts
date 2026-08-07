@@ -13,10 +13,21 @@ import { prisma } from "@/lib/prisma";
 const MAX_IMAGE = 8 * 1024 * 1024;   // 8 MB
 const MAX_VIDEO = 50 * 1024 * 1024;  // 50 MB
 
-const ALLOWED = [
-  "image/jpeg", "image/png", "image/webp", "image/gif", "image/avif",
-  "video/mp4", "video/webm", "video/quicktime",
-];
+/**
+ * İzin verilen türler.
+ *
+ * Görsellerde katı bir liste gerçek kullanıcıyı engelliyordu: iPhone
+ * fotoğrafları HEIC/HEIF, bazı Android'ler farklı MIME bildiriyor. Görsel
+ * tarafında "image/*" kabul edilip yalnızca tehlikeli olanlar (SVG — script
+ * çalıştırabilir) dışlanıyor. Video tarafı dar tutuluyor.
+ */
+const ENGELLI_GORSEL = ["image/svg+xml"];
+const IZINLI_VIDEO = ["video/mp4", "video/webm", "video/quicktime"];
+
+function turUygunMu(tur: string) {
+  if (tur.startsWith("image/")) return !ENGELLI_GORSEL.includes(tur);
+  return IZINLI_VIDEO.includes(tur);
+}
 
 export async function POST(req: NextRequest) {
   const user = await getAuthUser();
@@ -38,9 +49,9 @@ export async function POST(req: NextRequest) {
   if (!brand) return NextResponse.json({ error: "Marka bulunamadı" }, { status: 404 });
 
   // Tür kontrolü tarayıcının bildirdiği MIME'a değil, izin listesine dayanır.
-  if (!ALLOWED.includes(file.type)) {
+  if (!turUygunMu(file.type)) {
     return NextResponse.json(
-      { error: "Yalnızca JPG, PNG, WEBP, GIF, AVIF görseller ve MP4, WEBM, MOV videolar yüklenebilir" },
+      { error: `Bu dosya türü desteklenmiyor (${file.type || "bilinmiyor"}). Görsel veya MP4/WEBM/MOV video yükleyin.` },
       { status: 400 }
     );
   }

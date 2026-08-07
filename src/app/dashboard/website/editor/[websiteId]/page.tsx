@@ -330,6 +330,9 @@ export default function WebsiteEditorPage({
       if (!res.ok) throw new Error(data.error ?? "Hata");
 
       setBlocks(data.blocks);
+      // Renk/font/animasyon istekleri temayı değiştiriyor; önizleme
+      // güncellenmezse kullanıcı "hiçbir şey olmadı" sanıyor.
+      if (data.theme) setWebsite((w) => (w ? { ...w, theme: data.theme } : w));
       setMessages((m) => [
         ...m.slice(0, -1),
         { role: "ai", content: sL.applied },
@@ -488,7 +491,8 @@ export default function WebsiteEditorPage({
         <div className="shrink-0 border-b border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.4)] px-6 py-4">
           {(() => {
             const sub = website.subdomain ?? website.brand?.slug ?? website.brandId;
-            const subUrl = `https://${sub}.novelya.com.tr`;
+            // Alt alan adı için wildcard DNS yok; çalışan adres /site yolu.
+            const subUrl = `https://www.novelya.com.tr/site/${sub}`;
             const siteUrl = `https://novelya.com.tr/site/${sub}`;
             return (
               <div className="mx-auto max-w-4xl space-y-4">

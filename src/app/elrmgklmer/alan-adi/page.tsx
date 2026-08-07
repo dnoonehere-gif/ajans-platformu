@@ -53,13 +53,16 @@ const UCRETSIZ_PAKETLER = ["isletme", "isletme-yillik", "ajans", "ajans-yillik"]
 
 function notSablonu(ucretsiz: boolean) {
   if (ucretsiz) {
+    // Ücretsiz pakette onaylanacak bir ödeme yok; "onaylarsanız" demek
+    // kullanıcıyı bekletir. Doğrudan işleme geçtiğimiz söyleniyor.
     return `Alan adı müsait. Paketinize dahil olduğu için kurulum ücreti alınmıyor. ` +
-      `Sonraki yıllarda yıllık ${YENILEME_UCRETI.toLocaleString("tr-TR")} ₺ yenileme ücreti oluşur. ` +
-      `Onaylarsanız 2 iş günü içinde yayına alırız.`;
+      `Alan adını alıp sitenizi 2 iş günü içinde bu adrese taşıyoruz. ` +
+      `İlk yıl dahil; sonraki yıllarda yıllık ${YENILEME_UCRETI.toLocaleString("tr-TR")} ₺ ` +
+      `yenileme ücreti oluşur.`;
   }
   return `Alan adı müsait. Kurulum ücreti ${KURULUM_UCRETI.toLocaleString("tr-TR")} ₺ ` +
     `(ilk yıl alan adı dahil). Sonraki yıllarda yıllık ${YENILEME_UCRETI.toLocaleString("tr-TR")} ₺ ` +
-    `yenileme ücreti oluşur. Onaylarsanız 2 iş günü içinde yayına alırız.`;
+    `yenileme ücreti oluşur. Onayınızı aldıktan sonra 2 iş günü içinde yayına alırız.`;
 }
 
 const inp =
@@ -165,9 +168,8 @@ export default function DomainRequestsPage() {
           {talepler.map((t) => {
             const d = DURUM[t.status];
             const ts = taslakAl(t);
-            const siteAdresi = t.website.subdomain
-              ? `https://${t.website.subdomain}.novelya.com.tr`
-              : `https://novelya.com.tr/site/${t.brand.slug}`;
+            // Alt alan adı çözülmüyor (wildcard DNS yok) — çalışan yol.
+            const siteAdresi = `https://www.novelya.com.tr/site/${t.brand.slug}`;
 
             return (
               <div key={t.id} className="glass rounded-2xl p-5">
@@ -250,7 +252,7 @@ export default function DomainRequestsPage() {
                     onClick={() => setTaslak({ ...taslak, [t.id]: { ...ts, not: notSablonu(ucretsizMi(t)), fiyat: ucretsizMi(t) ? "0" : String(KURULUM_UCRETI) } })}
                     className="rounded-lg border border-[hsl(var(--border))] px-3 py-1.5 text-xs transition hover:bg-[hsl(var(--accent))]"
                   >
-                    Şablonu yükle
+                    Notu şablona döndür
                   </button>
                 </div>
 

@@ -45,6 +45,7 @@ export function BlockRenderer({
   const fonts = FONT_PAIRS.find((f) => f.id === theme?.fontPairId) ?? FONT_PAIRS[0];
   const radius = theme?.radius ?? 16;
   const density = theme?.density ?? "normal";
+  const animasyon = theme?.animation ?? "yumusak";
 
   const style = {
     "--w-bg": palette.bg,
@@ -69,8 +70,27 @@ export function BlockRenderer({
         .w-h { font-family: var(--w-display); letter-spacing: var(--w-tracking); ${fonts.upper ? "text-transform: uppercase;" : ""} }
         .w-card { background: var(--w-surface); border-radius: var(--w-r); }
         .w-btn { background: var(--w-accent); color: var(--w-accent-ink); border-radius: var(--w-r-sm); }
+        .w-btn { transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s; }
+        .w-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 26px -12px var(--w-accent); }
+        ${animasyon === "yok" ? "" : `
+        /* Bölüm giriş animasyonu. Görünüre girince değil, sayfa yüklenince
+           sırayla tetiklenir; ek JavaScript gerektirmez ve dışa aktarılan
+           tek dosyalık HTML'de de çalışır. */
+        @keyframes wIn {
+          from { opacity: 0; transform: translateY(${animasyon === "belirgin" ? 48 : 24}px) scale(${animasyon === "belirgin" ? ".97" : ".995"}); filter: blur(${animasyon === "belirgin" ? 8 : 3}px); }
+          to   { opacity: 1; transform: none; filter: none; }
+        }
+        .w-anim { animation: wIn ${animasyon === "belirgin" ? ".85s" : ".6s"} cubic-bezier(.22,1,.36,1) both; }
+        .w-card { transition: transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s; }
+        .w-card:hover { transform: translateY(-4px); }
+        `}
+        /* Hareketi azalt tercihinde tüm animasyonlar kapanır. */
+        @media (prefers-reduced-motion: reduce) {
+          .w-anim { animation: none; }
+          .w-btn:hover, .w-card:hover { transform: none; }
+        }
       `}</style>
-      {blocks.map((b) => (
+      {blocks.map((b, i) => (
         <EditProvider
           key={b.id}
           value={{
@@ -81,7 +101,12 @@ export function BlockRenderer({
             uploadMedia,
           }}
         >
-          <Section block={b} pad={PAD[density]} heroLayout={theme?.heroLayout ?? "ortali-buyuk"} />
+          <div
+            className={animasyon === "yok" ? undefined : "w-anim"}
+            style={animasyon === "yok" ? undefined : { animationDelay: `${Math.min(i * 110, 660)}ms` }}
+          >
+            <Section block={b} pad={PAD[density]} heroLayout={theme?.heroLayout ?? "ortali-buyuk"} />
+          </div>
         </EditProvider>
       ))}
     </div>
