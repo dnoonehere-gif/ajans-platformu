@@ -47,6 +47,9 @@ export default function OrdersPage() {
   const [siparisler, setSiparisler] = useState<Order[]>([]);
   const [yukleniyor, setYukleniyor] = useState(true);
   const [islemId, setIslemId] = useState<string | null>(null);
+  // Sipariş alımı gerçekten açık mı (menü yayında + sipariş açık)
+  const [acik, setAcik] = useState(true);
+  const [menuYayinda, setMenuYayinda] = useState(true);
 
   const yukle = useCallback(async () => {
     if (!activeBrand) return;
@@ -54,6 +57,8 @@ export default function OrdersPage() {
     const res = await fetch(`/api/menu/orders?brandId=${activeBrand.id}${q}`);
     const data = await res.json();
     setSiparisler(data.orders ?? []);
+    setAcik(data.enabled !== false);
+    setMenuYayinda(data.menuPublished !== false);
     setYukleniyor(false);
   }, [activeBrand?.id, sekme]);
 
@@ -102,6 +107,14 @@ export default function OrdersPage() {
           <RefreshCw className="h-4 w-4" /> Yenile
         </button>
       </div>
+
+      {!acik && (
+        <div className="mb-4 rounded-2xl bg-amber-500/10 px-4 py-3 text-sm text-amber-500">
+          {menuYayinda
+            ? "Menünüz yayında ama masadan sipariş kapalı. Dijital Menü sayfasından \"Sipariş Açık\" düğmesine basın."
+            : "Menünüz henüz yayında değil. Sipariş alabilmek için önce menüyü yayınlayın, sonra siparişi açın."}
+        </div>
+      )}
 
       <div className="mb-4 flex flex-wrap gap-1.5">
         {SEKMELER.map((s) => (

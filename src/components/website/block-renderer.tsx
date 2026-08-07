@@ -1,7 +1,7 @@
 "use client";
 import type { Block, SiteTheme } from "@/server/ai/website-generator";
 import { PALETTES, FONT_PAIRS } from "@/server/ai/website-themes";
-import { EditProvider, T, Media } from "./editable";
+import { EditProvider, T, Media, useEdit } from "./editable";
 import {
   Scissors, Sparkles, Clock, Phone, MapPin, Star, Shield, Heart, Wrench,
   Car, Coffee, Camera, Users, Award, Check, Calendar, Mail, type LucideIcon,
@@ -314,8 +314,19 @@ function About({ d, pad }: { d: D; pad: string }) {
 
 /** Görseller henüz yüklenmemişse yer tutucu gösterir (medya yükleme geldiğinde dolar). */
 function Gallery({ d, pad, variant }: { d: D; pad: string; variant?: string }) {
+  const api = useEdit();
   const images = (d.images as string[]) ?? [];
-  const slots = images.length > 0 ? images : Array.from({ length: 6 }, () => "");
+
+  // Yayınlanmış sitede boş yuvalar çizilmediği için, hiç görsel yoksa
+  // ziyaretçi başlığı görüp altında boşluk buluyordu. Böyle bir durumda
+  // bölümün tamamı gizlenir. Editörde ise 6 boş yuva gösterilir ki
+  // kullanıcı tıklayıp yükleyebilsin.
+  const dolu = images.filter(Boolean);
+  if (!api?.editable && dolu.length === 0) return null;
+
+  const slots = api?.editable
+    ? (images.length > 0 ? images : Array.from({ length: 6 }, () => ""))
+    : dolu;
   const grid = variant === "seritli" ? "grid-cols-2 md:grid-cols-4"
     : variant === "mozaik" ? "grid-cols-2 md:grid-cols-3"
     : "grid-cols-2 md:grid-cols-3";
@@ -327,7 +338,7 @@ function Gallery({ d, pad, variant }: { d: D; pad: string; variant?: string }) {
           <Media
             key={i}
             data={d}
-            path={`images.${i}`}
+            path={api?.editable ? `images.${i}` : `images.${images.indexOf(src)}`}
             className={`overflow-hidden ${variant === "mozaik" && i % 5 === 0 ? "row-span-2 aspect-[3/4]" : "aspect-square"}`}
             style={{ borderRadius: "var(--w-r-sm)", background: src ? undefined : "var(--w-bg)" }}
           />

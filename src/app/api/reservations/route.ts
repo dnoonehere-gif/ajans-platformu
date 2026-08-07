@@ -51,7 +51,16 @@ export async function GET(req: NextRequest) {
       include: { employee: { select: { id: true, fullName: true } } },
     });
 
-    return NextResponse.json({ reservations });
+    // Panel rezervasyon adresini her durumda gösteriyordu; oysa sayfa yalnızca
+    // chatbot rezervasyonu açıkken VEYA yayında bir site varken çalışıyor.
+    // Kullanıcı linki paylaşıp "kapalı" ekranıyla karşılaşmasın diye durum
+    // birlikte döndürülür.
+    const [chatbot, website] = await Promise.all([
+      prisma.chatbot.findFirst({ where: { brandId, isActive: true, reservationEnabled: true }, select: { id: true } }),
+      prisma.website.findFirst({ where: { brandId, isPublished: true }, select: { id: true } }),
+    ]);
+
+    return NextResponse.json({ reservations, enabled: Boolean(chatbot || website) });
   } catch (e) {
     console.error("Reservations GET error:", e);
     return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });

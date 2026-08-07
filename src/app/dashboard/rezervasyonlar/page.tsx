@@ -60,6 +60,8 @@ export default function ReservationsPage() {
   const [kopyalandi, setKopyalandi] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", date: "", time: "", partySize: 1, notes: "" });
   const [hata, setHata] = useState("");
+  // Rezervasyon sayfası gerçekten açık mı (chatbot veya yayında site gerekiyor)
+  const [acik, setAcik] = useState(true);
 
   const yukle = useCallback(async () => {
     if (!activeBrand) return;
@@ -68,6 +70,7 @@ export default function ReservationsPage() {
     const res = await fetch(`/api/reservations?brandId=${activeBrand.id}${q}`);
     const data = await res.json();
     setKayitlar(data.reservations ?? []);
+    setAcik(data.enabled !== false);
     setYukleniyor(false);
   }, [activeBrand?.id, sekme]);
 
@@ -145,6 +148,12 @@ export default function ReservationsPage() {
         <p className="mb-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))]">
           Rezervasyon sayfanız — WhatsApp, Instagram veya sitenizde paylaşın
         </p>
+        {!acik && (
+          <p className="mb-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-500">
+            Bu adres şu anda ziyaretçilere kapalı görünüyor. Açılması için web sitenizi
+            yayınlayın ya da Chatbot bölümünden rezervasyonu etkinleştirin.
+          </p>
+        )}
         <div className="flex items-center gap-2">
           <code className="flex-1 truncate rounded-lg bg-[hsl(var(--muted)/0.5)] px-3 py-2 text-xs">{rezervasyonLinki}</code>
           <button onClick={() => { navigator.clipboard.writeText(rezervasyonLinki); setKopyalandi(true); setTimeout(() => setKopyalandi(false), 2000); }}

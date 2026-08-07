@@ -102,7 +102,19 @@ export async function GET(req: NextRequest) {
     include: { items: true },
   });
 
-  return NextResponse.json({ orders });
+  // Sipariş alınabilmesi için menünün hem YAYINDA hem de siparişe AÇIK olması
+  // gerekiyor. Panel bunu söylemezse işletme "neden sipariş gelmiyor" diye
+  // bekliyor; durum birlikte döndürülür.
+  const menu = await prisma.menu.findFirst({
+    where: { brandId },
+    select: { isPublished: true, orderingEnabled: true },
+  });
+
+  return NextResponse.json({
+    orders,
+    enabled: Boolean(menu?.isPublished && menu?.orderingEnabled),
+    menuPublished: Boolean(menu?.isPublished),
+  });
 }
 
 /** Sipariş durumunu değiştirir. */
