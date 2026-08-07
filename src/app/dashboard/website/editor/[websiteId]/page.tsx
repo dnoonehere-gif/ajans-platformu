@@ -9,6 +9,7 @@ import Link from "next/link";
 import { BlockRenderer } from "@/components/website/block-renderer";
 import { setByPath, type TextFormat } from "@/components/website/editable";
 import { BLOCK_PRESETS } from "@/components/website/block-presets";
+import { DomainRequestButton } from "@/components/website/domain-request-button";
 import type { SiteTheme } from "@/server/ai/website-generator";
 import type { Block } from "@/server/ai/website-generator";
 import { useLang } from "@/components/language-provider";
@@ -491,6 +492,11 @@ export default function WebsiteEditorPage({
             const siteUrl = `https://novelya.com.tr/site/${sub}`;
             return (
               <div className="mx-auto max-w-4xl space-y-4">
+                {/* Ekibe gönderme: DNS ile uğraşmak istemeyen kullanıcı için
+                    tek tuşluk yol. Aşağıdaki elle kurulum anlatımı, kendi
+                    yapmak isteyenler için duruyor. */}
+                <DomainRequestButton websiteId={websiteId} />
+
                 <div className="flex flex-wrap items-start gap-6">
                   {/* Novelya Subdomain */}
                   <div className="flex-1 min-w-56">

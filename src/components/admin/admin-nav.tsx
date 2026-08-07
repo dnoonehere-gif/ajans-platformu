@@ -1,18 +1,17 @@
 "use client";
 import Link from "next/link";
 import {
-  LayoutDashboard, Users, Building2, Package, CreditCard, Brain, Bot, LogOut, ScrollText,
-} from "lucide-react";
+  LayoutDashboard, Users, Building2, Package, CreditCard, Brain, Bot, LogOut, ScrollText, Globe2 } from "lucide-react";
 import { useLang } from "@/components/language-provider";
 
 const L = {
   tr: {
-    overview: "Genel Bakış", users: "Kullanıcılar", brands: "Markalar",
+    overview: "Genel Bakış", users: "Kullanıcılar", brands: "Markalar", domains: "Alan Adı Talepleri",
     plans: "Paketler", payments: "Ödemeler", ai: "AI Kullanımı",
     chatbot: "Chatbot", logs: "Sistem Logları", backToDashboard: "Dashboard'a Dön",
   },
   en: {
-    overview: "Overview", users: "Users", brands: "Brands",
+    overview: "Overview", users: "Users", brands: "Brands", domains: "Domain Requests",
     plans: "Plans", payments: "Payments", ai: "AI Usage",
     chatbot: "Chatbot", logs: "System Logs", backToDashboard: "Back to Dashboard",
   },
@@ -26,6 +25,7 @@ export function AdminNav() {
     { href: "/elrmgklmer", label: s.overview, icon: LayoutDashboard },
     { href: "/elrmgklmer/kullanicilar", label: s.users, icon: Users },
     { href: "/elrmgklmer/markalar", label: s.brands, icon: Building2 },
+    { href: "/elrmgklmer/alan-adi", label: s.domains, icon: Globe2 },
     { href: "/elrmgklmer/paketler", label: s.plans, icon: Package },
     { href: "/elrmgklmer/odemeler", label: s.payments, icon: CreditCard },
     { href: "/elrmgklmer/ai", label: s.ai, icon: Brain },

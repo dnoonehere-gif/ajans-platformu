@@ -5,6 +5,7 @@ import { Globe, Sparkles, Loader2, ChevronRight, ChevronLeft, Check, Palette, Ph
 import Image from "next/image";
 import Link from "next/link";
 import { useBrand } from "@/components/dashboard/brand-provider";
+import { DomainRequestButton } from "@/components/website/domain-request-button";
 import { useLang } from "@/components/language-provider";
 import { PageLoading } from "@/components/ui/page-loading";
 
@@ -350,6 +351,7 @@ export default function WebsitePage() {
               className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] px-5 py-2.5 text-sm transition hover:bg-[hsl(var(--accent))]">
               <Sparkles className="h-4 w-4" /> {sL.regenerate}
             </button>
+            <DomainRequestButton websiteId={mevcutSite.id} />
             <button onClick={siteyiKaldir} disabled={siliniyor}
               className="ml-auto flex items-center gap-2 rounded-xl border border-red-500/30 px-5 py-2.5 text-sm text-red-400 transition hover:bg-red-500/10 disabled:opacity-50">
               {siliniyor ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />} {sL.remove}

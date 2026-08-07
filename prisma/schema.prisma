@@ -204,6 +204,7 @@ model User {
   @@index([globalRole])
   @@index([emailNormalized])
   @@index([signupIp])
+  domainRequests DomainRequest[]
 }
 
 /// OAuth hesabı (NextAuth PrismaAdapter için ZORUNLU).
@@ -301,6 +302,7 @@ model Brand {
 
   @@index([ownerId])
   orders       Order[]
+  domainRequests DomainRequest[]
 }
 
 /// White-Label ayarları — Ajans planı müşterilerinin kendi markalarıyla site sunması
@@ -496,8 +498,9 @@ model Website {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  brand Brand         @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  pages WebsitePage[]
+  brand          Brand           @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  pages          WebsitePage[]
+  domainRequests DomainRequest[]
 }
 
 /// Web sitesi sayfası (düzenlenebilir bloklar JSON olarak tutulur)
@@ -1019,4 +1022,41 @@ model BackgroundJob {
   updatedAt DateTime  @updatedAt
 
   @@index([queue, status])
+}
+
+/// Kullanıcının "sitemi kendi alan adımla yayınlayın" talebi.
+///
+/// Özel alan adı bağlama teknik olarak DNS + Railway ayarı gerektiriyor ve
+/// müşterinin çoğu bunu yapamıyor. Bu yüzden self-servis yerine ELDEN
+/// yürüyen bir akış: kullanıcı istediği adı yazıp gönderiyor, ekip alan adını
+/// alıp kuruyor ve giriş bilgilerini iletiyor. Ücret admin tarafından
+/// belirlenip talebe yazılıyor (alan adı fiyatı uzantıya göre değişiyor).
+model DomainRequest {
+  id            String   @id @default(cuid())
+  websiteId     String
+  brandId       String
+  userId        String
+  /// Kullanıcının istediği alan adı — "kuaforayse.com.tr" gibi
+  desiredDomain String
+  /// Alternatif tercih; ilk isim alınmışsa kullanılır
+  altDomain     String?
+  /// Kullanıcının notu
+  note          String?
+  /// PENDING | QUOTED | IN_PROGRESS | COMPLETED | REJECTED
+  status        String   @default("PENDING")
+  /// Ekip tarafından belirlenen ücret (kuruş). Kullanıcıya gösterilir.
+  priceCents    Int?
+  /// Yayına alındığında gerçekleşen adres
+  finalDomain   String?
+  /// Ekibin kullanıcıya ilettiği not (giriş bilgileri BURAYA YAZILMAZ)
+  adminNote     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  website Website @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  brand   Brand   @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([brandId])
 }
