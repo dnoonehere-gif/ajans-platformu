@@ -47,8 +47,8 @@ const SEKMELER = ["PENDING", "QUOTED", "IN_PROGRESS", "COMPLETED", ""] as const;
  *
  * İşletme ve Ajans paketlerinde kurulum ücretsiz — yükseltme sebebi olsun.
  */
-const KURULUM_UCRETI = 2500;
-const YENILEME_UCRETI = 2000;
+const KURULUM_UCRETI = 3900;
+const YENILEME_UCRETI = 2400;
 const UCRETSIZ_PAKETLER = ["isletme", "isletme-yillik", "ajans", "ajans-yillik"];
 
 function notSablonu(ucretsiz: boolean) {

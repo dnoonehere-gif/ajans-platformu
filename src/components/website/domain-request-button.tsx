@@ -39,7 +39,7 @@ const L = {
       "Bilmeniz gereken her şeyi e-posta veya mesajla iletiriz.",
     ],
     priceNote:
-      "Kurulum ücreti 2.500 ₺ (ilk yıl alan adı dahil), sonraki yıllarda yıllık 2.000 ₺ yenileme ücreti oluşur. İşletme ve Ajans paketlerinde kurulum ücretsizdir. Ekibimiz onayınızı almadan hiçbir ücret tahsil edilmez.",
+      "Kurulum ücreti 3.900 ₺ (ilk yıl alan adı dahil), sonraki yıllarda yıllık 2.400 ₺ yenileme ücreti oluşur. İşletme ve Ajans paketlerinde kurulum ücretsizdir. Ekibimiz onayınızı almadan hiçbir ücret tahsil edilmez.",
     domainLabel: "İstediğiniz alan adı",
     domainPh: "kuaforayse.com.tr",
     altLabel: "Alternatif (ilk isim alınmışsa)",
@@ -75,7 +75,7 @@ const L = {
       "We send you everything you need to know by email or message.",
     ],
     priceNote:
-      "Setup is ₺2,500 (first-year domain included), then ₺2,000 per year for renewal. Setup is free on the Business and Agency plans. Nothing is charged without your approval.",
+      "Setup is ₺3,900 (first-year domain included), then ₺2,400 per year for renewal. Setup is free on the Business and Agency plans. Nothing is charged without your approval.",
     domainLabel: "Domain you want",
     domainPh: "yoursalon.com",
     altLabel: "Alternative (if the first is taken)",
