@@ -28,13 +28,19 @@ export async function POST(req: NextRequest) {
   const res = await fetch(`${supabaseUrl}/storage/v1/object/brand-assets/${path}`, {
     method: "POST",
     headers: {
+      // Bkz. media/upload — yeni sb_secret_* anahtarları apikey başlığı istiyor.
+      apikey: supabaseKey,
       Authorization: `Bearer ${supabaseKey}`,
       "Content-Type": file.type,
     },
     body: bytes,
   });
 
-  if (!res.ok) return NextResponse.json({ error: "Yükleme başarısız" }, { status: 500 });
+  if (!res.ok) {
+    const detay = (await res.text().catch(() => "")).slice(0, 300);
+    console.error(`Logo yükleme hatası (${res.status}):`, detay);
+    return NextResponse.json({ error: `Yükleme başarısız (${res.status}). ${detay}` }, { status: 500 });
+  }
 
   const url = `${supabaseUrl}/storage/v1/object/public/brand-assets/${path}`;
   return NextResponse.json({ url });

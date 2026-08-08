@@ -78,6 +78,11 @@ export async function POST(req: NextRequest) {
   const res = await fetch(`${supabaseUrl}/storage/v1/object/brand-assets/${path}`, {
     method: "POST",
     headers: {
+      // Supabase Storage hem "apikey" hem "Authorization" bekleyebiliyor.
+      // Yeni sb_secret_* anahtarlarında yalnızca Authorization göndermek
+      // 401'e düşüyordu; ikisi birden gönderilince eski JWT service_role
+      // anahtarları da yeni format da çalışıyor.
+      apikey: supabaseKey,
       Authorization: `Bearer ${supabaseKey}`,
       "Content-Type": file.type,
       "Cache-Control": "31536000",
@@ -86,8 +91,14 @@ export async function POST(req: NextRequest) {
   });
 
   if (!res.ok) {
-    console.error("Medya yükleme hatası:", await res.text());
-    return NextResponse.json({ error: "Yükleme başarısız" }, { status: 500 });
+    // Supabase'in kendi hata metni gizleniyordu; "Yükleme başarısız"
+    // dışında hiçbir ipucu kalmıyor ve teşhis imkânsız hâle geliyordu.
+    const detay = (await res.text().catch(() => "")).slice(0, 300);
+    console.error(`Medya yükleme hatası (${res.status}):`, detay);
+    return NextResponse.json(
+      { error: `Yükleme başarısız (${res.status}). ${detay || "Depo hata ayrıntısı vermedi."}` },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({
