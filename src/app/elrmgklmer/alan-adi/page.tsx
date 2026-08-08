@@ -42,13 +42,13 @@ const SEKMELER = ["PENDING", "QUOTED", "IN_PROGRESS", "COMPLETED", ""] as const;
  * Fiyatlandırma.
  *
  * Alan adı maliyeti ilk yıl düşük (.com.tr ~₺71) ama YENİLEME yüksek
- * (~₺952/yıl). Tek seferlik ücret alınırsa ikinci yıl zarar yazılır, bu
+ * (Hostinger .com.tr: 728 ₺/yıl). Tek seferlik ücret alınırsa ikinci yıl zarar yazılır, bu
  * yüzden yenileme ücreti baştan söylenir.
  *
  * İşletme ve Ajans paketlerinde kurulum ücretsiz — yükseltme sebebi olsun.
  */
-const KURULUM_UCRETI = 3900;
-const YENILEME_UCRETI = 2400;
+const KURULUM_UCRETI = 1900;
+const YENILEME_UCRETI = 1500;
 const UCRETSIZ_PAKETLER = ["isletme", "isletme-yillik", "ajans", "ajans-yillik"];
 
 function notSablonu(ucretsiz: boolean) {

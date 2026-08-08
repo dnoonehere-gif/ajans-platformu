@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getBrandPlanFeatures } from "@/lib/plan-guard";
 import { getAuthUser } from "@/lib/auth-guard";
 
 export async function GET() {
@@ -31,5 +32,15 @@ export async function GET() {
     ...memberBrands.filter((b) => !ownedIds.has(b.id)),
   ];
 
-  return NextResponse.json({ brands: all });
+  // Site kütüphanesi "yeni site" butonunu paket kotasına göre gösteriyor;
+  // marka limitini ayrı bir istek yapmadan burada döndürüyoruz.
+  // Kota SAHİP olunan markalara göre işler — üyesi olunan markalar sayılmaz.
+  const ilkMarka = owned[0];
+  const features = ilkMarka ? await getBrandPlanFeatures(ilkMarka.id) : null;
+
+  return NextResponse.json({
+    brands: all,
+    planFeatures: { brands: features?.brands ?? 1 },
+    ownedCount: owned.length,
+  });
 }

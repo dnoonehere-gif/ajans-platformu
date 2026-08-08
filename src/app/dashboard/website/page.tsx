@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Globe, Sparkles, Loader2, ChevronRight, ChevronLeft, Check, Palette, Phone, Building2, ImageIcon, Pencil, ExternalLink, Trash2 } from "lucide-react";
+import { Globe, Sparkles, Loader2, ChevronRight, ChevronLeft, Check, Palette, Phone, Building2, ImageIcon, Pencil, ExternalLink, Trash2, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useBrand } from "@/components/dashboard/brand-provider";
@@ -12,6 +12,9 @@ import { PageLoading } from "@/components/ui/page-loading";
 const L = {
   tr: {
     libraryTitle: "Web Siteniz",
+    newSite: "Yeni Site",
+    newSiteLocked: (n: number) => `Site limiti doldu (${n}) — Yükselt`,
+    quotaNote: (a: number, b: number) => `${a} / ${b === -1 ? "sınırsız" : b} site kullanıldı. Her marka için bir site oluşturulabilir.`,
     published: "Yayında", draft: "Taslak",
     edit: "Düzenle", view: "Siteyi Gör", regenerate: "Yeniden Oluştur", remove: "Kaldır",
     removeConfirm: "Site kalıcı olarak silinecek. Emin misiniz?",
@@ -57,6 +60,9 @@ const L = {
   },
   en: {
     libraryTitle: "Your Website",
+    newSite: "New Site",
+    newSiteLocked: (n: number) => `Site limit reached (${n}) — Upgrade`,
+    quotaNote: (a: number, b: number) => `${a} / ${b === -1 ? "unlimited" : b} sites used. One site per brand.`,
     published: "Live", draft: "Draft",
     edit: "Edit", view: "View Site", regenerate: "Regenerate", remove: "Remove",
     removeConfirm: "The site will be permanently deleted. Are you sure?",
@@ -173,6 +179,20 @@ export default function WebsitePage() {
   const [mevcutSite, setMevcutSite] = useState<{ id: string; title: string; isPublished: boolean; subdomain?: string } | null>(null);
   const [yenidenOlustur, setYenidenOlustur] = useState(false);
   const [siliniyor, setSiliniyor] = useState(false);
+
+  // Her markanın TEK sitesi olabiliyor (Website.brandId benzersiz). Yani
+  // "yeni site" demek yeni marka demek, o da paketin marka kotasına bağlı.
+  const [kota, setKota] = useState<{ kullanilan: number; limit: number } | null>(null);
+  useEffect(() => {
+    fetch("/api/user/brands")
+      .then((r) => r.json())
+      .then((d) => {
+        const markalar = Number(d.ownedCount ?? (d.brands ?? []).length);
+        const limit = Number(d.planFeatures?.brands ?? 1);
+        setKota({ kullanilan: markalar, limit });
+      })
+      .catch(() => setKota(null));
+  }, []);
 
   useEffect(() => {
     if (!activeBrand) { setChecking(false); return; }
@@ -353,6 +373,20 @@ export default function WebsitePage() {
               <Sparkles className="h-4 w-4" /> {sL.regenerate}
             </button>
             <DomainRequestButton websiteId={mevcutSite.id} />
+            {/* Yeni site = yeni marka. Kota doluysa yükseltmeye yönlendirilir;
+                sessizce çalışmayan bir buton göstermek yerine sebebi yazılır. */}
+            {kota && (kota.limit === -1 || kota.kullanilan < kota.limit) ? (
+              <Link href="/dashboard/marka-olustur"
+                className="flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] px-5 py-2.5 text-sm transition hover:bg-[hsl(var(--accent))]">
+                <Plus className="h-4 w-4" /> {sL.newSite}
+              </Link>
+            ) : kota ? (
+              <Link href="/dashboard/abonelik"
+                className="flex items-center gap-2 rounded-xl border border-amber-500/30 px-5 py-2.5 text-sm text-amber-500 transition hover:bg-amber-500/10">
+                <Plus className="h-4 w-4" /> {sL.newSiteLocked(kota.limit)}
+              </Link>
+            ) : null}
+
             <button onClick={siteyiKaldir} disabled={siliniyor}
               className="ml-auto flex items-center gap-2 rounded-xl border border-red-500/30 px-5 py-2.5 text-sm text-red-400 transition hover:bg-red-500/10 disabled:opacity-50">
               {siliniyor ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />} {sL.remove}
@@ -362,7 +396,12 @@ export default function WebsitePage() {
 
         {error && <p className="mt-4 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-red-400">{error}</p>}
 
-        <p className="mt-4 text-xs text-[hsl(var(--muted-foreground))]">{sL.regenerateNote}</p>
+        {kota && (
+          <p className="mt-4 text-xs text-[hsl(var(--muted-foreground))]">
+            {sL.quotaNote(kota.kullanilan, kota.limit)}
+          </p>
+        )}
+        <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">{sL.regenerateNote}</p>
       </div>
     );
   }
