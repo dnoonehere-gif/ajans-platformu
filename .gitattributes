@@ -1,2 +1,5 @@
-*.sh text eol=lf
-Dockerfile text eol=lf
+# Pazarlama görselleri ikili dosyadır; git bunları metin sanıp satır sonu
+# dönüşümü yaparsa dosyalar bozulur.
+*.png binary
+*.jpg binary
+*.mp4 binary
