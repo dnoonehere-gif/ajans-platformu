@@ -4,7 +4,7 @@
 > özeldir ve senkronlanmaz; bu dosya depoda olduğu için `git pull` ile gelir.
 > Her oturumun sonunda güncellenir. Önce bunu oku, sonra çalışmaya başla.
 
-**Son güncelleme:** 09.08.2026
+**Son güncelleme:** 09.08.2026 (ödeme akışı doğrulandı)
 
 ---
 
@@ -13,8 +13,8 @@
 Ürün canlı: <https://www.novelya.com.tr> · Panel: `/dashboard` · Yönetim: `/elrmgklmer`
 Altyapı: Next.js 15 + Prisma + Supabase + Railway + Cloudflare.
 
-**Ödeyen müşteri henüz YOK.** Ürün geniş, doğrulanmış kısmı dar.
-Öncelik yeni özellik değil, **ilk müşteriyi bulmak ve ödeme akışını canlı test etmek.**
+**Dış müşteri henüz YOK** (tek ödeme kaydı kendi testimiz). Ürün geniş,
+doğrulanmış kısmı dar. Öncelik yeni özellik değil, **ilk gerçek müşteriyi bulmak.**
 
 ## Fiyatlar (09.08.2026'da düşürüldü)
 
@@ -35,9 +35,13 @@ sitede gördüğünden farklı tutar öder.
 ## Bekleyen işler — sırayla
 
 1. **Shopier fiyatlarını güncelle** (sitede 499 ₺ yazıyor, Shopier'de 899 ₺ olabilir) — ACİL
-2. **İlk gerçek satın alma testi** — ödeme yolu hiç çalıştırılmadı. En ucuz plandan
-   alım yapıp Railway loglarında `Shopier webhook: imza incelemesi` satırını izle:
-   abonelik açılıyor mu, fatura oluşuyor mu, onay maili gidiyor mu.
+2. **Ödeme akışı ✅ KANITLANDI (22.07.2026)** — veritabanında gerçek bir kayıt var:
+   Başlangıç planı, provider SHOPIER, `providerSubId 650597725`, abonelik ACTIVE,
+   fatura PAID ₺899. Yani Shopier → webhook → abonelik → fatura zinciri çalışıyor.
+   ⚠️ 22.07'den sonra YENİ ödeme kaydı yok. Yeni bir test yapıldıysa ve kayıt
+   düşmediyse webhook kopmuş demektir — Shopier işlem geçmişiyle karşılaştır.
+   NOT: Fatura tutarı ödendiği andaki fiyatı saklar (₺899), fiyat düşünce
+   geçmişe dönük değişmez. Doğru davranış.
 3. **PostHog verisi** — çalışır hâle geldi. Bakılacak: 368 ziyaretçi/gün geliyor
    ama kayıt 0. Kaç kişi `/kayit` sayfasına gidiyor, formda nerede bırakıyor?
 4. **Google OAuth doğrulaması** — uygulama hâlâ "Testing" modunda; müşteriler
