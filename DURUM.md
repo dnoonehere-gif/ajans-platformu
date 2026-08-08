@@ -20,10 +20,13 @@ doğrulanmış kısmı dar. Öncelik yeni özellik değil, **ilk gerçek müşte
 
 | Paket | Aylık | Yıllık |
 |---|---|---|
-| Başlangıç | 499 ₺ | 4.990 ₺ |
-| Profesyonel | 999 ₺ | 9.990 ₺ |
-| İşletme | 1.899 ₺ | 18.990 ₺ |
-| Ajans | 3.499 ₺ | 34.990 ₺ |
+| Başlangıç | 499 ₺ | 4.490 ₺ |
+| Profesyonel | 999 ₺ | 8.990 ₺ |
+| İşletme | 1.899 ₺ | 16.990 ₺ |
+| Ajans | 3.499 ₺ | 29.990 ₺ |
+
+Yıllıklar aylığın 12 katından **~%25 ucuz** (≈3 ay bedava). Önceden tam 10 kattı
+(2 ay bedava) — yıllığa geçiş yeterince cazip değildi.
 
 Alan adı hizmeti: kurulum **1.900 ₺**, yenileme **1.500 ₺/yıl** (maliyet 728 ₺).
 İşletme ve Ajans paketlerinde kurulum ücretsiz.

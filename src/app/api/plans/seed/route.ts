@@ -21,19 +21,19 @@ const ALL_PLANS = [
     features: { brands: -1, teamMembers: -1, aiContent: -1, chatbot: true, reviews: true, qrCodes: -1, website: true, googleBusiness: true, seoContent: true, whiteLabel: true, batchContent: true, clientReporting: true, socialMedia: true, apiAccess: true, support: "priority" },
   },
   {
-    name: "Başlangıç Yıllık", slug: "baslangic-yillik", priceCents: 499000, currency: "TRY", interval: "year" as const, trialDays: 0,
+    name: "Başlangıç Yıllık", slug: "baslangic-yillik", priceCents: 449000, currency: "TRY", interval: "year" as const, trialDays: 0,
     features: { brands: 1, teamMembers: 2, aiContent: 50, chatbot: false, reviews: false, qrCodes: 2, website: true, googleBusiness: false, seoContent: false, support: "email" },
   },
   {
-    name: "Profesyonel Yıllık", slug: "profesyonel-yillik", priceCents: 999000, currency: "TRY", interval: "year" as const, trialDays: 0,
+    name: "Profesyonel Yıllık", slug: "profesyonel-yillik", priceCents: 899000, currency: "TRY", interval: "year" as const, trialDays: 0,
     features: { brands: 5, teamMembers: 10, aiContent: 300, chatbot: true, reviews: true, qrCodes: 10, website: true, googleBusiness: true, seoContent: true, support: "priority" },
   },
   {
-    name: "İşletme Yıllık", slug: "isletme-yillik", priceCents: 1899000, currency: "TRY", interval: "year" as const, trialDays: 0,
+    name: "İşletme Yıllık", slug: "isletme-yillik", priceCents: 1699000, currency: "TRY", interval: "year" as const, trialDays: 0,
     features: { brands: 20, teamMembers: 50, aiContent: -1, chatbot: true, reviews: true, qrCodes: -1, website: true, googleBusiness: true, seoContent: true, support: "priority" },
   },
   {
-    name: "Ajans Yıllık", slug: "ajans-yillik", priceCents: 3499000, currency: "TRY", interval: "year" as const, trialDays: 0,
+    name: "Ajans Yıllık", slug: "ajans-yillik", priceCents: 2999000, currency: "TRY", interval: "year" as const, trialDays: 0,
     features: { brands: -1, teamMembers: -1, aiContent: -1, chatbot: true, reviews: true, qrCodes: -1, website: true, googleBusiness: true, seoContent: true, whiteLabel: true, batchContent: true, clientReporting: true, socialMedia: true, apiAccess: true, support: "priority" },
   },
 ];
